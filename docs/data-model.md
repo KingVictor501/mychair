@@ -186,7 +186,18 @@ Visit history is not its own table: it is the client's `completed` appointments 
 | request_id | text | no | |
 | details | jsonb | no | already redacted before saving. Deleted after 14 days. |
 
-Metrics (requests, errors, latency) are calculated from `request_done` and `request_failed` rows, so there is no separate metrics table.
+Metrics can also be calculated straight from `request_done` and `request_failed` rows. We keep a second, pre-counted table (below) so you can compare both approaches in the dashboard and keep the one you like best.
+
+### metrics_minutely (pre-counted totals, one row per minute per route)
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| minute | timestamptz | yes | the start of the minute, e.g. 14:05:00 |
+| route | text | yes | e.g. `/api/appointments` |
+| request_count | int | yes | requests finished in that minute |
+| error_count | int | yes | of those, how many failed (`request_failed`) |
+| latency_sum_ms | bigint | yes | total milliseconds, so the average = sum / count |
+| latency_p50_ms / latency_p95_ms | int | yes | median and 95th-percentile speed for that minute |
+| | | | unique on (minute, route). Updated each time a request finishes. Deleted after 14 days like logs. |
 
 ### web_vitals
 | Field | Type | Required | Notes |

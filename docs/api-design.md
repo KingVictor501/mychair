@@ -87,7 +87,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
 | GET | `/api/admin/logs` | `?level=&event=&route=&from=&to=&cursor=` | log page | Super Admin |
-| GET | `/api/admin/metrics` | `?range=1h\|24h\|7d` | requests, errors, median and p95 latency over time | Super Admin |
+| GET | `/api/admin/metrics` | `?range=1h\|24h\|7d&source=logs\|table` | requests, errors, median and p95 latency over time. `logs` calculates from `log_entries`; `table` reads `metrics_minutely`. Default `table`. | Super Admin |
 | GET | `/api/admin/vitals` | `?range=` | web vitals grouped by page | Super Admin |
 | GET | `/api/admin/stack-links` | none | links read from env variables | Super Admin |
 | GET | `/api/admin/embeddings` | none | `{ embeddedCount, serviceCount }` read from the vector table | Super Admin |

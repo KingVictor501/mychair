@@ -6,6 +6,8 @@ Two rules apply to every row below:
 - **Shop rule:** a user can only touch records with their own `shop_id`. (Super Admin is the only exception.)
 - **Ownership rule:** "own" means the record belongs to that user. "Their" client means a client who has an appointment or style card with that pro.
 
+**Super Admin has no limits:** every row is ✅ for Super Admin, in any shop.
+
 Legend: ✅ allowed, ❌ not allowed, 🔸 allowed with a limit (explained in the notes column).
 
 An owner who also cuts hair has both the Owner and Pro columns.
@@ -14,7 +16,7 @@ An owner who also cuts hair has both the Owner and Pro columns.
 |---|---|---|---|---|---|
 | **Accounts** | | | | | |
 | Sign up as a client | ✅ | ✅ | ✅ | ✅ | open to anyone |
-| Join as a pro | ❌ | ❌ | 🔸 | ❌ | only through an invite link |
+| Join as a pro | ✅ | ❌ | 🔸 | ❌ | everyone else: only through an invite link. Super Admin can create pro accounts directly. |
 | Create an invite link | ✅ | ✅ | ❌ | ❌ | |
 | Log in / log out | ✅ | ✅ | ✅ | ✅ | |
 | View or edit own account | ✅ | ✅ | ✅ | ✅ | |
