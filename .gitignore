@@ -1,0 +1,25 @@
+# .gitignore: a list of files Git must never save or upload to GitHub.
+# Used by Git itself (not imported by any code). The name is fixed by Git.
+
+# Every env file (these hold secrets). The "!" line re-allows the safe template.
+.env
+.env.*
+.env*.local
+!.env.example
+
+# Installed packages (can always be re-created with `npm install`)
+node_modules/
+
+# Next.js build output and generated files
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Vercel local link folder
+.vercel/
+
+# Mac and editor clutter
+.DS_Store
+.vscode/
+npm-debug.log*

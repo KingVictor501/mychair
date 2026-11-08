@@ -1,0 +1,40 @@
+/* app/globals.css
+   WHAT IT'S FOR: the app-wide look. A minimalist white and gray palette.
+   WHO USES IT: app/layout.tsx imports it, so it applies to every page.
+   WHY THE NAME: "globals" = applies everywhere; ".css" = styling file.
+
+   The colors are stored once as named variables ("design tokens") under :root.
+   To brand the app later (a shop logo and colors), change these values; nothing else needs editing. */
+
+:root {
+  --color-bg: #ffffff;        /* page background: white */
+  --color-surface: #f4f4f5;   /* cards and panels: very light gray */
+  --color-border: #d4d4d8;    /* thin lines: light gray */
+  --color-text: #18181b;      /* main text: near black (strong contrast on white) */
+  --color-text-muted: #52525b;/* secondary text: dark gray (still readable on white) */
+}
+
+/* Include padding and borders in an element's width so nothing overflows on a 375px phone. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem; /* 1rem side gutter keeps text off the screen edge on phones */
+}
+
+p {
+  color: var(--color-text-muted);
+}
