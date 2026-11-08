@@ -159,8 +159,7 @@ It powers **service search for clients:** searching "lashes" finds "eyelash exte
 
 ## MY CLASS TASKS (not code, but remind me)
 
-- Post my three-scenario picks in #choose-your-weapon with a one-sentence reason for each.
-- Write my Course 2 baseline note myself (Section 9).
+- None left. The #choose-your-weapon post is not part of this capstone, and my Course 2 baseline note (Section 9) is finished and already submitted outside this repo, so skip Section 9.
 
 ---
 
