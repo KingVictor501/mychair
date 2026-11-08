@@ -14,13 +14,13 @@
 // useState remembers a value between redraws; useEffect runs code once the page appears.
 // Both come from React, the library Next.js is built on.
 import { useEffect, useState } from "react";
-// HealthResponse comes from lib/types.ts so this file and the API agree on the answer's shape.
-import type { HealthResponse } from "@/lib/types";
+// The agreed shapes of the API's good answer and error answer, from lib/types.ts.
+import type { ApiErrorBody, HealthResponse } from "@/lib/types";
 
-// The four situations the widget can be in.
+// The three situations the widget can be in.
 type ViewState =
   | { kind: "loading" }
-  | { kind: "data"; health: HealthResponse }
+  | { kind: "ok" }
   | { kind: "error"; message: string };
 
 // Shows "Checking...", then either the app/database status or a friendly error.
@@ -34,8 +34,16 @@ export default function HealthStatus() {
     async function check() {
       try {
         const res = await fetch("/api/health");
-        const health = (await res.json()) as HealthResponse;
-        if (!cancelled) setView({ kind: "data", health });
+        const body = (await res.json()) as HealthResponse | ApiErrorBody;
+        if (cancelled) return;
+
+        if ("status" in body && body.status === "ok") {
+          setView({ kind: "ok" });
+        } else if ("error" in body) {
+          setView({ kind: "error", message: body.error.message });
+        } else {
+          setView({ kind: "error", message: "Something went wrong." });
+        }
       } catch {
         // The request itself failed (for example, no internet).
         if (!cancelled) {
@@ -55,15 +63,8 @@ export default function HealthStatus() {
   }
 
   if (view.kind === "error") {
-    return <p role="alert">{view.message}</p>;
+    return <p role="alert">Health check: error. {view.message}</p>;
   }
 
-  // "data": the server answered. It may still say the database is down.
-  return view.health.status === "ok" ? (
-    <p role="status">Health check: ok. The app is running and the database is reachable.</p>
-  ) : (
-    <p role="alert">
-      Health check: error. {view.health.message ?? "Something went wrong."}
-    </p>
-  );
+  return <p role="status">Health check: ok. The app is running and the database is reachable.</p>;
 }
