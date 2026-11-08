@@ -49,7 +49,7 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | Set payment status | ✅ | ✅ | 🔸 | ❌ | pro: own appointments only (record only, no real payments) |
 | **Clients and style cards** | | | | | |
 | View a client | ✅ | ✅ | 🔸 | ❌ | pro: **only their own clients, and only name, phone, style card.** Never email. |
-| View client email | ✅ | ✅ | ❌ | 🔸 | client: own only |
+| View client email (if the client gave one) | ✅ | ✅ | ❌ | 🔸 | client: own only. Phone is required for clients and is visible to their pros. |
 | Create or edit a style card | ✅ | ❌ | 🔸 | ❌ | pro: only their own cards |
 | View a style card | ✅ | ✅ | 🔸 | ❌ | pro: own cards, or cards another pro shared with them |
 | Upload a style card photo | ✅ | ❌ | 🔸 | ❌ | own cards only. JPG, PNG, WebP, max 5 MB |

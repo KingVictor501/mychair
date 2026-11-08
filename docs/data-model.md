@@ -50,8 +50,8 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | **shop_id** | uuid FK shops | no | **Ties the user to a shop.** Empty only for `super_admin`. |
 | role | text | yes | `super_admin`, `owner`, `pro`, `client` |
 | name | text | yes | |
-| email | text | yes | unique, used to log in. Never shown to pros. |
-| phone | text | no | |
+| email | text | **clients: optional. Owner, pro, Super Admin: required** | unique when present. Can be used to log in. Never shown to pros. |
+| phone | text | **clients: required.** Others: optional | unique when present. Saved in one standard format (E.164, e.g. `+15551234567`). Can be used to log in. |
 | password_hash | text | yes | hash only, never the password. Never returned by any route. |
 | created_at | timestamptz | yes | |
 

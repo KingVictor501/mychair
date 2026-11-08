@@ -22,11 +22,11 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 ### Auth
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
-| POST | `/api/auth/signup` | `{ name, email, password, phone? }` | 201 `{ user }` and sets cookie | Public (creates a client) |
-| POST | `/api/auth/login` | `{ email, password }` | 200 `{ user }` and sets cookie | Public |
+| POST | `/api/auth/signup` | `{ name, phone, password, email? }` | 201 `{ user }` and sets cookie | Public (creates a client; phone required, email optional) |
+| POST | `/api/auth/login` | `{ identifier, password }` where identifier is a phone number or an email | 200 `{ user }` and sets cookie | Public |
 | POST | `/api/auth/logout` | none | 204 | Protected (any role) |
 | GET | `/api/me` | none | `{ user }` | Protected (any role) |
-| POST | `/api/auth/join` | `{ inviteToken, name, email, password, phone? }` | 201 `{ user }` as a pro | Public (needs a valid invite) |
+| POST | `/api/auth/join` | `{ inviteToken, name, email, password, phone? }` (email required for pros) | 201 `{ user }` as a pro | Public (needs a valid invite) |
 
 ### Shop and team
 | Method | URL | Request body | Response | Who |
