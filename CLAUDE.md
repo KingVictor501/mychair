@@ -160,7 +160,6 @@ It powers **service search for clients:** searching "lashes" finds "eyelash exte
 ## MY CLASS TASKS (not code, but remind me)
 
 - Post my three-scenario picks in #choose-your-weapon with a one-sentence reason for each.
-- Be able to name three project shapes where Next.js is NOT the right answer, and the framework that fits each better. Explain this to me in plain English and quiz me before the end of the week.
 - Write my Course 2 baseline note myself (Section 9).
 
 ---
