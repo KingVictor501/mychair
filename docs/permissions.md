@@ -16,8 +16,10 @@ An owner who also cuts hair has both the Owner and Pro columns.
 |---|---|---|---|---|---|
 | **Accounts** | | | | | |
 | Sign up as a client | ✅ | ✅ | ✅ | ✅ | open to anyone |
-| Join as a pro | ✅ | ❌ | 🔸 | ❌ | everyone else: only through an invite link. Super Admin can create pro accounts directly. |
-| Create an invite link | ✅ | ✅ | ❌ | ❌ | |
+| Join as a pro | ✅ | ❌ | 🔸 | ❌ | only through a pro invite link, or by an account the owner or Super Admin created for them |
+| Create a pro account for someone | ✅ | 🔸 | ❌ | ❌ | owner: own shop only. They enter the pro's name, email, and role. **The owner never sets or sees the password:** the pro gets a one-time setup link and chooses their own. |
+| Create a pro invite link | ✅ | ✅ | ❌ | ❌ | the link lets a pro sign up and join the shop |
+| Create a client invite link | ✅ | 🔸 | 🔸 | ❌ | pro: a link for their own page only. Owner: only if they also work as a pro. The app does **not** send texts: the pro copies or shares the link and sends it from their own phone. |
 | Log in / log out | ✅ | ✅ | ✅ | ✅ | |
 | View or edit own account | ✅ | ✅ | ✅ | ✅ | |
 | **Shop** | | | | | |
@@ -62,6 +64,15 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | Run or view service embedding status | ✅ | ❌ | ❌ | ❌ | |
 | Run a semantic-search test in the dashboard | ✅ | ❌ | ❌ | ❌ | |
 | "View as" another user (audited) | ✅ | ❌ | ❌ | ❌ | every session is logged |
+
+## Client invite links
+- A client invite link opens the sign-up page with that pro already chosen, so the new client is that pro's client right after signing up.
+- It is active for 24 hours and can be used once. It counts as used only after the client's account is created successfully, so a failed sign-up (for example, a typo) does not burn the link. The pro can make another one at any time.
+- The link is a random secret stored hashed (same design as pro invites). Creating links is rate limited.
+- The link never contains the client's name, phone, or email.
+
+## Notes for later
+- **Owner as a pro:** the owner needs their own "pro" view on the dashboard so they can take and schedule their own appointments, switching between the owner view and the pro view. Not built yet; the owner column already allows booking and schedule actions.
 
 ## What each failure returns
 - Not logged in: **401**.
