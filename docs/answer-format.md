@@ -17,6 +17,7 @@
 - The separator between document and section is a space, a middle dot `·`, and a space.
 - **Two or more sources:** put them all on the same line, in order of relevance, each written in full and joined by ` + `.
 - If two sections come from the same document, repeat the document name for each.
+- A section name may itself contain ` + ` (for example the product `Chalk Bag + Chalk` in `pricing.csv`). So a checker must split the line only where ` + ` is followed by a document name and ` · `, never on every ` + `.
 - Cite only passages the answer actually used.
 
 ## Decision 3: Refusal line
