@@ -7,8 +7,6 @@
 .env*.local
 !.env.example
 
-# The course corpus documents. Kept on this computer only: never committed, never on GitHub.
-
 # Installed packages (can always be re-created with `npm install`)
 node_modules/
 
