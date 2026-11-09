@@ -42,3 +42,14 @@ export type ApiErrorBody = {
     message: string; // e.g. "Database unreachable"
   };
 };
+
+// The result of asking the answer engine one question (lib/answer.ts).
+export type RagResult = {
+  // "answered": a cited answer. "refused": the exact refusal line. "malformed": Claude's reply broke our format.
+  outcome: "answered" | "refused" | "malformed";
+  answer: string;
+  citations: string[]; // each "{document} · {section}"
+  citationsVerified: boolean; // every citation matched a passage we really retrieved
+  passages: SearchResult[]; // what was retrieved and shown to Claude, closest first
+  tookMs: number;
+};
