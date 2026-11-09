@@ -22,18 +22,20 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 ### Auth
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
-| POST | `/api/auth/signup` | `{ name, phone, password, email? }` | 201 `{ user }` and sets cookie | Public (creates a client; phone required, email optional) |
+| POST | `/api/auth/signup` | `{ name, phone, password, email?, inviteToken? }` | 201 `{ user }` and sets cookie. With a valid `inviteToken`, the new client is attached to the inviting pro and the link is marked used. | Public (creates a client; phone required, email optional) |
 | POST | `/api/auth/login` | `{ identifier, password }` where identifier is a phone number or an email | 200 `{ user }` and sets cookie | Public |
 | POST | `/api/auth/logout` | none | 204 | Protected (any role) |
 | GET | `/api/me` | none | `{ user }` | Protected (any role) |
 | POST | `/api/auth/join` | `{ inviteToken, name, email, password, phone? }` (email required for pros) | 201 `{ user }` as a pro | Public (needs a valid invite) |
+| POST | `/api/auth/setup-password` | `{ inviteToken, password }` | 200 `{ user }` and sets cookie. Finishes a pro account an owner created. | Public (needs a valid setup link) |
 
 ### Shop and team
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
 | GET | `/api/shop` | none | shop name, time zone, booking rules | Protected (any role) |
 | PATCH | `/api/shop` | `{ name?, timezone?, defaultBookingWindowDays?, cancellationWindowHours? }` | `{ shop }` | Owner, Super Admin |
-| POST | `/api/invites` | `{ role: "pro" }` | 201 `{ inviteUrl, expiresAt }` | Owner, Super Admin |
+| POST | `/api/invites` | `{ role: "pro" }` or `{ role: "client" }` | 201 `{ inviteUrl, expiresAt }`. Client links last 24 hours and work once. | `pro` link: Owner, Super Admin. `client` link: a Pro (own page only) or an Owner who also works as a pro. |
+| POST | `/api/team` | `{ name, email, role }` | 201 `{ pro, setupUrl, expiresAt }`. The owner never sets or sees a password. | Owner (own shop), Super Admin |
 | GET | `/api/team` | none | list of pros (pay fields only for owner and Super Admin) | Protected |
 | PATCH | `/api/team/[proId]` | `{ role?, stationNumber?, payType?, payAmount?, priceMode? }` | `{ pro }` | Owner, Super Admin |
 

@@ -52,7 +52,7 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | name | text | yes | |
 | email | text | **clients: optional. Owner, pro, Super Admin: required** | unique when present. Can be used to log in. Never shown to pros. |
 | phone | text | **clients: required.** Others: optional | unique when present. Saved in one standard format (E.164, e.g. `+15551234567`). Can be used to log in. |
-| password_hash | text | yes | hash only, never the password. Never returned by any route. |
+| password_hash | text | yes, except a pro account an owner just created | hash only, never the password. Never returned by any route. Empty only until the pro uses their setup link; **login is refused while it is empty.** |
 | created_at | timestamptz | yes | |
 
 ### pro_profiles (extra fields for owner and pro users who take appointments)
@@ -78,11 +78,13 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 |---|---|---|---|
 | id | uuid | yes | |
 | **shop_id** | uuid FK shops | yes | |
-| role | text | yes | `pro` (owner invites also allowed for Super Admin) |
+| role | text | yes | `pro` (a pro joining, or a pro setting a password) or `client` (a client joining one pro) |
 | token_hash | text | yes | the link's secret, stored hashed |
-| created_by | uuid FK users | yes | owner or Super Admin |
-| expires_at | timestamptz | yes | |
-| used_at / used_by | timestamptz / uuid | no | set when redeemed, so a link works once |
+| created_by | uuid FK users | yes | owner or Super Admin for `pro` links; a pro (or an owner who also works as a pro) for `client` links |
+| pro_id | uuid FK users | no | set only for `client` links: the pro the new client will belong to |
+| user_id | uuid FK users | no | set only for a **setup link** for a pro account an owner created: the account that link finishes |
+| expires_at | timestamptz | yes | `client` links: 24 hours after creation. `pro` links: set when created (draft: 7 days). |
+| used_at / used_by | timestamptz / uuid | no | set only after the account is created (or the password is set) successfully, so a link works once and a failed sign-up does not burn it |
 
 ### services (the catalog; the "corpus" for search)
 | Field | Type | Required | Notes |
