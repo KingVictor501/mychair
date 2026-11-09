@@ -174,6 +174,23 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 
 Visit history is not its own table: it is the client's `completed` appointments with that pro.
 
+### corpus_chunks (the search passages; the embedded count comes from here)
+The sample corpus, cut into passages and embedded. The corpus files are NOT in the repo; `npm run corpus:embed` reads them from the user's computer.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| id | uuid | yes | Primary key |
+| source | text | yes | Which corpus file the passage came from |
+| heading | text | yes | The section heading ("" if none) |
+| position | integer | yes | Order within the file |
+| body | text | yes | The passage text |
+| content_hash | text | yes, unique | SHA-256 of model + text; makes re-running safe (no duplicates) |
+| embedding | vector(1536) | yes | From OpenAI text-embedding-3-small; HNSW index with cosine distance |
+| model | text | yes | Which embedding model made it |
+| created_at | timestamptz | yes | When it was stored |
+
+No shop or user field: this is shared reference data, not shop data.
+
 ### log_entries
 | Field | Type | Required | Notes |
 |---|---|---|---|

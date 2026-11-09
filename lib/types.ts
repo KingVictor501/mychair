@@ -12,6 +12,28 @@ export type HealthResponse = {
   status: "ok";
 };
 
+// One passage returned by the search. "score" is cosine similarity: closer to 1 = closer in meaning.
+export type SearchResult = {
+  id: string;
+  source: string; // file the passage came from
+  heading: string; // where in the file
+  text: string; // the passage itself
+  score: number;
+};
+
+// The answer of GET /api/search: passages ranked closest first.
+export type SearchResponse = {
+  results: SearchResult[];
+  tookMs: number;
+};
+
+// The answer of GET /api/admin/embeddings: how many passages are embedded, read from the database itself.
+export type EmbeddingStatus = {
+  embeddedChunks: number;
+  model: string | null;
+  bySource: Array<{ source: string; count: number }>;
+};
+
 // The standard shape of EVERY error the API sends back (see docs/api-design.md).
 // Short and friendly: never a stack trace or connection details.
 export type ApiErrorBody = {

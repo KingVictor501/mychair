@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test lib/*.test.ts lib/*/*.test.ts",
     "corpus:count": "tsx scripts/corpus-count.ts",
+    "corpus:embed": "tsx scripts/corpus-embed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts"
   },

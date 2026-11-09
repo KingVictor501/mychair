@@ -53,7 +53,8 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 ### Search
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
-| GET | `/api/search/services` | `?q=lashes` | ranked list `{ service, score, pros[] }`, closest first | Protected |
+| GET | `/api/search` | `?q=` (2 to 200 characters) | `{ results: [{ id, source, heading, text, score }], tookMs }`, closest first | Protected (temporary `x-admin-key` header until real login) |
+| GET | `/api/admin/embeddings` | none | `{ embeddedChunks, model, bySource[] }`, read from the database | Protected (temporary `x-admin-key` header until real login) |
 
 ### Availability
 | Method | URL | Request body | Response | Who |

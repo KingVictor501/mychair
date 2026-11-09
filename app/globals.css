@@ -38,3 +38,82 @@ main {
 p {
   color: var(--color-text-muted);
 }
+
+/* ---- Search page (Section 7/8) ---- */
+
+/* Forms stack their label, input and button vertically, with a gap. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+label {
+  font-weight: 600;
+}
+
+input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  font: inherit;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+button {
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--color-text);
+  border-radius: 0.375rem;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Keyboard users get a clear outline. */
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.panel {
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+}
+
+.results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.result {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+}
+
+.result-meta {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Long passages wrap instead of causing sideways scrolling on a phone. */
+.result-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+}
