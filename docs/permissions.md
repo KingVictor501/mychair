@@ -56,7 +56,8 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | View a style card | ✅ | ✅ | 🔸 | ❌ | pro: own cards, or cards another pro shared with them |
 | Upload a style card photo | ✅ | ❌ | 🔸 | ❌ | own cards only. JPG, PNG, WebP, max 5 MB |
 | Grant or remove style-card sharing between two pros | ✅ | ✅ | ❌ | ❌ | the pros must ask the owner |
-| See the no-show count | ✅ | ✅ | 🔸 | ❌ | pro: for their own clients |
+| See the no-show count | ✅ | ✅ | 🔸 | ❌ | pro: for their own clients. Strikes are counted per shop. They are a record only and never block booking. |
+| Remove a no-show strike | ✅ | ✅ | 🔸 | ❌ | pro: only for an appointment they were reserved for (for example, the pro was running late). The owner can see all strikes and removals. |
 | **Super Admin tools** | | | | | |
 | View logs | ✅ | ❌ | ❌ | ❌ | |
 | View metrics and web performance | ✅ | ❌ | ❌ | ❌ | |
