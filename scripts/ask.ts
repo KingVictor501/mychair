@@ -1,12 +1,12 @@
 // scripts/ask.ts
 // WHAT IT'S FOR: the "ask a question" command. It sends your question through the answer engine
 // (lib/answer.ts) and prints the answer and its source, like this:
-//     ANSWER:  **30 days** for a refund ...
-//     SOURCE:  returns-shipping-policy.txt · SECTION 1 — RETURNS
+//     ANSWER:  **2 hours** before the start ...
+//     SOURCE:  cancellation-and-no-show-policy.md · The cancellation window
 // If the documents don't contain the answer, it prints the exact refusal line and SOURCE: none.
 // WHO USES IT: you, from your computer:
-//     npm run ask -- "How long do I have to return something for a refund?"
-// It uses your DEVELOPMENT database (.env.local), which holds the same corpus as production.
+//     npm run ask -- "How late can I cancel an appointment?"
+// It uses your DEVELOPMENT database (.env.local).
 // WHY THE NAME: "ask" is what you do with it; a one-off command-line "script".
 //
 // SAFETY: it never prints keys. Failures print a short friendly message and the status number.
@@ -55,7 +55,7 @@ async function main(): Promise<number> {
   const question = process.argv.slice(2).join(" ").trim();
   if (question.length < MIN_QUESTION || question.length > MAX_QUESTION) {
     print(`Please give a question between ${MIN_QUESTION} and ${MAX_QUESTION} characters.`);
-    print('Example: npm run ask -- "How long do I have to return something for a refund?"');
+    print('Example: npm run ask -- "How late can I cancel an appointment?"');
     return 1;
   }
 

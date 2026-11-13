@@ -2,7 +2,7 @@
 
 ## The spec I hand my AI
 
-Extend my Week 8 search into a question-answering engine for the sample documents.
+Extend my Week 8 search into a question-answering engine for the MyChair documents in `mychair-corpus/`.
 
 **Input and output**
 - Take a question from the command line (`npm run ask -- "your question"`).
@@ -10,7 +10,7 @@ Extend my Week 8 search into a question-answering engine for the sample document
 
 **Retrieval**
 - Embed the question and retrieve the top 3 passages from my existing vector store (`corpus_chunks`).
-- Put the 3 passages into a context block. Label each one with its document name and section, like `[returns-shipping-policy.txt · SECTION 1 — RETURNS]` followed by the text.
+- Put the 3 passages into a context block. Label each one with its document name and section, like `[cancellation-and-no-show-policy.md · The cancellation window]` followed by the text.
 
 **Answering**
 - Ask Claude (`claude-sonnet-5-5`) through the Claude API. The key comes from `ANTHROPIC_API_KEY` in `.env.local`. It is never printed or logged.

@@ -53,9 +53,9 @@ export const corpusChunks = pgTable(
   "corpus_chunks",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    // Which file the passage came from, e.g. "product-faq.md".
+    // Which file the passage came from, e.g. "pro-guide.md".
     source: text("source").notNull(),
-    // Where in the file, e.g. "Boots" or "6. Pay & Timekeeping > Overtime".
+    // Where in the file, e.g. "Your clients" or "6. Pay & Timekeeping > Overtime".
     heading: text("heading").notNull(),
     // Order of the passage within its file (0, 1, 2...).
     position: integer("position").notNull(),

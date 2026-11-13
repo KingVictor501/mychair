@@ -34,7 +34,7 @@ export function formatContext(passages: SearchResult[]): string {
 // LOAD-BEARING POINT 3: the exact refusal line for when the excerpts don't answer (refusal path).
 export function buildSystemPrompt(): string {
   return [
-    "You answer questions about the sample shop using ONLY the excerpts in the user's message.",
+    "You answer questions about MyChair, a booking app for barbers, salons, and similar shops, using ONLY the excerpts in the user's message.",
     "Each excerpt starts with a label in square brackets: [document · section].",
     "",
     "Rules:",
@@ -53,7 +53,7 @@ export function buildUserMessage(question: string, passages: SearchResult[]): st
 
 // Splits "a.md · X + b.txt · Y" into ["a.md · X", "b.txt · Y"].
 // We split only where " + " is followed by a document name and " · ", because a section name can
-// itself contain " + " (for example the product "Chalk Bag + Chalk" in pricing.csv).
+// itself contain " + " (for example a service named "Cut + Beard Trim" in a price list).
 export function splitCitations(sourceLine: string): string[] {
   return sourceLine
     .split(/ \+ (?=[A-Za-z0-9_.-]+\.(?:md|txt|csv)(?: · |$))/)

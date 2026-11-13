@@ -1,8 +1,8 @@
 // scripts/corpus-embed.ts
-// WHAT IT'S FOR: the "embed the corpus" command. It reads the documents in sample-corpus/,
+// WHAT IT'S FOR: the "embed the corpus" command. It reads the documents in mychair-corpus/,
 // cuts them into chunks (lib/corpus/chunk.ts), asks OpenAI for each chunk's embedding, and
 // saves chunk + embedding into the corpus_chunks table. The documents themselves are never
-// uploaded anywhere except to OpenAI for embedding; they are not in git.
+// uploaded anywhere except to OpenAI for embedding; they are in git, since they are the app's own help documents.
 //   - SAFE TO RE-RUN: each chunk has a fingerprint. Chunks already stored are skipped, so there
 //     are no duplicates and no repeat cost. If a document changes, only the changed chunks are
 //     re-embedded, and chunks that no longer exist are removed.
@@ -26,7 +26,7 @@ import { corpusChunks } from "../lib/db/schema";
 import { embedTexts, EMBEDDING_MODEL } from "../lib/embeddings";
 import { flushLogs, log } from "../lib/logger";
 
-const CORPUS_DIR = "sample-corpus";
+const CORPUS_DIR = "mychair-corpus";
 // Safety brake: if a run would embed more than this many NEW chunks, stop (guards against a
 // mistake like pointing at the wrong folder and paying to embed it).
 const MAX_NEW_CHUNKS = 600;

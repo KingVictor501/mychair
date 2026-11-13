@@ -177,7 +177,7 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 Visit history is not its own table: it is the client's `completed` appointments with that pro.
 
 ### corpus_chunks (the search passages; the embedded count comes from here)
-The sample corpus, cut into passages and embedded. The corpus files are NOT in the repo; `npm run corpus:embed` reads them from the user's computer.
+The MyChair help documents (`mychair-corpus/`, which are in the repo), cut into passages and embedded. `npm run corpus:embed` reads them and fills this table.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|

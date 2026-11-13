@@ -30,8 +30,8 @@ export const MIN_CHUNK_CHARS = 40;
 
 // One passage of the corpus.
 export type CorpusChunk = {
-  source: string; // file name, e.g. "product-faq.md"
-  heading: string; // where in the file it sits, e.g. "Boots" or "6. Pay & Timekeeping > Overtime"
+  source: string; // file name, e.g. "pro-guide.md"
+  heading: string; // where in the file it sits, e.g. "Your clients" or "6. Pay & Timekeeping > Overtime"
   position: number; // 0, 1, 2... order within the file
   body: string; // the passage text
   embedText: string; // what actually gets embedded: context line + body

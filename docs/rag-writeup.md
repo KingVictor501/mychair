@@ -1,17 +1,15 @@
-# Day 1: a cited answer engine over the sample corpus
+# Day 1: a cited answer engine over the MyChair documents
 
-Ask a question and the engine answers from the sample documents, cites the document and section, and says "I don't know" when the documents don't cover it.
+Ask a question and the engine answers from the MyChair documents, cites the document and section, and says "I don't know" when the documents don't cover it.
 
 ```
-npm run ask -- "How long do I have to return something for a refund?"
+npm run ask -- "How late can I cancel an appointment?"
 ```
-
-![Terminal showing the cited answer, the refusal, and the meaning-based answer](rag-answer-proof.png)
 
 ## How it works
 Question → embed → find the top 3 passages in the vector store → label each passage with its document and section → ask Claude (`claude-sonnet-5-5`) to answer from only those passages → check the reply → print the answer and the source.
 
-The search half is the Week 8 pgvector search over 232 chunks. The new half is `lib/rag.ts` (the rules), `lib/anthropic.ts` (the Claude call), `lib/answer.ts` (the engine), and `scripts/ask.ts` (the command).
+The search half is the pgvector search over 115 chunks from 14 documents in `mychair-corpus/`. The answer half is `lib/rag.ts` (the rules), `lib/anthropic.ts` (the Claude call), `lib/answer.ts` (the engine), and `scripts/ask.ts` (the command).
 
 ## 1. The behavior spec I gave my AI
 The full spec is in [rag-spec.md](rag-spec.md). In short:
@@ -37,25 +35,25 @@ Three things the review caught beyond those points:
 I also added a check the model can't skip: every citation in the reply must match the label of a passage that was actually retrieved. A citation that points at an invented section is flagged on screen.
 
 ## 3. A cited answer I verified against the real document
-**Question:** How long do I have to return something for a refund?
+**Question:** How late can I cancel an appointment?
 
-**Answer:** You have **30 days** from the date you receive your item to return it for a refund to your original payment method. After that, an exchange or store credit is still available until day 45.
+**Answer:** By default you can cancel up to **2 hours** before the appointment starts, after which the Cancel button is turned off. An owner can change this window for their shop, and the shop page shows the number that applies.
 
-**Source:** `returns-shipping-policy.txt · SECTION 2 — EXCHANGES & STORE CREDIT` + `store-operations-manual.md · 4. Processing a Customer Return`
+**Source:** `cancellation-and-no-show-policy.md · The cancellation window`
 
-**Verified:** In `sample-corpus/returns-shipping-policy.txt`, SECTION 2 (line 56) says "Refund window: 30 days. A return for a refund to your original payment method must happen within 30 days of receiving your item." and "Exchange and store-credit window: 45 days." Section 4 of the operations manual repeats both windows. The engine's citation check also passed.
+**Verified:** In `mychair-corpus/cancellation-and-no-show-policy.md`, the section "The cancellation window" says "By default you can cancel or reschedule on your own up to 2 hours before the appointment starts. Inside that window the Cancel button is turned off." The sentence that an owner can change the window is in the introduction at the top of the same file, which is why it appears as the second source. The engine's citation check passed.
 
 ## 4. A question that succeeded on meaning
-**Question:** Is it okay to go on a long trek right away in brand-new footwear?
+**Question:** My barber got stuck in traffic and I got blamed for skipping, how do I get that erased?
 
-**Answer:** No, it's best not to. Wear new boots around the house and on short walks for about the first week using your hiking socks, then build up to longer walks and a loaded day hike **before** committing them to a multi-day trip. Break-in needs vary by boot: the Creekside Trail Shoe needs almost none, the Granite Peak Hiker a little, and the Summit Pro the most.
+**Answer:** The pro who was reserved for that appointment can **remove the no-show strike themselves**, and the owner and the Super Admin can also see and remove strikes. If you think the strike is wrong, ask your pro or contact the shop.
 
-**Source:** `product-faq.md · Boots`
+**Source:** `cancellation-and-no-show-policy.md · If something went wrong`
 
-**Why this is a meaning win:** the words in my question that the Boots passage never uses are **trek**, **footwear**, **okay**, and **right away**. The passage says "boots", "multi-day trip", "hike", and "first week". The only word they share is "new". Search ranked this passage first, at a score of 0.628 (see [semantic-search-tests.md](semantic-search-tests.md)).
+**Why this is a meaning win:** the words in my question that the passage never uses are **barber**, **stuck**, **traffic**, **blamed**, **skipping**, and **erased**. The passage says "pro", "running late", "no-show", "mistake", and "remove". They share only small words like "for", "that", and "and". Search ranked this passage first, at a score of 0.416 (see [semantic-search-tests.md](semantic-search-tests.md)).
 
 ## 5. An honest "I don't know"
-**Question:** Do you price match competitors?
+**Question:** Do you sell hair gel?
 
 **Printed exactly:**
 ```
@@ -63,14 +61,13 @@ ANSWER:  I don't know — the documents I have don't cover that.
 SOURCE:  none
 ```
 
-**Why it refused:** none of the five documents has a price-matching policy. The best passages scored only 0.34 in search.
+**Why it refused:** none of the 14 documents mentions selling products. The best passage scored only 0.30 in search.
 
 ## What I noticed along the way
-- **The wording changes between runs.** The same question can open "No. Break boots in first…" one time and "No, it's best not to." the next. Both were grounded and cited correctly. I don't control the randomness (see the temperature point above), which matters for scoring.
-- **The bold sometimes lands on a word.** The meaning-based answer bolds "before" instead of a figure, which the format says to bold. The answers are still correct.
-- **"No." is the model's reading.** The Boots passage says to start slow and build up. It never says "no", so the opening word is an inference from the advice.
-- **The refusal depends on the model.** Retrieval always returns the 3 closest passages, even for an off-topic question, and has no minimum score. The refusal for the price-match question worked, but an earlier search test ("do you sell kayaks?") shows search alone would have returned an unrelated passage.
-- **Cost and speed.** Each answer sent about 870 to 1,440 input units and received 18 to 120 output units. That is about four-tenths of a cent at most, and 2 to 4 seconds per question.
+- **The wording changes between runs.** The same question can be phrased differently each time. Answers stayed grounded and cited correctly. I don't control the randomness (see the temperature point above), which matters for scoring.
+- **A bare file name can appear as a source.** In the cancellation answer, the second source was `cancellation-and-no-show-policy.md` with no section. It is a real passage: the introduction at the top of the file has no heading, so its label is just the file name. The citation check accepted it.
+- **The refusal depends on the model.** Retrieval always returns the 3 closest passages, even for an off-topic question, and has no minimum score. The refusal for the hair-gel question worked, but search alone would have returned an unrelated passage.
+- **Cost and speed.** Each answer sent about 540 to 670 input units and received 18 to 275 output units. That is well under a cent, and 2 to 3 seconds per question.
 
 ## Safety
 - The Claude key is read from `.env.local`, which is gitignored. It is sent only in the `Authorization` header and never printed or logged.
@@ -78,7 +75,7 @@ SOURCE:  none
 - Each question writes one `rag_answer` log line with its length, passage count, top score, outcome, citation check, model, usage, and milliseconds. The question and answer text are never logged.
 
 ## Tests
-`npm test` runs 57 tests, including 15 for this engine: the label format, the prompt's grounding and refusal wording, splitting citations (including a section named "Chalk Bag + Chalk"), the exact refusal line, rejecting invented citations, and reading Claude's reply.
+`npm test` runs 57 tests, including 15 for this engine: the label format, the prompt's grounding and refusal wording, splitting citations (including a section named "Cut + Beard Trim"), the exact refusal line, rejecting invented citations, and reading Claude's reply.
 
 ## Files
 | File | What it does |

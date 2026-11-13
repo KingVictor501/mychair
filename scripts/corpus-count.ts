@@ -1,5 +1,5 @@
 // scripts/corpus-count.ts
-// WHAT IT'S FOR: reads every file in the sample-corpus folder, chunks it with
+// WHAT IT'S FOR: reads every file in the mychair-corpus folder, chunks it with
 // lib/corpus/chunk.ts, and prints how many chunks each file makes and the TOTAL.
 // That total is the "corpus chunk count". Needs no database, no internet, and no API key.
 // WHO USES IT: you, with `npm run corpus:count`.
@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { chunkFile, MAX_CHUNK_CHARS } from "../lib/corpus/chunk";
 
 // The folder holding the corpus documents, relative to the project root.
-const CORPUS_DIR = "sample-corpus";
+const CORPUS_DIR = "mychair-corpus";
 
 // Prints one line of text (we avoid console.log in this project).
 function say(line: string): void {

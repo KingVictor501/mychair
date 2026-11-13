@@ -1,7 +1,7 @@
 // lib/rag.test.ts
 // WHAT IT'S FOR: automated checks of the answer-engine rules in lib/rag.ts, with no internet:
 // labels reach the context, the prompt contains the grounding rule and the exact refusal line,
-// replies are split correctly (including the "Chalk Bag + Chalk" case), and citations are checked
+// replies are split correctly (including the "Cut + Beard Trim" case), and citations are checked
 // against the passages we retrieved. Run with `npm test`.
 // WHY THE NAME: "<file>.test.ts" = the tests for <file>.ts.
 
@@ -24,9 +24,9 @@ function passage(source: string, heading: string, text: string): SearchResult {
   return { id: `${source}-${heading}`, source, heading, text, score: 0.6 };
 }
 
-const returns = passage("returns-shipping-policy.txt", "SECTION 1 — RETURNS", "Refund window: 30 days.");
-const manual = passage("store-operations-manual.md", "4. Processing a Customer Return", "Register steps.");
-const chalk = passage("pricing.csv", "Chalk Bag + Chalk", "Price: 24.00");
+const returns = passage("cancellation-and-no-show-policy.md", "How to cancel or reschedule", "Cancel up to 2 hours before.");
+const manual = passage("booking-policy.md", "How far ahead you can book", "Register steps.");
+const chalk = passage("pricing-examples.md", "Cut + Beard Trim", "Price: 24.00");
 
 test("the refusal line is exactly the one in docs/answer-format.md", () => {
   assert.equal(REFUSAL_LINE, "I don't know — the documents I have don't cover that.");
@@ -34,8 +34,8 @@ test("the refusal line is exactly the one in docs/answer-format.md", () => {
 
 test("LOAD-BEARING 1: every passage carries its document and section into the context", () => {
   const context = formatContext([returns, manual]);
-  assert.ok(context.includes("[returns-shipping-policy.txt · SECTION 1 — RETURNS]\nRefund window: 30 days."));
-  assert.ok(context.includes("[store-operations-manual.md · 4. Processing a Customer Return]\nRegister steps."));
+  assert.ok(context.includes("[cancellation-and-no-show-policy.md · How to cancel or reschedule]\nCancel up to 2 hours before."));
+  assert.ok(context.includes("[booking-policy.md · How far ahead you can book]\nRegister steps."));
 });
 
 test("a passage with no section is labeled with just the document", () => {
@@ -51,33 +51,33 @@ test("LOAD-BEARING 2 and 3: the prompt has the grounding rule and the exact refu
 });
 
 test("the user message holds the excerpts and the question", () => {
-  const message = buildUserMessage("How long for a refund?", [returns]);
-  assert.ok(message.includes("[returns-shipping-policy.txt · SECTION 1 — RETURNS]"));
-  assert.ok(message.endsWith("Question: How long for a refund?"));
+  const message = buildUserMessage("How late can I cancel?", [returns]);
+  assert.ok(message.includes("[cancellation-and-no-show-policy.md · How to cancel or reschedule]"));
+  assert.ok(message.endsWith("Question: How late can I cancel?"));
 });
 
 test("splitCitations splits two sources joined by ' + '", () => {
   assert.deepEqual(
-    splitCitations("returns-shipping-policy.txt · SECTION 1 — RETURNS + store-operations-manual.md · 4. Processing a Customer Return"),
-    ["returns-shipping-policy.txt · SECTION 1 — RETURNS", "store-operations-manual.md · 4. Processing a Customer Return"],
+    splitCitations("cancellation-and-no-show-policy.md · How to cancel or reschedule + booking-policy.md · How far ahead you can book"),
+    ["cancellation-and-no-show-policy.md · How to cancel or reschedule", "booking-policy.md · How far ahead you can book"],
   );
 });
 
 test("splitCitations does NOT cut a section name that contains ' + '", () => {
-  assert.deepEqual(splitCitations("pricing.csv · Chalk Bag + Chalk"), ["pricing.csv · Chalk Bag + Chalk"]);
+  assert.deepEqual(splitCitations("pricing-examples.md · Cut + Beard Trim"), ["pricing-examples.md · Cut + Beard Trim"]);
   assert.deepEqual(
-    splitCitations("pricing.csv · Chalk Bag + Chalk + product-faq.md · Boots"),
-    ["pricing.csv · Chalk Bag + Chalk", "product-faq.md · Boots"],
+    splitCitations("pricing-examples.md · Cut + Beard Trim + pro-guide.md · Your clients"),
+    ["pricing-examples.md · Cut + Beard Trim", "pro-guide.md · Your clients"],
   );
 });
 
 test("parseModelAnswer reads an answer and its single source", () => {
   const parsed = parseModelAnswer(
-    "**30 days** for a refund.\nSource: returns-shipping-policy.txt · SECTION 1 — RETURNS",
+    "**2 hours** before the start.\nSource: cancellation-and-no-show-policy.md · How to cancel or reschedule",
   );
   assert.equal(parsed.outcome, "answered");
-  assert.equal(parsed.answer, "**30 days** for a refund.");
-  assert.deepEqual(parsed.citations, ["returns-shipping-policy.txt · SECTION 1 — RETURNS"]);
+  assert.equal(parsed.answer, "**2 hours** before the start.");
+  assert.deepEqual(parsed.citations, ["cancellation-and-no-show-policy.md · How to cancel or reschedule"]);
 });
 
 test("parseModelAnswer recognises the exact refusal, with surrounding whitespace allowed", () => {
@@ -88,17 +88,17 @@ test("parseModelAnswer recognises the exact refusal, with surrounding whitespace
 
 test("parseModelAnswer flags replies that break the format", () => {
   // No Source line.
-  assert.equal(parseModelAnswer("30 days for a refund.").outcome, "malformed");
+  assert.equal(parseModelAnswer("2 hours before the start.").outcome, "malformed");
   // A refusal with something extra added is not the exact line.
   assert.equal(parseModelAnswer(`${REFUSAL_LINE} Sorry!`).outcome, "malformed");
   // A Source line with nothing after it.
-  assert.equal(parseModelAnswer("30 days.\nSource: ").outcome, "malformed");
+  assert.equal(parseModelAnswer("2 hours.\nSource: ").outcome, "malformed");
 });
 
 test("citationsMatchPassages accepts real citations and rejects invented ones", () => {
-  assert.equal(citationsMatchPassages(["returns-shipping-policy.txt · SECTION 1 — RETURNS"], [returns, manual]), true);
-  assert.equal(citationsMatchPassages(["pricing.csv · Chalk Bag + Chalk"], [chalk]), true);
-  assert.equal(citationsMatchPassages(["returns-shipping-policy.txt · SECTION 9 — MADE UP"], [returns, manual]), false);
+  assert.equal(citationsMatchPassages(["cancellation-and-no-show-policy.md · How to cancel or reschedule"], [returns, manual]), true);
+  assert.equal(citationsMatchPassages(["pricing-examples.md · Cut + Beard Trim"], [chalk]), true);
+  assert.equal(citationsMatchPassages(["cancellation-and-no-show-policy.md · Made up section"], [returns, manual]), false);
   assert.equal(citationsMatchPassages(["handbook.md · Anything"], [returns]), false);
   assert.equal(citationsMatchPassages([], [returns]), false);
 });

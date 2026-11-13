@@ -1,6 +1,6 @@
 # MyChair Corpus Plan
 
-The MyChair corpus is the set of documents the app's help assistant answers from. It lives in `mychair-corpus/`. The older `sample-corpus/` folder is the Week 8 practice corpus and stays as it is.
+The MyChair corpus is the set of documents the app's help assistant answers from. It lives in `mychair-corpus/`. It is the only corpus in this project.
 
 ## Rules the corpus follows
 
@@ -52,6 +52,5 @@ A client can now have one account and many shops, with a shop switcher. The docu
 
 ## Still to do
 
-- Point the count and embed commands at `mychair-corpus/` (they read `sample-corpus/` today).
 - Add the dummy content last: the sample shop directory file.
 - Build the footer with the six links.

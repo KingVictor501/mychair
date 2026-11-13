@@ -1,4 +1,4 @@
-# Answer format for the sample answer engine
+# Answer format for the MyChair answer engine
 
 ## Decision 1: Answer shape
 
@@ -12,12 +12,12 @@
 
 - On its own line, directly under the answer:
   `Source: {document} · {section}`
-- `{document}` is the exact file name of the document, such as `returns-shipping-policy.txt`.
+- `{document}` is the exact file name of the document, such as `booking-policy.md`.
 - `{section}` is the section name copied character for character from the database (`heading`), including any numbers, capital letters, dashes, or `>` signs it contains. Do not shorten or reword it.
 - The separator between document and section is a space, a middle dot `·`, and a space.
 - **Two or more sources:** put them all on the same line, in order of relevance, each written in full and joined by ` + `.
 - If two sections come from the same document, repeat the document name for each.
-- A section name may itself contain ` + ` (for example the product `Chalk Bag + Chalk` in `pricing.csv`). So a checker must split the line only where ` + ` is followed by a document name and ` · `, never on every ` + `.
+- A section name may itself contain ` + ` (for example a service section named `Cut + Beard Trim` in a price list). So a checker must split the line only where ` + ` is followed by a document name and ` · `, never on every ` + `.
 - Cite only passages the answer actually used.
 
 ## Decision 3: Refusal line
@@ -33,20 +33,20 @@ Use this exact line, with a straight apostrophe, when the passages do not answer
 
 **One source**
 
-> **30 days** for a refund to your original payment method, and **45 days** for an exchange or store credit.
-> Source: returns-shipping-policy.txt · SECTION 1 — RETURNS
+> You can cancel or reschedule on your own up to **2 hours** before the appointment starts.
+> Source: cancellation-and-no-show-policy.md · The cancellation window
 
-**Two sources** (the return-processing question needs the policy and the operations manual)
+**Two sources** (the booking-window question needs the booking policy and the pro guide)
 
-> Check the item against the policy's refund and exchange windows (**30 and 45 days**), then follow the register steps for the return.
-> Source: returns-shipping-policy.txt · SECTION 1 — RETURNS + store-operations-manual.md · 4. Processing a Customer Return
+> Clients can book up to **5 days** ahead by default, and a pro can extend their own window to allow more notice.
+> Source: booking-policy.md · How far ahead you can book + pro-guide.md · Your booking window
 
 **Two sections from one document**
 
-> Choose boots that are **snug but not tight**, with room to wiggle your toes, and break them in gradually over the first week.
-> Source: product-faq.md · Sizing & Fit + product-faq.md · Boots
+> A no-show adds **one strike** at that shop only, and the pro who was reserved can remove it if they were running late.
+> Source: cancellation-and-no-show-policy.md · No-show strikes + cancellation-and-no-show-policy.md · If something went wrong
 
-**Refusal** (for example, "Do you sell kayaks?")
+**Refusal** (for example, "Do you sell hair gel?")
 
 > I don't know — the documents I have don't cover that.
 
