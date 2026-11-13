@@ -51,6 +51,7 @@ function result(overrides: Partial<RagResult>): RagResult {
     citations: [LABEL],
     citationsVerified: true,
     passages: [{ id: "1", source: "cancellation-and-no-show-policy.md", heading: "The cancellation window", text: "x", score: 0.52 }],
+    blockedPassages: 0,
     tookMs: 1,
     ...overrides,
   };

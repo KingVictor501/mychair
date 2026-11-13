@@ -50,6 +50,7 @@ export type RagResult = {
   answer: string;
   citations: string[]; // each "{document} · {section}"
   citationsVerified: boolean; // every citation matched a passage we really retrieved
-  passages: SearchResult[]; // what was retrieved and shown to Claude, closest first
+  passages: SearchResult[]; // what was shown to Claude (after the injection screen), closest first
+  blockedPassages: number; // how many retrieved passages the injection screen removed
   tookMs: number;
 };
