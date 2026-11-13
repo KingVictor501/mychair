@@ -11,6 +11,7 @@
     "corpus:count": "tsx scripts/corpus-count.ts",
     "corpus:embed": "tsx scripts/corpus-embed.ts",
     "ask": "tsx scripts/ask.ts",
+    "eval": "tsx scripts/eval.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts"
   },
