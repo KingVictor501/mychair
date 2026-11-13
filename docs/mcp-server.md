@@ -1,4 +1,13 @@
-# MyChair MCP server
+# MyChair MCP servers
+
+There are two MCP servers in this project:
+
+| Server | Config | What it does | Scope |
+|---|---|---|---|
+| `mychair-corpus` (the scoped demo) | `.mcp.json`, committed | The official `@modelcontextprotocol/server-filesystem` package, pinned to 2.3.0, started with `--read-only` | One folder: `mychair-corpus/`. Evidence: `docs/mcp-evidence.md` |
+| `mychair-docs` (our own, described below) | local setting, not committed | Three tools that search the database by meaning | The development database |
+
+The rest of this page describes `mychair-docs`.
 
 MCP (Model Context Protocol) is a standard way to let an AI call tools on your data by itself. The MyChair MCP server gives Claude Code three read-only tools over the MyChair help documents, so it can search and quote them without anything being pasted in.
 

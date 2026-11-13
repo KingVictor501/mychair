@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "mychair-corpus": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem@2.3.0",
+        "--read-only",
+        "${CLAUDE_PROJECT_DIR:-.}/mychair-corpus"
+      ]
+    }
+  }
+}
