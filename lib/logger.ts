@@ -62,7 +62,10 @@ function emit(level: LogLevel, event: string, details?: Record<string, unknown>)
 
   const line = `${JSON.stringify(entry)}\n`;
   // Errors go to "standard error" (Vercel marks those red); everything else to "standard output".
-  if (level === "error") {
+  // EXCEPTION: when LOG_TO_STDERR=1 (set by mcp/server.ts), EVERY line goes to standard error.
+  // An MCP server talks to Claude over standard output, so a stray log line there would corrupt
+  // the conversation and break the connection.
+  if (level === "error" || process.env.LOG_TO_STDERR === "1") {
     process.stderr.write(line);
   } else {
     process.stdout.write(line);

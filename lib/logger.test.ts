@@ -74,6 +74,21 @@ test("errors go to standard error, everything else to standard output", () => {
   assert.equal(stdoutLines.length, 1);
 });
 
+test("with LOG_TO_STDERR=1 every level goes to standard error and nothing to standard output", () => {
+  process.env.LOG_LEVEL = "debug";
+  process.env.LOG_TO_STDERR = "1";
+  try {
+    log.debug("a", {});
+    log.info("b", {});
+    log.warn("c", {});
+    log.error("d", {});
+  } finally {
+    delete process.env.LOG_TO_STDERR;
+  }
+  assert.equal(stdoutLines.length, 0);
+  assert.equal(stderrLines.length, 4);
+});
+
 test("a secret logged by mistake is hidden in the printed line AND the saved copy", () => {
   process.env.LOG_LEVEL = "info";
   log.info("login_attempt", {
