@@ -117,3 +117,35 @@ button:focus-visible {
   overflow-wrap: anywhere;
   color: var(--color-text);
 }
+
+/* ---- Public ask page ---- */
+
+.examples {
+  padding-left: 1.25rem;
+}
+
+/* A button that looks like a link: for the example questions. */
+.link-button {
+  padding: 0.25rem 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-align: left;
+}
+
+.answer-text {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+/* The "I don't know" answer is dashed so it reads as a different kind of reply. */
+.refusal {
+  border-style: dashed;
+}
+
+.sources-heading {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+}

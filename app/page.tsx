@@ -5,6 +5,7 @@
 // this one sits directly in "app", so it is the home page.
 
 // HealthStatus comes from components/HealthStatus.tsx: the widget that calls /api/health.
+import Link from "next/link";
 import HealthStatus from "@/components/HealthStatus";
 
 // This is a server component (the default): it has no "use client" because it only
@@ -14,6 +15,9 @@ export default function HomePage() {
     <main>
       <h1>MyChair</h1>
       <p>Hello, world. This is the MyChair skeleton.</p>
+      <p>
+        <Link href="/ask">Ask MyChair a question</Link>
+      </p>
       <HealthStatus />
     </main>
   );

@@ -54,3 +54,20 @@ export type RagResult = {
   blockedPassages: number; // how many retrieved passages the injection screen removed
   tookMs: number;
 };
+
+// One source "receipt" shown under an answer on the public /ask page: exactly which document and
+// section the answer came from, plus the passage text itself so the visitor can check it.
+export type AskSource = {
+  document: string; // e.g. "cancellation-and-no-show-policy.md"
+  section: string; // e.g. "The cancellation window"
+  label: string; // "{document} · {section}", the same text as the citation
+  excerpt: string; // the passage the answer was written from
+};
+
+// The answer of POST /api/ask. Public: the corpus is MyChair's own help documents.
+// "answered" always has at least one source. "refused" is the exact refusal line with no sources.
+export type AskResponse = {
+  outcome: "answered" | "refused";
+  answer: string;
+  sources: AskSource[];
+};
