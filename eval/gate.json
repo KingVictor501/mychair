@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "description": "The pass/fail gate for the MyChair eval. Written and committed BEFORE the first scored run. The thresholds are a decision made in advance; the run only reveals which side of them the system is on.",
+  "retrieval": {
+    "measure": "Answerable items whose expected section is among the top 3 retrieved passages",
+    "passMin": 6,
+    "outOf": 7
+  },
+  "answer": {
+    "measure": "Items answered correctly with a visible matching citation, or refused with the exact refusal line",
+    "passMin": 8,
+    "outOf": 10
+  },
+  "refusalsMustAllPass": true
+}

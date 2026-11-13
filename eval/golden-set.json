@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "description": "MyChair golden set: 7 answerable questions and 3 that must be refused. Frozen before the first scored run. Expected answers and sources were copied from the live documents in mychair-corpus/.",
+  "items": [
+    {
+      "id": 1,
+      "kind": "answerable",
+      "question": "How late can a client cancel an appointment on their own?",
+      "expectedAnswer": "A client can cancel or reschedule on their own up to the shop's cancellation window before the appointment starts. A typical window is 2 hours.",
+      "expectedSource": { "document": "cancellation-and-no-show-policy.md", "section": "The cancellation window" },
+      "requiredPhrases": [["2 hours"]],
+      "passCriteria": "The answer states 2 hours AND cites the cancellation window section. A right number with no citation fails."
+    },
+    {
+      "id": 2,
+      "kind": "answerable",
+      "question": "How long does a client invite link last, and how many times can it be used?",
+      "expectedAnswer": "A client link works for 24 hours and can be used once.",
+      "expectedSource": { "document": "client-invite-links.md", "section": "How long a link lasts" },
+      "requiredPhrases": [["24 hours"], ["once", "one time", "single"]],
+      "passCriteria": "The answer states 24 hours AND once, and cites the How long a link lasts section."
+    },
+    {
+      "id": 3,
+      "kind": "answerable",
+      "question": "Can a pro see a client's email address?",
+      "expectedAnswer": "No. A pro sees only the client's name, phone number, and style card. They never see the client's email.",
+      "expectedSource": { "document": "style-cards-and-client-data.md", "section": "What pros can see about a client" },
+      "requiredPhrases": [["email"], ["phone"], ["style card"]],
+      "passCriteria": "The answer says the email is not visible and names the phone number and style card as what a pro does see, and cites the What pros can see about a client section."
+    },
+    {
+      "id": 4,
+      "kind": "answerable",
+      "question": "What kind of photos can go on a style card, and how big can they be?",
+      "expectedAnswer": "Photos must be JPG, PNG, or WebP and no larger than 5 MB. SVG files are not allowed.",
+      "expectedSource": { "document": "style-cards-and-client-data.md", "section": "Photos" },
+      "requiredPhrases": [["JPG"], ["PNG"], ["WebP"], ["5 MB"]],
+      "passCriteria": "The answer names JPG, PNG, WebP and the 5 MB limit, and cites the Photos section."
+    },
+    {
+      "id": 5,
+      "kind": "answerable",
+      "question": "How many days ahead can a client book?",
+      "expectedAnswer": "By default a client can book up to 5 days ahead. A pro can extend their own booking window.",
+      "expectedSource": { "document": "booking-policy.md", "section": "How far ahead you can book" },
+      "requiredPhrases": [["5 days"]],
+      "passCriteria": "The answer states 5 days AND cites the How far ahead you can book section."
+    },
+    {
+      "id": 6,
+      "kind": "answerable",
+      "question": "Can MyChair refund me if I'm unhappy with a haircut?",
+      "expectedAnswer": "No. MyChair does not process payments, so it cannot issue refunds. Refunds are decided by the shop's owner.",
+      "expectedSource": { "document": "refund-and-payment-policy.md", "section": "Refunds" },
+      "requiredPhrases": [
+        ["does not process payments", "doesn't process payments", "does not take", "doesn't take", "cannot issue refunds", "can't issue refunds", "cannot refund", "can't refund"],
+        ["shop"]
+      ],
+      "passCriteria": "The answer says MyChair cannot refund because it does not process payments and points to the shop, and cites the Refunds section."
+    },
+    {
+      "id": 7,
+      "kind": "answerable",
+      "question": "Who is allowed to change a pro's role?",
+      "expectedAnswer": "The owner and the Super Admin are the only people who can change a pro's role. A pro cannot change their own.",
+      "expectedSource": { "document": "owner-guide.md", "section": "Roles" },
+      "requiredPhrases": [["owner"], ["super admin"]],
+      "passCriteria": "The answer names the owner AND the Super Admin, and cites the Roles section."
+    },
+    {
+      "id": 8,
+      "kind": "refuse",
+      "question": "Do you sell hair gel?",
+      "expectedAnswer": "I don't know — the documents I have don't cover that.",
+      "expectedSource": null,
+      "requiredPhrases": [],
+      "passCriteria": "The only passing answer is the exact refusal line, with no Source line."
+    },
+    {
+      "id": 9,
+      "kind": "refuse",
+      "question": "Can I export my client list to a spreadsheet?",
+      "expectedAnswer": "I don't know — the documents I have don't cover that.",
+      "expectedSource": null,
+      "requiredPhrases": [],
+      "passCriteria": "The only passing answer is the exact refusal line, with no Source line."
+    },
+    {
+      "id": 10,
+      "kind": "refuse",
+      "question": "Do you have a loyalty rewards program?",
+      "expectedAnswer": "I don't know — the documents I have don't cover that.",
+      "expectedSource": null,
+      "requiredPhrases": [],
+      "passCriteria": "The only passing answer is the exact refusal line, with no Source line."
+    }
+  ]
+}
