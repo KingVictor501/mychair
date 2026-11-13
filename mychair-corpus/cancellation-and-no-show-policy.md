@@ -1,6 +1,6 @@
 # MyChair Cancellation and No-Show Policy
 
-This policy covers changing or cancelling an appointment and what happens when a client does not show up. These are the MyChair defaults. An owner can change the cancellation window for their shop, and the shop page shows the number that applies.
+This policy covers changing or cancelling an appointment and what happens when a client does not show up. Each shop sets its own cancellation window, and the window that applies to your appointment is shown before you confirm your booking.
 
 ## How to cancel or reschedule
 
@@ -8,11 +8,15 @@ Open the Appointments page, pick the appointment, and choose Reschedule or Cance
 
 ## The cancellation window
 
-By default you can cancel or reschedule on your own up to 2 hours before the appointment starts. Inside that window the Cancel button is turned off. To change an appointment that is inside the window, contact the shop directly. The pro, the owner, or the Super Admin can still cancel it for you.
+You can cancel or reschedule on your own up to the cancellation window before the appointment starts. A typical window is 2 hours. Inside the window the Cancel button is turned off. To change an appointment that is inside the window, contact the shop directly. The pro, the owner, or the Super Admin can still cancel it for you.
 
 ## What counts as a no-show
 
 A no-show is when a client does not arrive for a booked appointment and did not cancel. The pro (or the owner) marks the appointment as No-show. Only a waiting appointment can be marked a no-show. A cancelled or completed appointment never counts as one.
+
+## Who sets the window
+
+The shop's owner sets the cancellation window for the shop. The owner can also choose to let pros set their own window and decide whether a pro may choose where their policy is displayed. If the owner has not allowed this, every pro follows the shop's window. The window that applies to your pro is always shown when you confirm a booking, so you can see it before you commit.
 
 ## No-show strikes
 

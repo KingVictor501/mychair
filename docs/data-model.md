@@ -40,7 +40,9 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | name | text | yes | |
 | timezone | text | yes | IANA name, e.g. `America/Los_Angeles`. All times shown in this zone. |
 | default_booking_window_days | int | yes | default 5 |
-| cancellation_window_hours | int | yes | default 2 (assumption, you haven't set this yet) |
+| cancellation_window_hours | int | yes | the shop's window. Starts at 2. The owner can change it. |
+| allow_pro_cancellation_window | boolean | yes | default false. When true, a pro can set their own window. |
+| allow_pro_policy_display_choice | boolean | yes | default false. When true, a pro can choose whether their policy also shows on their profile page. |
 | created_at | timestamptz | yes | |
 
 ### users (everyone who can log in)
@@ -65,6 +67,8 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | live_status | text | yes | `available`, `with_client`, `on_break` |
 | price_mode | text | yes | `standard` or `custom` |
 | booking_window_days | int | no | empty means use the shop default (5). A pro can raise it. |
+| cancellation_window_hours | int | no | empty means use the shop's window. Only used when the shop has `allow_pro_cancellation_window` on. |
+| show_policy_on_profile | boolean | yes | default true. A pro can turn it off only when the shop has `allow_pro_policy_display_choice` on. The window is always shown when a client confirms a booking, whatever this says. |
 | bio | text | no | |
 
 ### client_profiles

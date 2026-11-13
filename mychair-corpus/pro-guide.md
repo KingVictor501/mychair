@@ -22,6 +22,10 @@ Add the services you offer, with a name, description, and length. You can list s
 
 Clients can book 5 days ahead by default. You can extend your own window if you want more notice, for example 14 days.
 
+## Your cancellation and no-show policy
+
+Your owner decides whether you can set your own cancellation window. If they allow it, you can change the window for your own appointments, and if they allow that too, you can choose whether your policy is also shown on your profile page. If they have not allowed it, you follow the shop's window. Clients always see the window that applies to you when they confirm a booking, whatever you choose. You can remove a no-show strike for an appointment you were reserved for, for example when you were running late.
+
 ## Your clients
 
 You see only your own clients, and only their name, phone number, and style card. You never see their email or another pro's clients.

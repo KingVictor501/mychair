@@ -6,6 +6,10 @@ This guide is for the person who runs a shop on MyChair.
 
 Pick your business type: barbershop, salon, nail shop, lash studio, or multi-service. One click sets up the matching pro roles and a starter list of services. You can turn roles on or off later. Then set your shop name, time zone, booking window, and cancellation window.
 
+## Cancellation and no-show settings
+
+You set the shop's cancellation window. You can also turn on two options: let pros set their own cancellation window, and let pros choose whether their policy is displayed on their profile page. Both are off until you turn them on. Whatever you choose, clients always see the window that applies before they confirm a booking. You can see every pro's window and every no-show strike in your shop.
+
 ## Bring in your team
 
 You have two options. Send a pro invite link, and the pro signs up and picks a role you have turned on. Or create the account yourself by entering the pro's name, email, and role. The pro then gets a one-time setup link and chooses their own password. You never see or set a pro's password.

@@ -33,7 +33,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
 | GET | `/api/shop` | none | shop name, time zone, booking rules | Protected (any role) |
-| PATCH | `/api/shop` | `{ name?, timezone?, defaultBookingWindowDays?, cancellationWindowHours? }` | `{ shop }` | Owner, Super Admin |
+| PATCH | `/api/shop` | `{ name?, timezone?, defaultBookingWindowDays?, cancellationWindowHours?, allowProCancellationWindow?, allowProPolicyDisplayChoice? }` | `{ shop }` | Owner, Super Admin |
 | POST | `/api/invites` | `{ role: "pro" }` or `{ role: "client" }` | 201 `{ inviteUrl, expiresAt }`. Client links last 24 hours and work once. | `pro` link: Owner, Super Admin. `client` link: a Pro (own page only) or an Owner who also works as a pro. |
 | POST | `/api/team` | `{ name, email, role }` | 201 `{ pro, setupUrl, expiresAt }`. The owner never sets or sees a password. | Owner (own shop), Super Admin |
 | GET | `/api/team` | none | list of pros (pay fields only for owner and Super Admin) | Protected |
@@ -51,6 +51,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 | PUT | `/api/pros/[id]/prices` | `{ prices: [{ serviceId, priceCents }] }` | updated list | Owner, Super Admin |
 | PATCH | `/api/pros/[id]/status` | `{ liveStatus }` | `{ liveStatus }` | The pro themself, Owner, Super Admin |
 | PATCH | `/api/pros/[id]/booking-window` | `{ days }` | `{ days }` | The pro themself, Owner, Super Admin |
+| PATCH | `/api/pros/[id]/cancellation-policy` | `{ cancellationWindowHours?, showPolicyOnProfile? }` | `{ cancellationWindowHours, showPolicyOnProfile }`. Refused with 403 unless the shop has turned on the matching option. | The pro themself (only if the shop allows), Owner, Super Admin |
 
 ### Search
 | Method | URL | Request body | Response | Who |

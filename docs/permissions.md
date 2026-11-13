@@ -25,6 +25,7 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | **Shop** | | | | | |
 | Create a shop | ✅ | ❌ | ❌ | ❌ | one shop for now |
 | Edit shop settings (name, time zone, booking rules) | ✅ | 🔸 | ❌ | ❌ | owner: own shop only |
+| Allow pros to set their own cancellation window, or to choose whether their policy is displayed | ✅ | 🔸 | ❌ | ❌ | owner: own shop only. Both options start off. |
 | **Team and pay** | | | | | |
 | View list of pros | ✅ | ✅ | ✅ | ✅ | clients see name, status, services, prices only |
 | Change a pro's role | ✅ | ✅ | ❌ | ❌ | a pro cannot change their own role |
@@ -42,6 +43,7 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | View any pro's schedule in the shop | ✅ | ✅ | 🔸 | ❌ | pro: own only |
 | Set own live status | ✅ | ✅ | ✅ | ❌ | |
 | Extend own booking window beyond 5 days | ✅ | ✅ | ✅ | ❌ | pro: own window only |
+| Set own cancellation window / choose whether own policy shows on their profile | ✅ | ✅ | 🔸 | ❌ | pro: only if the owner has turned on that option. **Whatever is chosen, the window that applies is always shown to the client when they confirm a booking.** |
 | See a pro's open times | ✅ | ✅ | ✅ | ✅ | |
 | **Appointments** | | | | | |
 | Book an appointment | ✅ | ✅ | ❌ | 🔸 | client: for themselves, inside the pro's booking window |

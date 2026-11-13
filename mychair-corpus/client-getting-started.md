@@ -20,11 +20,11 @@ Choose a service and a pro. MyChair shows the open times in the shop's time zone
 
 ## Confirm your booking
 
-Check the pro, service, time, length, and price, then confirm. The length uses your pro's saved time estimate for you if there is one. Your appointment appears on the Appointments page with the status Waiting.
+Check the pro, service, time, length, price, and cancellation window, then confirm. The length uses your pro's saved time estimate for you if there is one. Your appointment appears on the Appointments page with the status Waiting.
 
 ## See, move, or cancel
 
-The Appointments page lists your upcoming and past bookings. You can reschedule or cancel up to 2 hours before the start by default. See the cancellation and no-show policy.
+The Appointments page lists your upcoming and past bookings. You can reschedule or cancel up to the cancellation window before the start, which is shown when you confirm your booking. A typical window is 2 hours. See the cancellation and no-show policy.
 
 ## What you will not see
 
