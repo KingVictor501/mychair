@@ -2,7 +2,7 @@
 
 Plain English: a database is a set of **tables** (like spreadsheets). Each row is one thing (one shop, one appointment). Each table has an `id`, and tables point at each other by storing the other row's id (a **foreign key**, shown as FK).
 
-Scope: barbers, one shop. Every record that belongs to a shop still carries `shop_id`, so adding more shops later needs no redesign.
+Scope: three shops (a barbershop, a nail salon and a lash studio), each with one owner and three pros, on demo data (the `is_demo` marking is added when the demo data is built). Every record that belongs to a shop still carries `shop_id`, so adding more shops later needs no redesign.
 
 ## Diagram
 
