@@ -74,3 +74,24 @@ export type AskResponse = {
   answer: string;
   sources: AskSource[];
 };
+
+// ---- Shop app ----
+
+// The four kinds of account. Every protected route checks this AND the shop (lib/auth/permissions.ts).
+export type Role = "super_admin" | "owner" | "pro" | "client";
+
+// The logged-in person, as the server sees them. Loaded fresh from the database on each request
+// (lib/auth/current-user.ts), so a deleted or changed account takes effect at once.
+export type CurrentUser = {
+  id: string;
+  role: Role;
+  shopId: string | null; // null only for the Super Admin
+  name: string;
+  isDemo: boolean;
+};
+
+// The minimum the permission checks need to know about a shop.
+export type ShopRef = { id: string; isDemo: boolean };
+
+// What GET /api/auth/me returns: who is logged in. Never a password hash, email or phone.
+export type MeResponse = { user: { id: string; role: Role; shopId: string | null; name: string; isDemo: boolean } | null };
