@@ -13,6 +13,7 @@
     "ask": "tsx scripts/ask.ts",
     "eval": "tsx scripts/eval.ts",
     "injection:test": "tsx scripts/injection-test.ts",
+    "agent:triage": "tsx scripts/agent-triage.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts"
   },

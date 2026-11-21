@@ -84,7 +84,7 @@ The program checks the note with a `zod` schema before writing anything. A run i
 - One row has been added to `agent/audit-log.md`.
 - Nothing in the note looks like an email address, phone number or key (the same patterns the logger redacts).
 
-If the check fails, the note isn't written. The run adds a `failed` row to the audit log and says why.
+If the check fails, the problems are sent back to Claude so it can fix exactly those. After three failed attempts the run stops: no note is written, and the audit log gets a `failed` row with the reason.
 
 ## Audit log
 
@@ -99,7 +99,7 @@ If the check fails, the note isn't written. The run adds a `failed` row to the a
 
 If the MCP server refuses the key, is down or times out, or Claude can't be reached, the agent:
 
-- stops before asking Claude anything, so it never guesses about health without data,
+- stops the moment the call fails, so Claude never gets the chance to judge health without the real numbers,
 - writes no note,
 - adds a `failed` row to the audit log with the reason (for example `mcp_unauthorized`) and "no changes made",
 - prints one line saying what failed, that nothing was changed, and what to check next.
@@ -119,5 +119,6 @@ For a forced failure, `AGENT_FORCE_FAILURE=bad_key` sends a wrong key on purpose
 | `agent/runs/` | One triage note per run. |
 | `agent/audit-log.md` | One row per run. |
 | `scripts/agent-triage.ts` | The program: loads the files, calls the MCP server, asks Claude, checks the note, writes it. |
-| `lib/agent/*.ts` and tests | The parts that can be tested offline: the path guard, the note check, the audit row and the failure messages. |
+| `lib/agent/*.ts`, `lib/agent/agent.test.ts` | The parts that can be tested offline: the path guard, the note check, the audit row, the MCP client and the failure messages. |
+| `agent/test-reports/` | Made-up weeks (healthy, empty, bad) for dry runs with `--report-file`. |
 | `docs/agent-runs.md` | Real runs, the failure test and what the dry runs turned up. |

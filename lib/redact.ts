@@ -77,6 +77,23 @@ function isSensitiveKey(key: string): boolean {
 // Order matters: the database-address rule runs before the email rule so
 // "postgresql://user:pw@host" is handled as an address, not mistaken for an email.
 export function scrubString(input: string): string {
+  let text = maskSensitive(input);
+
+  // Finally, cut very long text.
+  if (text.length > MAX_STRING_LENGTH) {
+    text = `${text.slice(0, MAX_STRING_LENGTH)}…[truncated]`;
+  }
+  return text;
+}
+
+// True if the text holds anything that looks private (an email, phone, token, key-bearing
+// address or card-like number). Used by the triage agent to refuse a note before writing it.
+export function containsSensitive(input: string): boolean {
+  return maskSensitive(input) !== input;
+}
+
+// The masking rules on their own, with no length cut. Shared by scrubString and containsSensitive.
+function maskSensitive(input: string): string {
   let text = input;
 
   // Addresses with a username:password in them, e.g. postgresql://user:pw@host/db
@@ -92,11 +109,6 @@ export function scrubString(input: string): string {
   // Phone numbers: +15551234567 style, or 555-123-4567 / (555) 123 4567 style
   text = text.replace(/\+\d{10,15}\b/g, "[REDACTED_PHONE]");
   text = text.replace(/\(?\b\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/g, "[REDACTED_PHONE]");
-
-  // Finally, cut very long text.
-  if (text.length > MAX_STRING_LENGTH) {
-    text = `${text.slice(0, MAX_STRING_LENGTH)}…[truncated]`;
-  }
   return text;
 }
 

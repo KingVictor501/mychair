@@ -4,7 +4,7 @@
 // computer. It uses a plain web request (fetch), so no extra package is needed.
 // Docs used: https://platform.claude.com/docs/en/manage-claude/authentication (headers) and
 // https://platform.claude.com/docs/en/api/messages/create (request shape).
-// WHO USES IT: lib/answer.ts.
+// WHO USES IT: lib/answer.ts (askClaude) and scripts/agent-triage.ts (postMessages).
 // WHY THE NAME: it is the code that talks to Anthropic, the company that makes Claude.
 //
 // SAFETY: the API key is read from the environment and goes ONLY in the Authorization header.
@@ -65,13 +65,19 @@ export function parseClaudeResponse(json: unknown): Omit<ClaudeReply, "model"> {
   return { text, inputTokens, outputTokens };
 }
 
-// Sends one question to Claude and returns the text reply.
-export async function askClaude(system: string, userMessage: string): Promise<ClaudeReply> {
+// Sends any Messages API request body to Claude and returns the parsed JSON reply.
+// Shared by askClaude (below) and the triage agent (scripts/agent-triage.ts), so the key, the
+// headers and the error rules live in one place. "extraHeaders" is for optional features
+// (for example a beta flag); it never carries the key.
+export async function postMessages(
+  body: Record<string, unknown>,
+  extraHeaders: Record<string, string> = {},
+): Promise<unknown> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new ClaudeError("ANTHROPIC_API_KEY is not set", null);
 
-  const model = getAnswerModel();
   const headers: Record<string, string> = {
+    ...extraHeaders,
     // The secret key goes ONLY here.
     Authorization: `Bearer ${apiKey}`,
     "anthropic-version": API_VERSION,
@@ -86,12 +92,7 @@ export async function askClaude(system: string, userMessage: string): Promise<Cl
     response = await fetch(ENDPOINT, {
       method: "POST",
       headers,
-      body: JSON.stringify({
-        model,
-        max_tokens: MAX_TOKENS,
-        system,
-        messages: [{ role: "user", content: userMessage }],
-      }),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
@@ -101,7 +102,18 @@ export async function askClaude(system: string, userMessage: string): Promise<Cl
 
   // Status only; the response body is never put in an error.
   if (!response.ok) throw new ClaudeError(`Claude API returned status ${response.status}`, response.status);
+  return response.json();
+}
 
-  const parsed = parseClaudeResponse(await response.json());
+// Sends one question to Claude and returns the text reply.
+export async function askClaude(system: string, userMessage: string): Promise<ClaudeReply> {
+  const model = getAnswerModel();
+  const json = await postMessages({
+    model,
+    max_tokens: MAX_TOKENS,
+    system,
+    messages: [{ role: "user", content: userMessage }],
+  });
+  const parsed = parseClaudeResponse(json);
   return { ...parsed, model };
 }
