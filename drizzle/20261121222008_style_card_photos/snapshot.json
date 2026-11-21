@@ -1,0 +1,391 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "849280af-65c8-4351-8617-1ff2644fb3ab",
+  "prevIds": [
+    "4326c111-0d8d-4d34-9131-e9d25af3bf6d"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "style_card_photos"
+      ],
+      "writes": [
+        "s|tbl|public.style_card_photos",
+        "n|tbl|public.style_card_photos",
+        "e|tbl|public.style_card_photos",
+        "n|rel|public.style_card_photos",
+        "n|type|public.style_card_photos",
+        "n|rel|public.style_card_photos_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "style_card_photos",
+        "style_card_photos_card_idx"
+      ],
+      "writes": [
+        "s|idx|public.style_card_photos_card_idx",
+        "n|idx|public.style_card_photos_card_idx",
+        "e|idx|public.style_card_photos_card_idx",
+        "n|rel|public.style_card_photos_card_idx"
+      ],
+      "reads": [
+        "n|tbl|public.style_card_photos",
+        "n|sch|public",
+        "n|col|public.style_card_photos.style_card_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "style_card_photos"
+      ],
+      "writes": [
+        "s|fk|public.style_card_photos.style_card_photos_style_card_id_style_cards_id_fkey",
+        "n|fk|public.style_card_photos.style_card_photos_style_card_id_style_cards_id_fkey",
+        "e|fk|public.style_card_photos.style_card_photos_style_card_id_style_cards_id_fkey",
+        "n|con|public.style_card_photos.style_card_photos_style_card_id_style_cards_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.style_card_photos",
+        "n|sch|public",
+        "n|tbl|public.style_cards",
+        "n|sch|public",
+        "n|col|public.style_card_photos.style_card_id",
+        "n|col|public.style_cards.id",
+        "e|uniqueness|public.style_cards.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "style_card_photos"
+      ],
+      "writes": [
+        "s|fk|public.style_card_photos.style_card_photos_shop_id_shops_id_fkey",
+        "n|fk|public.style_card_photos.style_card_photos_shop_id_shops_id_fkey",
+        "e|fk|public.style_card_photos.style_card_photos_shop_id_shops_id_fkey",
+        "n|con|public.style_card_photos.style_card_photos_shop_id_shops_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.style_card_photos",
+        "n|sch|public",
+        "n|tbl|public.shops",
+        "n|sch|public",
+        "n|col|public.style_card_photos.shop_id",
+        "n|col|public.shops.id",
+        "e|uniqueness|public.shops.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "style_card_photos"
+      ],
+      "writes": [
+        "s|fk|public.style_card_photos.style_card_photos_pro_id_users_id_fkey",
+        "n|fk|public.style_card_photos.style_card_photos_pro_id_users_id_fkey",
+        "e|fk|public.style_card_photos.style_card_photos_pro_id_users_id_fkey",
+        "n|con|public.style_card_photos.style_card_photos_pro_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.style_card_photos",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.style_card_photos.pro_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "style_card_photos",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "shop_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "pro_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "pathname",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "content_type",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "size_bytes",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "caption",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_photos_card_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "style_card_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_photos_style_card_id_style_cards_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "style_card_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "style_cards",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_photos_shop_id_shops_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "shop_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "shops",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_photos_pro_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "pro_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_photos_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_photos_type_check",
+        "value": "\"content_type\" in ('image/jpeg', 'image/png', 'image/webp')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "style_card_photos",
+        "name": "style_card_photos_size_check",
+        "value": "\"size_bytes\" > 0 and \"size_bytes\" <= 4194304",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

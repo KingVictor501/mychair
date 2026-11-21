@@ -129,7 +129,7 @@ NEXT STEPS AND CHECKPOINTS
 - Picks their role when they create their account (from the roles the shop has turned on). After that, only the owner or Super Admin can change it.
 - Manages their own schedule and availability (working hours, days off, breaks).
 - Lists the services they offer. Services are searchable by clients, including services outside their main role. Example: a nail tech who also does lashes shows up when a client searches "lashes," alongside the lash techs.
-- Sets their live status: Available, With a client, On break.
+- Sets their live status: Available, With a client, Unavailable.
 - Sees **only their own clients**, never another pro's. For each client, a pro sees only: name, phone number, and the client's **style card**.
 - **Style card** (cut card): the client's preferences and history for that pro's service, for example guard sizes, beard specs, nail shape, lash style, photos, notes, visit history, and a **pre-filled time estimate** for the client's usual service (for example, "this fade takes 45 minutes"). The time estimate is used when the client books.
 
@@ -156,7 +156,7 @@ Shops
  │    ├── Availability / working hours
  │    ├── Services offered (for example: fade, beard trim, hot towel, gel manicure, lash fill)
  │    ├── Prices (standard or custom)
- │    └── Live status (Available, With a client, On break)
+ │    └── Live status (Available, With a client, Unavailable)
  ├── Clients (name, phone, email, no-show strike count)
  │    └── Style cards (per pro: guard sizes, beard specs, photos, notes, visit history, time estimate)
  └── Appointments / queue entries
@@ -443,7 +443,7 @@ Done when: a client-facing price shows correctly for a standard pro and a custom
 ### Section 12: Availability and live status
 
 - Pros set weekly working hours, days off, and breaks, in the shop's time zone.
-- Pros set their live status: Available, With a client, On break.
+- Pros set their live status: Available, With a client, Unavailable.
 - Owners and the Super Admin can view every pro's schedule in their shop.
 - Test: open times never overlap breaks or booked appointments.
 

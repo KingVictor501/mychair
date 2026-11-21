@@ -23,6 +23,7 @@
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",
     "@neondatabase/serverless": "^1.2.0",
+    "@vercel/blob": "^2.9.0",
     "drizzle-orm": "^1.0.0-rc.5",
     "jose": "^6.2.18",
     "next": "^16.4.5",

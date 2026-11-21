@@ -26,7 +26,7 @@ export function dayLabel(ymd: string): string {
 }
 
 // Live status and appointment status in words.
-export const LIVE_STATUS: Record<string, string> = { available: "Available", with_client: "With a client", on_break: "On break" };
+export const LIVE_STATUS: Record<string, string> = { available: "Available", with_client: "With a client", unavailable: "Unavailable" };
 export const APPOINTMENT_STATUS: Record<string, string> = {
   waiting: "Booked",
   in_chair: "In the chair",

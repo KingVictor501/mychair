@@ -165,14 +165,14 @@ export const proProfiles = pgTable(
     payType: text("pay_type"),
     // Monthly rent in cents, or commission percent. Owner and Super Admin only.
     payAmount: integer("pay_amount"),
-    // available, with_client or on_break.
+    // available, with_client or unavailable.
     liveStatus: text("live_status").notNull().default("available"),
     // standard (the shop's price list) or custom (prices set per service in pro_services).
     priceMode: text("price_mode").notNull().default("standard"),
     bio: text("bio"),
   },
   (t) => [
-    check("pro_profiles_live_status_check", sql`${t.liveStatus} in ('available', 'with_client', 'on_break')`),
+    check("pro_profiles_live_status_check", sql`${t.liveStatus} in ('available', 'with_client', 'unavailable')`),
     check("pro_profiles_price_mode_check", sql`${t.priceMode} in ('standard', 'custom')`),
     check("pro_profiles_pay_type_check", sql`${t.payType} is null or ${t.payType} in ('chair_rent', 'commission')`),
   ],
@@ -314,6 +314,37 @@ export const styleCards = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [unique("style_cards_pro_client_unique").on(t.proId, t.clientId)],
+);
+
+// Photos on a style card (for example the finished cut, or a style the client wants). The image
+// itself lives in private file storage (Vercel Blob); this row holds only where it is and what
+// it is. Photos are shown only through /api/photos/<id>, which checks who is asking.
+export const styleCardPhotos = pgTable(
+  "style_card_photos",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    styleCardId: uuid("style_card_id")
+      .notNull()
+      .references(() => styleCards.id, { onDelete: "cascade" }),
+    // Copied from the card so permission checks don't need an extra lookup.
+    shopId: uuid("shop_id")
+      .notNull()
+      .references(() => shops.id, { onDelete: "cascade" }),
+    proId: uuid("pro_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Where the file is in Blob storage (never shown to the browser directly).
+    pathname: text("pathname").notNull(),
+    contentType: text("content_type").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    caption: text("caption"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    check("style_card_photos_type_check", sql`${t.contentType} in ('image/jpeg', 'image/png', 'image/webp')`),
+    check("style_card_photos_size_check", sql`${t.sizeBytes} > 0 and ${t.sizeBytes} <= 4194304`),
+    index("style_card_photos_card_idx").on(t.styleCardId),
+  ],
 );
 
 // App-wide settings as key/value pairs, e.g. key "demo_mode" = { "enabled": true }.

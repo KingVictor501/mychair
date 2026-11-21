@@ -64,7 +64,7 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | station_number | text | no | set by owner |
 | pay_type | text | no | `chair_rent` or `commission`. **Owner and Super Admin only.** |
 | pay_amount | int | no | monthly rent in cents, or commission percent. **Owner and Super Admin only.** |
-| live_status | text | yes | `available`, `with_client`, `on_break` |
+| live_status | text | yes | `available`, `with_client`, `unavailable` |
 | price_mode | text | yes | `standard` or `custom` |
 | booking_window_days | int | no | empty means use the shop default (5). A pro can raise it. |
 | cancellation_window_hours | int | no | empty means use the shop's window. Only used when the shop has `allow_pro_cancellation_window` on. |

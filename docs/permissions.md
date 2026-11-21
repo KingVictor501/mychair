@@ -52,11 +52,11 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | Change status (in chair, completed, no-show) | ✅ | ✅ | 🔸 | ❌ | pro: own appointments only. Allowed order: waiting → in chair → completed; waiting → no-show; waiting or in chair → cancelled |
 | Set payment status | ✅ | ✅ | 🔸 | ❌ | pro: own appointments only (record only, no real payments) |
 | **Clients and style cards** | | | | | |
-| View a client | ✅ | ✅ | 🔸 | ❌ | pro: **only their own clients, and only name, phone, style card.** Never email. |
+| View a client | ✅ | ✅ | 🔸 | ❌ | owner and Super Admin: every client. pro: **only their own clients (anyone they've had an appointment or card with, booked right now or not), and only name, phone, style card.** Never email. |
 | View client email (if the client gave one) | ✅ | ✅ | ❌ | 🔸 | client: own only. Phone is required for clients and is visible to their pros. |
 | Create or edit a style card | ✅ | ❌ | 🔸 | ❌ | pro: only their own cards |
-| View a style card | ✅ | ✅ | 🔸 | ❌ | pro: own cards, or cards another pro shared with them |
-| Upload a style card photo | ✅ | ❌ | 🔸 | ❌ | own cards only. JPG, PNG, WebP, max 5 MB |
+| View a style card | ✅ | ✅ | 🔸 | ❌ | pro: own cards always; another pro's card for a client (read-only, with photos) only on a day that client is booked with them |
+| Upload a style card photo | ✅ | ❌ | 🔸 | ❌ | own cards only. JPG, PNG, WebP, max 4 MB, private storage |
 | Grant or remove style-card sharing between two pros | ✅ | ✅ | ❌ | ❌ | the pros must ask the owner |
 | See the no-show count | ✅ | ✅ | 🔸 | ❌ | pro: for their own clients. Strikes are counted per shop. They are a record only and never block booking. |
 | Remove a no-show strike | ✅ | ✅ | 🔸 | ❌ | pro: only for an appointment they were reserved for (for example, the pro was running late). The owner can see all strikes and removals. |

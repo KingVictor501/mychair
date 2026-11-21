@@ -5,7 +5,8 @@
 //              five days of upcoming ones, and style cards. Skips if demo data already exists,
 //              so running it twice never makes duplicates.
 //   removeDemo deletes every demo shop (everything under a shop goes with it, because of the
-//              "onDelete: cascade" links in the schema) and the demo Super Admin. Real records
+//              "onDelete: cascade" links in the schema), their photo files in storage, and the
+//              demo Super Admin. Real records
 //              are never touched: only rows marked is_demo are deleted.
 //   resetDemo  remove, then seed: puts the demo back to a clean state.
 // Appointment times are generated around "now" in each shop's time zone, so the demo always
@@ -24,9 +25,11 @@ import {
   proServices,
   services,
   shops,
+  styleCardPhotos,
   styleCards,
   users,
 } from "../db/schema";
+import { deleteBlobs } from "../photos/data";
 import { DEMO_SHOPS, DEMO_SUPER_ADMIN, type DemoShop } from "./catalog";
 import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
@@ -52,6 +55,14 @@ export async function demoExists(db: Db = getDb()): Promise<boolean> {
 
 // Deletes all demo data. Returns how many demo shops and demo users were removed.
 export async function removeDemo(db: Db = getDb()): Promise<{ shops: number; users: number }> {
+  // Photo files live in file storage, not the database, so delete them first: removing the
+  // shops below would otherwise leave the files behind.
+  const photos = await db
+    .select({ pathname: styleCardPhotos.pathname })
+    .from(styleCardPhotos)
+    .innerJoin(shops, eq(shops.id, styleCardPhotos.shopId))
+    .where(eq(shops.isDemo, true));
+  await deleteBlobs(photos.map((p) => p.pathname));
   const removedShops = await db.delete(shops).where(eq(shops.isDemo, true)).returning({ id: shops.id });
   // Users with a shop went with their shop; this catches the demo Super Admin (no shop).
   const removedUsers = await db.delete(users).where(eq(users.isDemo, true)).returning({ id: users.id });
@@ -134,7 +145,7 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
     .returning({ id: users.id });
   await db.insert(clientProfiles).values(clientRows.map((c) => ({ userId: c.id })));
 
-  // Each pro has two regular clients; the rest come and go.
+  // Each pro has two clients of their own (6 clients, 3 pros).
   const regulars = pros.map((_, i) => [clientRows[(i * 2) % clientRows.length]!, clientRows[(i * 2 + 1) % clientRows.length]!]);
 
   // Appointments: 21 days back to 5 days ahead, in the shop's local time.
@@ -166,7 +177,9 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
         }
         const startsAt = zonedToUtc(day, minutesToTime(cursor), shop.timezone);
         const endsAt = zonedToUtc(day, minutesToTime(end), shop.timezone);
-        const client = rand() < 0.6 ? regulars[p]![Math.floor(rand() * 2)]! : clientRows[Math.floor(rand() * clientRows.length)]!;
+        // Clients only book with their own pro, so each pro's client list is truly their own
+        // (and the demo shows that one pro never sees another pro's clients).
+        const client = regulars[p]![Math.floor(rand() * 2)]!;
         const price = pro.custom[service.name] ?? service.priceCents;
         rows.push(makeAppointment({ shopId, proId: pro.id, clientId: client.id, serviceId: service.id, startsAt, endsAt, priceCents: price }, now, rand));
         cursor = end + (rand() < 0.5 ? 0 : 15);

@@ -1,0 +1,38 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "4326c111-0d8d-4d34-9131-e9d25af3bf6d",
+  "prevIds": [
+    "a7e0da32-b0c5-4cbb-aeec-fdd9691180ae"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "pro_profiles"
+      ],
+      "writes": [
+        "s|ck|public.pro_profiles.pro_profiles_live_status_check"
+      ],
+      "reads": [
+        "n|tbl|public.pro_profiles",
+        "n|sch|public",
+        "n|col|public.pro_profiles.live_status",
+        "e|col|public.pro_profiles.live_status"
+      ],
+      "sqlHash": "089e4418fc7fdfc0"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"pro_profiles\",\"pro_profiles_live_status_check\"]",
+      "set": {
+        "value": "\"live_status\" in ('available', 'with_client', 'unavailable')"
+      }
+    }
+  ]
+}
