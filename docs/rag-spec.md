@@ -2,7 +2,7 @@
 
 ## The spec I hand my AI
 
-Extend my Week 8 search into a question-answering engine for the MyChair documents in `mychair-corpus/`.
+Extend the existing search into a question-answering engine for the MyChair documents in `mychair-corpus/`.
 
 **Input and output**
 - Take a question from the command line (`npm run ask -- "your question"`).

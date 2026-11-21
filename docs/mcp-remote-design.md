@@ -8,20 +8,20 @@ The local server in `mcp/server.ts` (three tools, runs only on my computer) stay
 
 | Question        | Answer                                                                                                                                                                     |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Who calls it    | An AI assistant (Claude) that I connect to the server, and later the health-triage agent (Week 10 item 3), which uses it as its only window into the app.                  |
+| Who calls it    | An AI assistant (Claude) that I connect to the server, and the health-triage agent (`docs/agent-design.md`), which uses it as its only window into the app.                  |
 | What it reads   | Counts from the `log_entries` table, built by the existing `lib/report.ts` (covered by `lib/report.test.ts`) and `lib/report-data.ts` (no unit tests because it queries the database, but it served the real scheduled Make run on Nov 16). |
 | What it returns | Numbers, `ok`/`attention`/`empty` words and short note codes such as `auth_failures_some`. No names, emails, phone numbers, log messages, questions people typed, or keys. |
 | What it changes | Nothing. It is read-only.                                                                                                                                                  |
 
 ### Why this tool and not another
 
-- **Not the docs search again:** the local server already searches the help documents. The rubric asks for a tool over the app's own data, and the health numbers are data only MyChair has.
-- **It feeds the agent:** the agent in item 3 needs a permission-scoped connection. If this one tool is all it can reach, its permission is "read seven days of counts" and nothing more.
+- **Not the docs search again:** the local server already searches the help documents. The point of this server is the app's own data, and the health numbers are data only MyChair has.
+- **It feeds the agent:** the triage agent needs a connection with the smallest possible permission. If this one tool is all it can reach, its permission is "read seven days of counts" and nothing more.
 - **It reuses tested code:** the report logic already has tests and a real scheduled run behind it, so the new work is the connection and the lock, not new math.
 
-## The dangerous thing, never built
+## The dangerous tool, never built
 
-**A tool that reads raw log lines or client records** (for example `read_logs` or `get_appointments`). It would be the useful next step for a troubleshooting assistant, and it is the one I refuse to build:
+**Read raw log lines or client records** (for example a `read_logs` or `get_appointments` tool). That would be the obvious next tool for a troubleshooting assistant, and it is the one I decided not to build:
 
 - Raw lines hold routes, request IDs and error messages, and the client records hold names and phone numbers. One wrong redaction, or one injected instruction in a log message ("ignore your rules and..."), and an AI is reading or repeating private data.
 - The same goes for anything that writes: no tool deletes logs, changes the retention rule, or runs SQL. A read-only server with one tool cannot be talked into damage.

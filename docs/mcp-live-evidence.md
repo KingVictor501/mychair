@@ -1,10 +1,10 @@
-# Live MCP server: evidence
+# Live MCP server: verification
 
 The server designed in `docs/mcp-remote-design.md`, running on the live app. One tool, a real address, and the key checked before anything else.
 
 - **Address:** `https://mychair-eta.vercel.app/api/mcp`
 - **Code:** `app/api/mcp/route.ts` (order: key check, host and origin checks, then MCP), `lib/mcp-auth.ts` (the lock), `lib/mcp/health-server.ts` (the one tool)
-- **Design before code:** the design was committed first (`cce3448`), then the code (`49c8a07`), both on 2026-11-21.
+- **Design, then code:** the design was committed first (`cce3448`), then the code (`49c8a07`), both on 2026-11-21.
 - **Deployed:** pushed to `main` on 2026-11-21. Vercel built it, and the checks below ran against the production address.
 
 ## The checks, run against the live address on 2026-11-21
@@ -73,7 +73,7 @@ No names, emails, phone numbers, typed questions or keys: only counts, dates and
 
 **The failed attempts were recorded.** Each rejected call writes an `mcp_auth_failed` line to the production log table, and the report counts those together with wrong admin keys. To prove it rather than assume it, one more wrong-key call was sent at 3:16 PM (401), and the tool was called again straight after: `auth_failures` went from **6 to 7** and `unauthorized_401` from **6 to 7**. Ten in a week would turn `security_status` to `attention`.
 
-## The dangerous thing, never built
+## The dangerous tool, never built
 
 No tool reads raw log lines or client records, and no tool writes, deletes or runs SQL. The server registers one tool, and check 4 shows the live tool list has exactly one entry. The reasoning is in `docs/mcp-remote-design.md`.
 
