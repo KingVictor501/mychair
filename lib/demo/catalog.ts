@@ -1,6 +1,6 @@
 // lib/demo/catalog.ts
 // WHAT IT'S FOR: the made-up demo shops: names, people, services, prices, hours and pay.
-// Everything here is fictional. Owners and pros are shown by first name only. Emails are @example.com and phone numbers are in the 555-01xx
+// Everything here is fictional. Everyone is shown by first name only, to keep the demo professional. Emails are @example.com and phone numbers are in the 555-01xx
 // range, which is reserved for fiction, so nothing here can reach a real person.
 // WHO USES IT: lib/demo/seed.ts. The catalog was approved before it was first seeded.
 // WHY THE NAME: the demo "catalog"; ".ts" = no screen code.
@@ -33,7 +33,7 @@ export type DemoShop = {
   preferences: Array<Record<string, string>>;
 };
 
-export const DEMO_SUPER_ADMIN = { name: "Demo Admin", email: "demo.admin@example.com" };
+export const DEMO_SUPER_ADMIN = { name: "Alex", email: "alex.admin@example.com" };
 
 export const DEMO_SHOPS: DemoShop[] = [
   {
@@ -52,12 +52,12 @@ export const DEMO_SHOPS: DemoShop[] = [
       { name: "Leo", title: "Barber", email: "leo.fadefactory@example.com", phone: "+12125550104", station: "3", payType: "commission", payAmount: 40, bio: "Sharp line-ups and beard work." },
     ],
     clients: [
-      { name: "Chip Shorts", phone: "+12125550111", email: "chip.shorts@example.com" },
-      { name: "Ty Trim", phone: "+12125550112", email: "ty.trim@example.com" },
-      { name: "Duke Dapper", phone: "+12125550113", email: "duke.dapper@example.com" },
-      { name: "Manny Mane", phone: "+12125550114", email: "manny.mane@example.com" },
-      { name: "Fritz Fuzz", phone: "+12125550115", email: "fritz.fuzz@example.com" },
-      { name: "Ozzie Oddcut", phone: "+12125550116", email: "ozzie.oddcut@example.com" },
+      { name: "Chris", phone: "+12125550111", email: "chris.fadefactory@example.com" },
+      { name: "Tyler", phone: "+12125550112", email: "tyler.fadefactory@example.com" },
+      { name: "Marcus", phone: "+12125550113", email: "marcus.fadefactory@example.com" },
+      { name: "Daniel", phone: "+12125550114", email: "daniel.fadefactory@example.com" },
+      { name: "Andre", phone: "+12125550115", email: "andre.fadefactory@example.com" },
+      { name: "Owen", phone: "+12125550116", email: "owen.fadefactory@example.com" },
     ],
     services: [
       { name: "Classic cut", description: "Scissor or clipper cut, shaped and finished.", durationMin: 30, priceCents: 3000 },
@@ -92,12 +92,12 @@ export const DEMO_SHOPS: DemoShop[] = [
       { name: "Penny", title: "Nail tech", email: "penny.glossandtips@example.com", phone: "+13055550104", station: "3", payType: "commission", payAmount: 40, bio: "Pedicures and natural nail care." },
     ],
     clients: [
-      { name: "Ruby Rouge", phone: "+13055550111", email: "ruby.rouge@example.com" },
-      { name: "Coco Cuticle", phone: "+13055550112", email: "coco.cuticle@example.com" },
-      { name: "Daisy Dip", phone: "+13055550113", email: "daisy.dip@example.com" },
-      { name: "Faye File", phone: "+13055550114", email: "faye.file@example.com" },
-      { name: "Gemma Glaze", phone: "+13055550115", email: "gemma.glaze@example.com" },
-      { name: "Hazel Hue", phone: "+13055550116", email: "hazel.hue@example.com" },
+      { name: "Rachel", phone: "+13055550111", email: "rachel.glossandtips@example.com" },
+      { name: "Nicole", phone: "+13055550112", email: "nicole.glossandtips@example.com" },
+      { name: "Diana", phone: "+13055550113", email: "diana.glossandtips@example.com" },
+      { name: "Faith", phone: "+13055550114", email: "faith.glossandtips@example.com" },
+      { name: "Grace", phone: "+13055550115", email: "grace.glossandtips@example.com" },
+      { name: "Hannah", phone: "+13055550116", email: "hannah.glossandtips@example.com" },
     ],
     services: [
       { name: "Classic manicure", description: "Shape, cuticle care and regular polish.", durationMin: 30, priceCents: 2500 },
@@ -133,12 +133,12 @@ export const DEMO_SHOPS: DemoShop[] = [
       { name: "Lou", title: "Lash artist", email: "lou.flutter@example.com", phone: "+14155550104", station: "3", payType: "commission", payAmount: 40, bio: "Lash lifts, tints and brows." },
     ],
     clients: [
-      { name: "Wendy Wink", phone: "+14155550111", email: "wendy.wink@example.com" },
-      { name: "Bella Blink", phone: "+14155550112", email: "bella.blink@example.com" },
-      { name: "Fiona Flutter", phone: "+14155550113", email: "fiona.flutter@example.com" },
-      { name: "Mona Mascara", phone: "+14155550114", email: "mona.mascara@example.com" },
-      { name: "Tilly Tint", phone: "+14155550115", email: "tilly.tint@example.com" },
-      { name: "Lola Long", phone: "+14155550116", email: "lola.long@example.com" },
+      { name: "Whitney", phone: "+14155550111", email: "whitney.flutter@example.com" },
+      { name: "Bianca", phone: "+14155550112", email: "bianca.flutter@example.com" },
+      { name: "Fiona", phone: "+14155550113", email: "fiona.flutter@example.com" },
+      { name: "Monica", phone: "+14155550114", email: "monica.flutter@example.com" },
+      { name: "Tessa", phone: "+14155550115", email: "tessa.flutter@example.com" },
+      { name: "Lauren", phone: "+14155550116", email: "lauren.flutter@example.com" },
     ],
     services: [
       { name: "Classic full set", description: "One extension on each natural lash for a natural look.", durationMin: 120, priceCents: 12000 },

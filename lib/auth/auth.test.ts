@@ -86,7 +86,7 @@ test("a short or missing SESSION_SECRET refuses to sign", async () => {
 });
 
 test("emails and US phone numbers are recognized and cleaned", () => {
-  assert.deepEqual(parseIdentifier(" Buzz.Barker@Example.com "), { kind: "email", value: "buzz.barker@example.com" });
+  assert.deepEqual(parseIdentifier(" Ben.FadeFactory@Example.com "), { kind: "email", value: "ben.fadefactory@example.com" });
   assert.deepEqual(parseIdentifier("(555) 010-1234"), { kind: "phone", value: "+15550101234" });
   assert.equal(normalizePhone("+1 555 010 1234"), "+15550101234");
   assert.equal(parseIdentifier("hello"), null);
