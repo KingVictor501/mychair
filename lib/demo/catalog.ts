@@ -1,6 +1,6 @@
 // lib/demo/catalog.ts
 // WHAT IT'S FOR: the made-up demo shops: names, people, services, prices, hours and pay.
-// Everything here is fictional. Emails are @example.com and phone numbers are in the 555-01xx
+// Everything here is fictional. Owners and pros are shown by first name only. Emails are @example.com and phone numbers are in the 555-01xx
 // range, which is reserved for fiction, so nothing here can reach a real person.
 // WHO USES IT: lib/demo/seed.ts. The catalog was approved before it was first seeded.
 // WHY THE NAME: the demo "catalog"; ".ts" = no screen code.
@@ -41,15 +41,15 @@ export const DEMO_SHOPS: DemoShop[] = [
     name: "Fade Factory",
     businessType: "barbershop",
     timezone: "America/New_York",
-    owner: { name: "Buzz Barker", email: "buzz.barker@example.com", phone: "+12125550101" },
+    owner: { name: "Ben", email: "ben.fadefactory@example.com", phone: "+12125550101" },
     pros: [
       {
-        name: "Razor Ray", title: "Master barber", email: "razor.ray@example.com", phone: "+12125550102", station: "1",
+        name: "Ray", title: "Master barber", email: "ray.fadefactory@example.com", phone: "+12125550102", station: "1",
         payType: "chair_rent", payAmount: 120000, customPrices: { "Skin fade": 5000, "Cut + beard": 6500 },
         bio: "Fifteen years behind the chair. Fades and hot towel shaves.",
       },
-      { name: "Taper Tia", title: "Barber", email: "taper.tia@example.com", phone: "+12125550103", station: "2", payType: "commission", payAmount: 45, bio: "Tapers, textured cuts and kids' cuts." },
-      { name: "Line-Up Leo", title: "Barber", email: "lineup.leo@example.com", phone: "+12125550104", station: "3", payType: "commission", payAmount: 40, bio: "Sharp line-ups and beard work." },
+      { name: "Tia", title: "Barber", email: "tia.fadefactory@example.com", phone: "+12125550103", station: "2", payType: "commission", payAmount: 45, bio: "Tapers, textured cuts and kids' cuts." },
+      { name: "Leo", title: "Barber", email: "leo.fadefactory@example.com", phone: "+12125550104", station: "3", payType: "commission", payAmount: 40, bio: "Sharp line-ups and beard work." },
     ],
     clients: [
       { name: "Chip Shorts", phone: "+12125550111", email: "chip.shorts@example.com" },
@@ -81,15 +81,15 @@ export const DEMO_SHOPS: DemoShop[] = [
     name: "Gloss & Tips",
     businessType: "nail_salon",
     timezone: "America/New_York",
-    owner: { name: "Polly Polish", email: "polly.polish@example.com", phone: "+13055550101" },
+    owner: { name: "Paula", email: "paula.glossandtips@example.com", phone: "+13055550101" },
     pros: [
       {
-        name: "Annie Acrylic", title: "Senior nail tech", email: "annie.acrylic@example.com", phone: "+13055550102", station: "1",
+        name: "Annie", title: "Senior nail tech", email: "annie.glossandtips@example.com", phone: "+13055550102", station: "1",
         payType: "chair_rent", payAmount: 100000, customPrices: { "Acrylic full set": 7500, "Acrylic fill": 5500 },
         bio: "Acrylic sets and sculpted nails.",
       },
-      { name: "Gina Gel", title: "Nail tech", email: "gina.gel@example.com", phone: "+13055550103", station: "2", payType: "commission", payAmount: 45, bio: "Gel manicures and nail art." },
-      { name: "Penny Pedi", title: "Nail tech", email: "penny.pedi@example.com", phone: "+13055550104", station: "3", payType: "commission", payAmount: 40, bio: "Pedicures and natural nail care." },
+      { name: "Gina", title: "Nail tech", email: "gina.glossandtips@example.com", phone: "+13055550103", station: "2", payType: "commission", payAmount: 45, bio: "Gel manicures and nail art." },
+      { name: "Penny", title: "Nail tech", email: "penny.glossandtips@example.com", phone: "+13055550104", station: "3", payType: "commission", payAmount: 40, bio: "Pedicures and natural nail care." },
     ],
     clients: [
       { name: "Ruby Rouge", phone: "+13055550111", email: "ruby.rouge@example.com" },
@@ -122,15 +122,15 @@ export const DEMO_SHOPS: DemoShop[] = [
     name: "Flutter Lash Lounge",
     businessType: "lash_studio",
     timezone: "America/New_York",
-    owner: { name: "Lana Lash", email: "lana.lash@example.com", phone: "+14155550101" },
+    owner: { name: "Lana", email: "lana.flutter@example.com", phone: "+14155550101" },
     pros: [
       {
-        name: "Volume Vee", title: "Lead lash artist", email: "volume.vee@example.com", phone: "+14155550102", station: "1",
+        name: "Vera", title: "Lead lash artist", email: "vera.flutter@example.com", phone: "+14155550102", station: "1",
         payType: "chair_rent", payAmount: 110000, customPrices: { "Volume full set": 21000, "Volume fill": 9500 },
         bio: "Volume and mega-volume sets.",
       },
-      { name: "Classic Cleo", title: "Lash artist", email: "classic.cleo@example.com", phone: "+14155550103", station: "2", payType: "commission", payAmount: 45, bio: "Natural classic and hybrid sets." },
-      { name: "Lift Lou", title: "Lash artist", email: "lift.lou@example.com", phone: "+14155550104", station: "3", payType: "commission", payAmount: 40, bio: "Lash lifts, tints and brows." },
+      { name: "Cleo", title: "Lash artist", email: "cleo.flutter@example.com", phone: "+14155550103", station: "2", payType: "commission", payAmount: 45, bio: "Natural classic and hybrid sets." },
+      { name: "Lou", title: "Lash artist", email: "lou.flutter@example.com", phone: "+14155550104", station: "3", payType: "commission", payAmount: 40, bio: "Lash lifts, tints and brows." },
     ],
     clients: [
       { name: "Wendy Wink", phone: "+14155550111", email: "wendy.wink@example.com" },
