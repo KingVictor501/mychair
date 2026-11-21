@@ -1,7 +1,7 @@
 // lib/demo/seed.ts
 // WHAT IT'S FOR: adding and removing the demo shops.
 //   seedDemo   creates the three demo shops from lib/demo/catalog.ts, with their owners, pros,
-//              clients, services and prices, hours, about three weeks of past appointments and
+//              clients, services and prices, hours, about three months of past appointments and
 //              five days of upcoming ones, and style cards. Skips if demo data already exists,
 //              so running it twice never makes duplicates.
 //   removeDemo deletes every demo shop (everything under a shop goes with it, because of the
@@ -14,6 +14,7 @@
 // WHO USES IT: scripts/demo-seed.ts, scripts/demo-remove.ts and the Super Admin "Reset demo" route.
 // WHY THE NAME: "seed" = put starting data into the database; ".ts" = no screen code.
 
+import { createHash } from "node:crypto";
 import { count, eq } from "drizzle-orm";
 import { hashPassword } from "../auth/password";
 import { getDb } from "../db/client";
@@ -34,6 +35,18 @@ import { DEMO_SHOPS, DEMO_SUPER_ADMIN, type DemoShop } from "./catalog";
 import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
 type Db = ReturnType<typeof getDb>;
+
+// How far back the demo's appointment history goes, so visit history and revenue have a few months to show.
+const HISTORY_DAYS = 90;
+
+// A fixed ID for a demo shop or person, made from its slug or email. Because the ID is the same
+// every time the demo is seeded, resetting the demo doesn't log anyone out: their session still
+// points at an account that exists. (Real accounts keep their random IDs.)
+export function demoId(key: string): string {
+  const h = createHash("sha256").update(`mychair-demo:${key}`).digest("hex");
+  // Shaped like a standard UUID (version 4 layout) so the uuid columns accept it.
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${((parseInt(h.slice(16, 17), 16) & 0x3) | 0x8).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+}
 type AppointmentRow = typeof appointments.$inferInsert;
 
 // A small seeded random-number generator, so each shop's demo week has a stable shape.
@@ -78,7 +91,7 @@ export async function seedDemo(
   if (await demoExists(db)) return { skipped: true, shops: 0, appointments: 0 };
   const passwordHash = await hashPassword(password);
 
-  await db.insert(users).values({ role: "super_admin", name: DEMO_SUPER_ADMIN.name, email: DEMO_SUPER_ADMIN.email, passwordHash, isDemo: true });
+  await db.insert(users).values({ id: demoId(DEMO_SUPER_ADMIN.email), role: "super_admin", name: DEMO_SUPER_ADMIN.name, email: DEMO_SUPER_ADMIN.email, passwordHash, isDemo: true });
 
   let totalAppointments = 0;
   for (const [index, shop] of DEMO_SHOPS.entries()) {
@@ -97,13 +110,13 @@ export async function resetDemo(password: string, now: Date = new Date(), db: Db
 async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date, rand: () => number): Promise<number> {
   const [shopRow] = await db
     .insert(shops)
-    .values({ slug: shop.slug, name: shop.name, businessType: shop.businessType, timezone: shop.timezone, isDemo: true })
+    .values({ id: demoId(shop.slug), slug: shop.slug, name: shop.name, businessType: shop.businessType, timezone: shop.timezone, isDemo: true })
     .returning({ id: shops.id });
   if (!shopRow) throw new Error("demo shop insert failed");
   const shopId = shopRow.id;
 
   // The owner (runs the shop; doesn't take appointments in the demo).
-  await db.insert(users).values({ shopId, role: "owner", name: shop.owner.name, email: shop.owner.email, phone: shop.owner.phone, passwordHash, isDemo: true });
+  await db.insert(users).values({ id: demoId(shop.owner.email), shopId, role: "owner", name: shop.owner.name, email: shop.owner.email, phone: shop.owner.phone, passwordHash, isDemo: true });
 
   // Services and their standard prices.
   const serviceRows = await db
@@ -116,7 +129,7 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
   for (const pro of shop.pros) {
     const [proRow] = await db
       .insert(users)
-      .values({ shopId, role: "pro", name: pro.name, email: pro.email, phone: pro.phone, passwordHash, isDemo: true })
+      .values({ id: demoId(pro.email), shopId, role: "pro", name: pro.name, email: pro.email, phone: pro.phone, passwordHash, isDemo: true })
       .returning({ id: users.id });
     if (!proRow) throw new Error("demo pro insert failed");
     const custom = pro.customPrices ?? {};
@@ -141,14 +154,14 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
   // Clients. Each client has a client profile (for no-show strikes).
   const clientRows = await db
     .insert(users)
-    .values(shop.clients.map((c) => ({ shopId, role: "client", name: c.name, email: c.email, phone: c.phone, passwordHash, isDemo: true })))
+    .values(shop.clients.map((c) => ({ id: demoId(c.email), shopId, role: "client", name: c.name, email: c.email, phone: c.phone, passwordHash, isDemo: true })))
     .returning({ id: users.id });
   await db.insert(clientProfiles).values(clientRows.map((c) => ({ userId: c.id })));
 
   // Each pro has two clients of their own (6 clients, 3 pros).
   const regulars = pros.map((_, i) => [clientRows[(i * 2) % clientRows.length]!, clientRows[(i * 2 + 1) % clientRows.length]!]);
 
-  // Appointments: 21 days back to 5 days ahead, in the shop's local time.
+  // Appointments: about three months back to 5 days ahead, in the shop's local time.
   const rows: AppointmentRow[] = [];
   const today = localDateParts(now, shop.timezone);
   const open = timeToMinutes(shop.hours.start);
@@ -156,7 +169,7 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
   const breakStart = timeToMinutes(shop.hours.breakStart);
   const breakEnd = timeToMinutes(shop.hours.breakEnd);
 
-  for (let offset = -21; offset <= 5; offset++) {
+  for (let offset = -HISTORY_DAYS; offset <= 5; offset++) {
     const day = addDays(today, offset);
     if (!shop.openDays.includes(day.weekday)) continue;
     pros.forEach((pro, p) => {

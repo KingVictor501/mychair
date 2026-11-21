@@ -8,6 +8,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEMO_SHOPS, DEMO_SUPER_ADMIN } from "./catalog";
+import { demoId } from "./seed";
 import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
 test("three demo shops, each with 1 owner, 3 pros and a priced service list", () => {
@@ -46,4 +47,12 @@ test("dates, weekdays and minutes are calculated correctly", () => {
   assert.deepEqual(addDays(d, 10), { year: 2026, month: 12, day: 1, weekday: 2 });
   assert.equal(timeToMinutes("13:30"), 810);
   assert.equal(minutesToTime(810), "13:30");
+});
+
+test("demo IDs are fixed per person and shop, unique, and valid UUIDs", () => {
+  const keys = [DEMO_SUPER_ADMIN.email, ...DEMO_SHOPS.flatMap((s) => [s.slug, s.owner.email, ...s.pros.map((p) => p.email), ...s.clients.map((c) => c.email)])];
+  const ids = keys.map(demoId);
+  assert.deepEqual(keys.map(demoId), ids, "same input, same ID every time");
+  assert.equal(new Set(ids).size, ids.length, "no two demo records share an ID");
+  for (const id of ids) assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 });
