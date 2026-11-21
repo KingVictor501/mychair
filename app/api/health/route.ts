@@ -25,6 +25,9 @@ export const GET = withLogging("/api/health", async () => {
   // computer (LOG_LEVEL=debug) but never on the live site (LOG_LEVEL=info).
   log.debug("health_debug_probe", { note: "dev-only noise" });
 
+  // ROLLBACK DRILL: a deliberate bad deploy. Reverted right after the drill.
+  throw new Error("rollback drill: deliberate bad deploy");
+
   try {
     const sql = getSql();
     // The simplest possible database question: "what is 1?" If Neon answers, it is reachable.
