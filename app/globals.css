@@ -19,6 +19,9 @@
   --color-border: #d4d4d8;    /* thin lines: light gray */
   --color-text: #18181b;      /* main text: near black (strong contrast on white) */
   --color-text-muted: #52525b;/* secondary text: dark gray (still readable on white) */
+  /* Chart line colors, checked for colorblind separation and 3:1 contrast on white. */
+  --color-series-1: #2a78d6;  /* blue: the main line */
+  --color-series-2: #eb6834;  /* orange: the second line */
 }
 
 /* Tailwind's reset makes every heading the same size as body text and removes list bullets.

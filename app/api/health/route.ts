@@ -36,6 +36,8 @@ export const GET = withLogging("/api/health", async () => {
     throw new ApiError(503, "DB_UNREACHABLE", "Database unreachable", { cause });
   }
 
-  const body: HealthResponse = { status: "ok" };
+  // VERCEL_GIT_COMMIT_SHA is set by Vercel on every deploy. Only the first 7 characters are
+  // sent: enough to match a commit in git, and not a secret.
+  const body: HealthResponse = { status: "ok", version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local" };
   return Response.json(body);
 });

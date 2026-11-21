@@ -10,6 +10,9 @@
 // (Being able to answer at all means the app is running AND the database replied.)
 export type HealthResponse = {
   status: "ok";
+  // The short git commit of the deploy that answered (from Vercel's VERCEL_GIT_COMMIT_SHA),
+  // or "local" on my computer. Shows which deploy is live, for example during a rollback.
+  version: string;
 };
 
 // One passage returned by the search. "score" is cosine similarity: closer to 1 = closer in meaning.

@@ -67,7 +67,7 @@ Status says whether it is built and running today or planned for a later section
 | Tests | Node's built-in test runner through `tsx` (`npm test`) | In use | No test helpers or mocks included, so I write small ones. |
 | Auth | Own simple auth: hashed passwords + signed token (`jose`) in an httpOnly cookie | Planned | I own the security details, but the same token works for the mobile app later. |
 | File storage | Vercel Blob | Planned | Simple, same dashboard, more Vercel lock-in. |
-| Charts | Recharts | Planned | Easy line graphs; adds weight to the dashboard page. |
+| Charts | Hand-drawn SVG line charts (`components/LineChart.tsx`) on the `/metrics` page | In use | No extra package, but I maintain the drawing, hover and table view myself, and adding a new chart type means writing it. Recharts stays an option if the charts get more complex. |
 | Rate-limit storage | Upstash Redis for logins and booking | Planned | One more service and key, but memory doesn't work across serverless servers. (The Ask page's cap already avoids it by counting rows in `log_entries`.) |
 | Shop separation | Checks in one shared permission helper (not row-level security) | Planned | If I forget the helper on one route, data leaks. |
 
