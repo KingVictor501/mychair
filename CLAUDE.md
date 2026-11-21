@@ -16,7 +16,13 @@ The three shops run on made-up demo data so the app can be shown end to end: own
 
 - **Claude writes the catalog:** you (Claude) create each shop's services, descriptions, durations and prices, realistic for that kind of shop, and give at least one pro per shop custom prices so the "Standard price" vs custom pricing works. Show me the catalog before seeding it.
 
-- **Easy to add and remove:** one command adds it (`npm run demo:seed`) and one removes it (`npm run demo:remove`). Every demo shop and demo user is marked as demo in the database, and everything else hangs off them, so removing demo data never touches a real record. Seeding twice must not create duplicates.
+- **Demo mode switch (for showing buyers, kept after the course):** the demo shops stay in the database permanently. The Super Admin dashboard has one switch, **Demo mode: on / off**, stored in the database (not in a Vercel setting, so it works on any host).
+  - **On:** a public `/demo` page with buttons such as "See the owner view" and "See a pro's view" for each shop. One click opens that demo owner's or pro's pages with no sign-up or password. Every demo page shows a "Demo" banner.
+  - **Off:** `/demo` shows "Demo not available", and existing demo sessions stop working. The demo shops are kept, ready for the next time.
+  - **Boxed in:** a demo session can reach only demo shops. It can't send invites or messages to real people, open the Super Admin pages, or touch a real shop or customer. Enforced in the shared permission helper, on the server.
+  - **Reset demo:** a Super Admin button puts the demo shops back to a clean, realistic state after visitors have clicked around (booked, cancelled, edited style cards).
+  - Switching demo mode on or off and resetting it each write a log line (`demo_mode_changed`, `demo_reset`) with the Super Admin's user ID only.
+- **Easy to add and remove (for development):** one command adds it (`npm run demo:seed`) and one removes it (`npm run demo:remove`). Every demo shop and demo user is marked as demo in the database, and everything else hangs off them, so removing demo data never touches a real record. Seeding twice must not create duplicates. Reset uses the same seed.
 - **Clearly fake:** names that are obviously made up, emails at `example.com`, phone numbers in the reserved `555-01xx` range, no real photos of people. Pages show a small "Demo data" label.
 - **Logins:** demo accounts for every role (the owner and three pros in each shop, clients, and a demo Super Admin), with the password read from an environment variable, never written in code or docs.
 - **Separate from testing the AI:** demo data is only for showing the shop features. Evals and AI tests keep running against the real corpus and the real model.
