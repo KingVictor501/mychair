@@ -11,7 +11,7 @@
 
 // The thresholds. They live here, in code and in git, so the rules for "attention" are written
 // down in advance and not decided after seeing the numbers.
-export const AUTH_FAILURES_ATTENTION_AT = 10; // this many wrong admin keys in a week
+export const AUTH_FAILURES_ATTENTION_AT = 10; // this many wrong keys (admin or MCP) in a week
 export const LOG_STALE_AFTER_HOURS = 24; // newest log line older than this = logging looks dead
 
 // Everything the database and the server's settings can tell us. All plain numbers or yes/no.
@@ -29,7 +29,7 @@ export type ReportInputs = {
   answered: number; // rag_answer lines with outcome "answered"
   refused: number; // rag_answer lines with outcome "refused"
   injectionBlocked: number; // injection_attempt_detected lines
-  authFailures: number; // admin_auth_failed lines
+  authFailures: number; // admin_auth_failed + mcp_auth_failed lines (wrong keys at either lock)
   capHits: number; // ask_cap_reached lines
   corpusChunks: number; // passages stored right now
   corpusChunksFlagged: number; // stored passages the injection screen would block

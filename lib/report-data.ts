@@ -41,7 +41,8 @@ export async function gatherReportInputs(now: Date = new Date()): Promise<Report
       answered: sql<number>`count(*) filter (where ${logEntries.event} = 'rag_answer' and ${logEntries.details}->>'outcome' = 'answered')`,
       refused: sql<number>`count(*) filter (where ${logEntries.event} = 'rag_answer' and ${logEntries.details}->>'outcome' = 'refused')`,
       injectionBlocked: sql<number>`count(*) filter (where ${logEntries.event} = 'injection_attempt_detected')`,
-      authFailures: sql<number>`count(*) filter (where ${logEntries.event} = 'admin_auth_failed')`,
+      // Wrong keys at either lock: the admin routes and the live MCP server.
+      authFailures: sql<number>`count(*) filter (where ${logEntries.event} in ('admin_auth_failed', 'mcp_auth_failed'))`,
       capHits: sql<number>`count(*) filter (where ${logEntries.event} = 'ask_cap_reached')`,
     })
     .from(logEntries)
