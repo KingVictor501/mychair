@@ -181,6 +181,10 @@ export async function createAppointment(args: { shop: ShopRow; proId: string; pr
 // queries that already join "services" on appointments.service_id.
 export const serviceNamesSql = sql<string>`coalesce((select string_agg(s.name, ' + ' order by l.position) from ${appointmentServices} l join ${services} s on s.id = l.service_id where l.appointment_id = ${appointments.id}), ${services.name})`;
 
+// The same services as a list, for example ["Skin fade", "Beard trim"], so a service whose own
+// name contains "+" (like "Cut + beard") is never split in two. Same join rule as above.
+export const serviceListSql = sql<string[]>`coalesce((select array_agg(s.name order by l.position) from ${appointmentServices} l join ${services} s on s.id = l.service_id where l.appointment_id = ${appointments.id}), array[${services.name}])`;
+
 // A client's appointments: upcoming first (soonest first), then past (newest first).
 export async function listClientAppointments(clientId: string, shop: ShopRow, now: Date = new Date()): Promise<ClientAppointment[]> {
   const rows = await getDb()

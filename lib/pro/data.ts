@@ -15,7 +15,7 @@
 
 import { and, asc, count, desc, eq, gte, lt, max, ne, or, sql } from "drizzle-orm";
 import { ApiError } from "../api-error";
-import { serviceNamesSql, type ShopRow } from "../booking/data";
+import { serviceListSql, serviceNamesSql, type ShopRow } from "../booking/data";
 import { getDb } from "../db/client";
 import { appointments, clientProfiles, proProfiles, services, styleCards, users } from "../db/schema";
 import { addDays, localDateParts, type LocalDate, zonedToUtc } from "../demo/time";
@@ -42,7 +42,7 @@ export type ClientDetail = {
   card: { preferences: Record<string, string>; notes: string; usualServiceId: string | null; timeEstimateMin: number | null; updatedAt: string; photos: PhotoSummary[] } | null;
   // Other pros' cards for this client, shown read-only. Always included.
   otherCards: Array<{ proName: string; preferences: Record<string, string>; notes: string; usualServiceName: string | null; timeEstimateMin: number | null; updatedAt: string; photos: PhotoSummary[] }>;
-  visits: Array<{ id: string; startsAt: string; serviceName: string; priceCents: number; status: string }>;
+  visits: Array<{ id: string; startsAt: string; services: string[]; priceCents: number; status: string }>;
   services: Array<{ id: string; name: string; durationMin: number }>;
 };
 
@@ -164,7 +164,7 @@ export async function getClientForPro(proId: string, shop: ShopRow, clientId: st
   if (!client) throw new ApiError(404, "NOT_FOUND", "Not found.");
   const [card] = await db.select().from(styleCards).where(and(eq(styleCards.proId, proId), eq(styleCards.clientId, clientId)));
   const visits = await db
-    .select({ id: appointments.id, startsAt: appointments.startsAt, serviceName: serviceNamesSql, priceCents: appointments.priceCents, status: appointments.status })
+    .select({ id: appointments.id, startsAt: appointments.startsAt, services: serviceListSql, priceCents: appointments.priceCents, status: appointments.status })
     .from(appointments)
     .innerJoin(services, eq(services.id, appointments.serviceId))
     .where(and(eq(appointments.proId, proId), eq(appointments.clientId, clientId), lt(appointments.startsAt, new Date())))

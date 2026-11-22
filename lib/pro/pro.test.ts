@@ -7,6 +7,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { CurrentUser } from "../types";
+import { groupVisits } from "./visits";
 import { canBookFor, canManageAppointment, canTransition, canViewCard, nextSteps, proSettingsInput, statusChangeInput, styleCardInput } from "./lifecycle";
 
 test("appointments move in the right order and final statuses stay final", () => {
@@ -75,4 +76,44 @@ test("pro settings accept a true/false toggle and nothing else", () => {
   assert.equal(proSettingsInput.safeParse({ allowOthersToBook: true }).success, true);
   assert.equal(proSettingsInput.safeParse({ allowOthersToBook: "yes" }).success, false);
   assert.equal(proSettingsInput.safeParse({ allowOthersToBook: false, priceMode: "custom" }).success, false, "no sneaking in other fields");
+});
+
+test("everything on the same day is one visit: completed, no-show or rescheduled", () => {
+  const tz = "America/New_York";
+  const appts = [
+    // Tue 18 Nov: a fade at 10:00 and a beard trim at 10:45, both done.
+    { id: "b", startsAt: "2026-11-18T15:45:00Z", services: ["Beard trim"], priceCents: 1500, status: "completed" },
+    { id: "a", startsAt: "2026-11-18T15:00:00Z", services: ["Skin fade"], priceCents: 3500, status: "completed" },
+    // Sat 15 Nov: came for a two-service appointment; a later one was cancelled. Still "completed".
+    { id: "d", startsAt: "2026-11-15T19:00:00Z", services: ["Edge-up"], priceCents: 1500, status: "cancelled" },
+    { id: "c", startsAt: "2026-11-15T14:00:00Z", services: ["Cut + beard", "Hot towel shave"], priceCents: 9000, status: "completed" },
+    // Thu 13 Nov: didn't come.
+    { id: "f", startsAt: "2026-11-13T15:00:00Z", services: ["Skin fade"], priceCents: 3500, status: "no_show" },
+    // Wed 12 Nov: cancelled = rescheduled.
+    { id: "e", startsAt: "2026-11-12T15:00:00Z", services: ["Skin fade"], priceCents: 3500, status: "cancelled" },
+    // Today, not marked yet: not a visit outcome, so it's left out.
+    { id: "g", startsAt: "2026-11-11T15:00:00Z", services: ["Skin fade"], priceCents: 3500, status: "waiting" },
+  ];
+  const visits = groupVisits(appts, tz);
+  assert.equal(visits.length, 4, "four days with an outcome; the unmarked one is left out");
+  assert.deepEqual(visits[0], { key: "2026-11-18", startsAt: "2026-11-18T15:00:00Z", services: ["Skin fade", "Beard trim"], totalCents: 5000, outcome: "completed" });
+  assert.deepEqual(visits[1]!.services, ["Cut + beard", "Hot towel shave"], "only what they came for; 'Cut + beard' stays one service");
+  assert.equal(visits[1]!.totalCents, 9000, "the cancelled one isn't charged");
+  assert.equal(visits[2]!.outcome, "no_show");
+  assert.equal(visits[2]!.totalCents, null, "no cost for a no-show");
+  assert.equal(visits[3]!.outcome, "rescheduled");
+  assert.equal(visits[3]!.totalCents, null, "no cost for a rescheduled visit");
+});
+
+test("visits are split by the shop's local day, not the UTC day", () => {
+  // 11pm and 11:30pm in New York on 18 Nov are already 19 Nov in UTC; still one visit on the 18th.
+  const visits = groupVisits(
+    [
+      { id: "x", startsAt: "2026-11-19T04:30:00Z", services: ["Edge-up"], priceCents: 1500, status: "completed" },
+      { id: "y", startsAt: "2026-11-19T04:00:00Z", services: ["Skin fade"], priceCents: 3500, status: "completed" },
+    ],
+    "America/New_York",
+  );
+  assert.equal(visits.length, 1);
+  assert.equal(visits[0]!.key, "2026-11-18");
 });
