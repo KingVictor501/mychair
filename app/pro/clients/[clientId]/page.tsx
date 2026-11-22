@@ -17,6 +17,7 @@ import { shopDateTime } from "@/lib/format";
 import { photoStorageReady } from "@/lib/photos/data";
 import { getClientForPro, type ClientDetail } from "@/lib/pro/data";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ShopBanner from "@/components/ShopBanner";
 
 export default async function ClientPage({ params }: { params: Promise<{ clientId: string }> }) {
   const user = await getCurrentUser();
@@ -39,11 +40,7 @@ export default async function ClientPage({ params }: { params: Promise<{ clientI
   return (
     <main className="!max-w-3xl">
       <Breadcrumbs items={[{ label: "My schedule", href: "/pro" }, { label: "My clients", href: "/pro/clients" }, { label: client.name }]} />
-      <h1 className="!mt-2 !mb-1">{client.name}</h1>
-      <p className="!mt-0">
-        {client.phone ?? "No phone"}
-        {client.noShows > 0 && ` · ${client.noShows} no-show${client.noShows === 1 ? "" : "s"}`}
-      </p>
+      <ShopBanner businessType={shop.businessType} title={client.name} subtitle={`${client.phone ?? "No phone"}${client.noShows > 0 ? ` · ${client.noShows} no-show${client.noShows === 1 ? "" : "s"}` : ""}`} />
 
       <h2>Style card</h2>
       {card && <p className="!mt-0 text-sm">Last updated {shopDateTime(card.updatedAt, shop.timezone)}</p>}

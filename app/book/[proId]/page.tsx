@@ -14,6 +14,7 @@ import { canAccessShop } from "@/lib/auth/permissions";
 import { bookableDates, getPro, getShop, listProServices } from "@/lib/booking/data";
 import { getPreferredProId } from "@/lib/clients/preferred";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ShopBanner from "@/components/ShopBanner";
 
 export default async function ProBookingPage({ params }: { params: Promise<{ proId: string }> }) {
   const user = await getCurrentUser();
@@ -31,17 +32,20 @@ export default async function ProBookingPage({ params }: { params: Promise<{ pro
   return (
     <main>
       <Breadcrumbs items={[{ label: shop.name, href: "/book" }, { label: pro.name }]} />
-      <h1 className="!mt-2 !mb-1">
-        {pro.name}
-        {preferredProId === pro.id && (
-          <span className="ml-2 text-star" role="img" aria-label="Your preferred pro">
-            ★
-          </span>
-        )}
-      </h1>
-      <p className="!mt-0">
-        {pro.title} at {shop.name}
-      </p>
+      <ShopBanner
+        businessType={shop.businessType}
+        title={
+          <>
+            {pro.name}
+            {preferredProId === pro.id && (
+              <span className="ml-2 text-star" role="img" aria-label="Your preferred pro">
+                ★
+              </span>
+            )}
+          </>
+        }
+        subtitle={`${pro.title} at ${shop.name}`}
+      />
       {pro.bio && <p>{pro.bio}</p>}
       <PreferredProButton proId={pro.id} proName={pro.name} isPreferred={preferredProId === pro.id} />
       <BookingForm proId={pro.id} services={services} dates={dates} timeZone={shop.timezone} cancellationWindowHours={shop.cancellationWindowHours} />

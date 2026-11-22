@@ -11,6 +11,7 @@ import Link from "next/link";
 import SwitchSessionButton from "@/components/SwitchSessionButton";
 import { listDemoViews } from "@/lib/demo/entry";
 import { isDemoModeOn } from "@/lib/demo/mode";
+import { shopTheme } from "@/lib/theme";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Demo · MyChair" };
@@ -34,9 +35,9 @@ export default async function DemoPage() {
         <>
           <p className="!mt-0">Three made-up shops with three months of bookings. Open any view in one click: no account or password. Everything here is demo data.</p>
           {shops.map((s) => (
-            <section key={s.id} aria-label={s.name} className="mb-4 rounded-lg border border-border bg-bg p-4">
+            <section key={s.id} aria-label={s.name} data-shop={shopTheme(s.businessType)} className="shop-gradient mb-4 rounded-xl p-4">
               <h2 className="!mt-0 !mb-1">{s.name}</h2>
-              <p className="!mt-0 text-sm">{TYPE_LABEL[s.businessType] ?? s.businessType}</p>
+              <p className="!mt-0 text-sm text-text">{TYPE_LABEL[s.businessType] ?? s.businessType}</p>
               <div className="flex flex-wrap gap-2">
                 {s.owner && <SwitchSessionButton url="/api/demo/enter" userId={s.owner.id} label={`See the owner view (${s.owner.name})`} />}
                 {s.pros.map((p) => (

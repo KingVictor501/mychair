@@ -11,6 +11,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 // SessionBanner (components/SessionBanner.tsx) shows "Demo" or "Viewing as …" when that applies.
 import SessionBanner from "@/components/SessionBanner";
+// SiteHeader (components/SiteHeader.tsx) is the bar with MyChair, the role's links and Log out.
+import SiteHeader from "@/components/SiteHeader";
 
 // The tab title and description for search engines and phones.
 export const metadata: Metadata = {
@@ -28,6 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SessionBanner />
+        <SiteHeader />
         {children}
       </body>
     </html>

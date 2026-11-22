@@ -15,15 +15,16 @@ import { redirect } from "next/navigation";
 import AppointmentActions from "@/components/AppointmentActions";
 import ClientSearch from "@/components/ClientSearch";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
-import LogoutButton from "@/components/LogoutButton";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop } from "@/lib/booking/data";
 import { parseLocalDate } from "@/lib/booking/slots";
 import { addDays, localDateParts, type LocalDate } from "@/lib/demo/time";
-import { APPOINTMENT_STATUS, LIVE_STATUS, money, shopTime } from "@/lib/format";
+import { LIVE_STATUS, money, shopTime } from "@/lib/format";
 import { listShopDay, listTeam, shopRevenue } from "@/lib/owner/data";
 import { payLabel } from "@/lib/owner/rules";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ShopBanner from "@/components/ShopBanner";
+import StatusPill from "@/components/StatusPill";
 
 export const metadata: Metadata = { title: "My shop · MyChair" };
 export const dynamic = "force-dynamic";
@@ -51,8 +52,7 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
   return (
     <main className="!max-w-4xl">
       <Breadcrumbs items={[{ label: shop.name }]} />
-      <h1 className="!mb-1">{shop.name}</h1>
-      <p className="!mt-0">Hi, {user.name}. Here&apos;s your shop.</p>
+      <ShopBanner businessType={shop.businessType} title={shop.name} subtitle={`Hi, ${user.name}. Here's your shop.`} />
 
       <section aria-label="Revenue" className="grid grid-cols-3 gap-2">
         {[
@@ -91,7 +91,7 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
                     {shopTime(a.startsAt, shop.timezone)} · {a.proName}
                   </span>
                   <span className="block text-sm text-text-muted">
-                    {a.clientName} · {a.serviceName} · {money(a.priceCents)} · {APPOINTMENT_STATUS[a.status] ?? a.status}
+                    {a.clientName} · {a.serviceName} · {money(a.priceCents)} <StatusPill status={a.status} />
                   </span>
                 </span>
                 <AppointmentActions appointmentId={a.id} status={a.status} />
@@ -139,9 +139,6 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
         <ClientSearch mode="any" />
       </div>
 
-      <section aria-label="Account" className="mt-8 border-t border-border pt-4">
-        <LogoutButton />
-      </section>
     </main>
   );
 }

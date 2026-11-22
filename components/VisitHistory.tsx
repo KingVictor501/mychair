@@ -5,7 +5,8 @@
 // WHO USES IT: app/pro/clients/[clientId]/page.tsx.
 // WHY THE NAME: the visit history; ".tsx" = screen code. A server component (no "use client").
 
-import { APPOINTMENT_STATUS, money, shopDateTime } from "@/lib/format";
+import { money, shopDateTime } from "@/lib/format";
+import StatusPill from "./StatusPill";
 
 type Visit = { id: string; startsAt: string; serviceName: string; priceCents: number; status: string };
 
@@ -33,21 +34,24 @@ export default function VisitHistory({ visits, timeZone }: { visits: Visit[]; ti
         const label = new Date(Date.UTC(y ?? 0, (m ?? 1) - 1, 1)).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", year: "numeric" });
         const completed = list.filter((v) => v.status === "completed");
         return (
-          <details key={key} open={key === current} className="rounded-lg border border-border bg-bg">
+          <details key={key} open={key === current} className="overflow-hidden rounded-lg border border-border bg-bg">
             <summary className="flex cursor-pointer flex-wrap justify-between gap-2 p-3 font-semibold text-text">
               <span>{label}</span>
               <span className="text-sm font-normal text-text-muted">
                 {list.length} {list.length === 1 ? "visit" : "visits"} · {money(completed.reduce((sum, v) => sum + v.priceCents, 0))}
               </span>
             </summary>
-            <ul className="!m-0 !list-none grid gap-2 !px-3 !pb-3">
+            {/* One row per visit: the day and time on the left, what was done, then price and status. */}
+            <ul className="!m-0 !list-none !p-0 divide-y divide-border border-t border-border">
               {list.map((v) => (
-                <li key={v.id} className="flex flex-wrap justify-between gap-2 rounded border border-border bg-surface p-2 text-sm">
-                  <span className="text-text">
-                    {v.serviceName} · {shopDateTime(v.startsAt, timeZone)}
+                <li key={v.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-2 text-sm">
+                  <span className="whitespace-nowrap text-text-muted">{shopDateTime(v.startsAt, timeZone).replace(/^\w+, /, "")}</span>
+                  <span className="min-w-0 truncate text-text" title={v.serviceName}>
+                    {v.serviceName}
                   </span>
-                  <span>
-                    {money(v.priceCents)} · {APPOINTMENT_STATUS[v.status] ?? v.status}
+                  <span className="flex items-center gap-2 justify-self-end">
+                    <span className="text-text">{money(v.priceCents)}</span>
+                    <StatusPill status={v.status} />
                   </span>
                 </li>
               ))}

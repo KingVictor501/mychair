@@ -11,8 +11,10 @@ import CancelButton from "@/components/CancelButton";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop, listClientAppointments, type ClientAppointment } from "@/lib/booking/data";
-import { APPOINTMENT_STATUS, money, shopDateTime } from "@/lib/format";
+import { money, shopDateTime } from "@/lib/format";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ShopBanner from "@/components/ShopBanner";
+import StatusPill from "@/components/StatusPill";
 
 export const metadata: Metadata = { title: "My appointments · MyChair" };
 
@@ -35,7 +37,7 @@ export default async function MyAppointmentsPage() {
           {a.serviceName} with {a.proName}
         </span>
         <span className="block text-sm text-text-muted">
-          {shopDateTime(a.startsAt, shop.timezone)} · {money(a.priceCents)} · {APPOINTMENT_STATUS[a.status] ?? a.status}
+          {shopDateTime(a.startsAt, shop.timezone)} · {money(a.priceCents)} <StatusPill status={a.status} />
         </span>
       </span>
       {a.canCancel && <CancelButton appointmentId={a.id} />}
@@ -45,7 +47,7 @@ export default async function MyAppointmentsPage() {
   return (
     <main>
       <Breadcrumbs items={[{ label: shop.name, href: "/book" }, { label: "My appointments" }]} />
-      <h1 className="!mt-2">My appointments</h1>
+      <ShopBanner businessType={shop.businessType} title="My appointments" subtitle={shop.name} />
       <h2>Upcoming</h2>
       {upcoming.length === 0 ? (
         <p>

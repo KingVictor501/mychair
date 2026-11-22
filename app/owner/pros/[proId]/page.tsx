@@ -12,6 +12,7 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop } from "@/lib/booking/data";
 import { getProPricing } from "@/lib/owner/data";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ShopBanner from "@/components/ShopBanner";
 
 export default async function OwnerProPage({ params }: { params: Promise<{ proId: string }> }) {
   const user = await getCurrentUser();
@@ -33,8 +34,7 @@ export default async function OwnerProPage({ params }: { params: Promise<{ proId
   return (
     <main className="!max-w-3xl">
       <Breadcrumbs items={[{ label: shop.name, href: "/owner" }, { label: `${data.pro.name}'s prices` }]} />
-      <h1 className="!mt-2 !mb-1">{data.pro.name}&apos;s prices</h1>
-      <p className="!mt-0">{data.pro.title}. Only you and the Super Admin can change prices.</p>
+      <ShopBanner businessType={shop.businessType} title={`${data.pro.name}'s prices`} subtitle={`${data.pro.title}. Only you and the Super Admin can change prices.`} />
       <ProPricingEditor proId={data.pro.id} proName={data.pro.name} initialMode={data.pro.priceMode} services={data.services} />
     </main>
   );

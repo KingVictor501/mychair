@@ -38,6 +38,38 @@
   a { color: inherit; text-decoration: underline; }
 }
 
+/* ---- Shop colors ----
+   Each kind of shop gets its own soft gradient, used on that shop's banner and cards. Set by
+   data-shop="barbershop" (or nail_salon, lash_studio) on an element; lib/theme.ts picks the value.
+   Light colors keep near-black text readable on top. To brand a shop later, change these. */
+[data-shop] {
+  --shop-from: #f4f4f5;
+  --shop-to: #e4e4e7;
+  --shop-ink: #3f3f46;
+}
+[data-shop="barbershop"] {
+  --shop-from: #e0f2fe;  /* pale sky */
+  --shop-to: #e2e8f0;    /* cool slate */
+  --shop-ink: #0c4a6e;   /* deep blue, for the thin accent line */
+}
+[data-shop="nail_salon"] {
+  --shop-from: #fce7f3;  /* blush */
+  --shop-to: #ffedd5;    /* peach */
+  --shop-ink: #9d174d;   /* deep rose */
+}
+[data-shop="lash_studio"] {
+  --shop-from: #ede9fe;  /* lavender */
+  --shop-to: #fae8ff;    /* orchid */
+  --shop-ink: #5b21b6;   /* deep violet */
+}
+/* The gradient itself, and a thin accent line in the shop's ink color. */
+.shop-gradient {
+  background-image: linear-gradient(135deg, var(--shop-from), var(--shop-to));
+}
+.shop-accent {
+  border-left: 4px solid var(--shop-ink);
+}
+
 /* Include padding and borders in an element's width so nothing overflows on a 375px phone. */
 *,
 *::before,
@@ -77,7 +109,9 @@ label {
   font-weight: 600;
 }
 
-input {
+input,
+select,
+textarea {
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: 0.375rem;
@@ -89,11 +123,15 @@ input {
 button {
   padding: 0.6rem 0.9rem;
   border: 1px solid var(--color-text);
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   background: var(--color-text);
   color: var(--color-bg);
   font: inherit;
   cursor: pointer;
+}
+
+button:not(:disabled):hover {
+  opacity: 0.88;
 }
 
 button:disabled {
@@ -103,6 +141,10 @@ button:disabled {
 
 /* Keyboard users get a clear outline. */
 input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+summary:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--color-text);
   outline-offset: 2px;

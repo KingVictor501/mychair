@@ -12,6 +12,7 @@ import { ApiError } from "@/lib/api-error";
 import { bookableDates, listProServices } from "@/lib/booking/data";
 import { loadGuestPro } from "@/lib/guest/booking";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ShopBanner from "@/components/ShopBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -31,10 +32,7 @@ export default async function GuestProPage({ params }: { params: Promise<{ proId
   return (
     <main>
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Book without an account", href: "/guest" }, { label: pro.name }]} />
-      <h1 className="!mt-2 !mb-1">{pro.name}</h1>
-      <p className="!mt-0">
-        {pro.title} at {shop.name}
-      </p>
+      <ShopBanner businessType={shop.businessType} title={pro.name} subtitle={`${pro.title} at ${shop.name}`} />
       {pro.bio && <p>{pro.bio}</p>}
       <BookingForm guest proId={pro.id} services={services} dates={dates} timeZone={shop.timezone} cancellationWindowHours={shop.cancellationWindowHours} />
     </main>

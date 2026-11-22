@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { listGuestShops } from "@/lib/guest/booking";
 import { LIVE_STATUS, money } from "@/lib/format";
+import { shopTheme } from "@/lib/theme";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Book without an account · MyChair" };
@@ -26,8 +27,8 @@ export default async function GuestPage() {
         <p className="rounded-lg border border-border bg-surface p-3">No shops are taking bookings right now. Check back soon.</p>
       ) : (
         shops.map(({ shop, pros }) => (
-          <section key={shop.id} aria-label={shop.name} className="mb-6">
-            <h2>{shop.name}</h2>
+          <section key={shop.id} aria-label={shop.name} data-shop={shopTheme(shop.businessType)} className="mb-6">
+            <h2 className="shop-gradient !mb-3 rounded-lg px-3 py-2">{shop.name}</h2>
             {pros.length === 0 ? (
               <p>No pros are taking bookings here yet.</p>
             ) : (

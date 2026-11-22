@@ -13,6 +13,7 @@ import { getShop, listPros } from "@/lib/booking/data";
 import { getPreferredProId } from "@/lib/clients/preferred";
 import { LIVE_STATUS, money } from "@/lib/format";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ShopBanner from "@/components/ShopBanner";
 
 export const metadata: Metadata = { title: "Book · MyChair" };
 
@@ -29,11 +30,8 @@ export default async function BookPage() {
   return (
     <main>
       <Breadcrumbs items={[{ label: shop.name }]} />
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="!mb-1">{shop.name}</h1>
-        <Link href="/book/mine">My appointments</Link>
-      </div>
-      <p>Pick a pro to see their services and open times. You can book with any pro, and make one your preferred pro on their page.</p>
+      <ShopBanner businessType={shop.businessType} title={shop.name} subtitle="Pick a pro to see their services and open times." />
+      <p className="!mt-0 text-sm">You can book with any pro, and make one your preferred pro on their page.</p>
       {pros.length === 0 ? (
         <p className="rounded-lg border border-border bg-surface p-3">No pros are taking bookings yet. Check back soon.</p>
       ) : (

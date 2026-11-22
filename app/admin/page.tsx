@@ -13,7 +13,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminLocked from "@/components/AdminLocked";
 import AdminDemoControls from "@/components/AdminDemoControls";
-import LogoutButton from "@/components/LogoutButton";
 import SwitchSessionButton from "@/components/SwitchSessionButton";
 import { listShopSummaries, stackLinks } from "@/lib/admin/data";
 import { canUseAdmin } from "@/lib/auth/admin-access";
@@ -21,6 +20,7 @@ import { getCurrentUser, getSessionClaims } from "@/lib/auth/current-user";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { isDemoModeOn } from "@/lib/demo/mode";
 import { money } from "@/lib/format";
+import { shopTheme } from "@/lib/theme";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Super Admin · MyChair", robots: { index: false, follow: false } };
@@ -65,7 +65,7 @@ export default async function AdminHome() {
         ) : (
           <ul className="!list-none !p-0 grid gap-3">
             {shops.map((s) => (
-              <li key={s.id} className="rounded-lg border border-border bg-bg p-4">
+              <li key={s.id} data-shop={shopTheme(s.businessType)} className="shop-accent rounded-lg border border-border bg-bg p-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="text-lg font-semibold text-text">
                     {s.name}
@@ -125,9 +125,6 @@ export default async function AdminHome() {
         )}
       </section>
 
-      <section aria-label="Account" className="mt-8 border-t border-border pt-4">
-        <LogoutButton />
-      </section>
     </main>
   );
 }
