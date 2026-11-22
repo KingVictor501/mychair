@@ -21,7 +21,12 @@ const ALG = "HS256";
 const ISSUER = "mychair";
 
 // What the token says about the person. Kept small: IDs and the role, never a name or email.
-export type SessionClaims = { userId: string; role: Role; shopId: string | null; demo: boolean };
+// "actorId" is set only while the Super Admin is viewing the app as someone else ("view as"):
+// it's the Super Admin's own ID, so the session can be switched back and every action traced.
+export type SessionClaims = { userId: string; role: Role; shopId: string | null; demo: boolean; actorId?: string };
+
+// How long a "view as" session lasts before the Super Admin has to start it again.
+export const VIEW_AS_HOURS = 1;
 
 // The secret as bytes. A missing or short secret stops the app from signing anything.
 function secretKey(): Uint8Array {
@@ -31,13 +36,14 @@ function secretKey(): Uint8Array {
 }
 
 // Makes the signed token for a user who just logged in.
+// A "view as" token lasts VIEW_AS_HOURS instead of SESSION_DAYS.
 export async function createSessionToken(claims: SessionClaims): Promise<string> {
-  return new SignJWT({ role: claims.role, shopId: claims.shopId, demo: claims.demo })
+  return new SignJWT({ role: claims.role, shopId: claims.shopId, demo: claims.demo, ...(claims.actorId ? { actorId: claims.actorId } : {}) })
     .setProtectedHeader({ alg: ALG })
     .setSubject(claims.userId)
     .setIssuer(ISSUER)
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_DAYS}d`)
+    .setExpirationTime(claims.actorId ? `${VIEW_AS_HOURS}h` : `${SESSION_DAYS}d`)
     .sign(secretKey());
 }
 
@@ -54,6 +60,7 @@ export async function readSessionToken(token: string | undefined): Promise<Sessi
       role,
       shopId: typeof payload.shopId === "string" ? payload.shopId : null,
       demo: payload.demo === true,
+      ...(typeof payload.actorId === "string" ? { actorId: payload.actorId } : {}),
     };
   } catch {
     return null;

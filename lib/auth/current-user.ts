@@ -14,12 +14,17 @@ import { getDb } from "../db/client";
 import { users } from "../db/schema";
 import { isDemoModeOn } from "../demo/mode";
 import type { CurrentUser, Role } from "../types";
-import { readSessionToken, SESSION_COOKIE } from "./session";
+import { readSessionToken, SESSION_COOKIE, type SessionClaims } from "./session";
 
-// Returns the logged-in user, or null.
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+// The checked session claims for this request (who, and whether it's a "view as"), or null.
+export async function getSessionClaims(): Promise<SessionClaims | null> {
   const store = await cookies();
-  const claims = await readSessionToken(store.get(SESSION_COOKIE)?.value);
+  return readSessionToken(store.get(SESSION_COOKIE)?.value);
+}
+
+// Returns the logged-in user, or null. During "view as", this is the person being viewed as.
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  const claims = await getSessionClaims();
   if (!claims) return null;
 
   const [row] = await getDb()

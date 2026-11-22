@@ -1,6 +1,6 @@
 // components/MetricsDashboard.tsx
-// WHAT IT'S FOR: the interactive part of the /metrics page. You type the admin key, pick a time
-// range, and see summary numbers plus three charts: requests, server errors, and latency
+// WHAT IT'S FOR: the interactive part of the /metrics page. A logged-in Super Admin sees it
+// straight away; anyone else types the admin key. Then pick a time range, and see summary numbers plus three charts: requests, server errors, and latency
 // (median and 95th percentile). Data comes from GET /api/admin/metrics.
 // Every state is shown: locked, loading, error, empty (no requests in the range), and data.
 // WHO USES IT: app/metrics/page.tsx.
@@ -10,7 +10,7 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 // LineChart (components/LineChart.tsx) draws each chart. The types come from lib/metrics.ts.
 import LineChart from "./LineChart";
 import { RANGE_KEYS, type MetricsRange, type MetricsResponse } from "@/lib/metrics";
@@ -24,17 +24,19 @@ type State =
 const RANGE_LABEL: Record<MetricsRange, string> = { "1h": "Last hour", "24h": "Last 24 hours", "7d": "Last 7 days" };
 
 // Shows the dashboard.
-export default function MetricsDashboard() {
+// "signedIn" = the page already checked this is a real Super Admin, so no key is needed.
+export default function MetricsDashboard({ signedIn = false }: { signedIn?: boolean }) {
   const [adminKey, setAdminKey] = useState("");
   const [range, setRange] = useState<MetricsRange>("24h");
-  const [state, setState] = useState<State>({ kind: "locked" });
+  const [state, setState] = useState<State>({ kind: signedIn ? "loading" : "locked" });
 
   // Loads the numbers for one range.
   async function load(nextRange: MetricsRange) {
     setRange(nextRange);
     setState({ kind: "loading" });
     try {
-      const res = await fetch(`/api/admin/metrics?range=${nextRange}`, { headers: { "x-admin-key": adminKey } });
+      // The key header is only sent when a key was typed; otherwise the login cookie is used.
+      const res = await fetch(`/api/admin/metrics?range=${nextRange}`, adminKey ? { headers: { "x-admin-key": adminKey } } : {});
       if (res.status === 401) return setState({ kind: "error", message: "That admin key didn't work." });
       if (!res.ok) return setState({ kind: "error", message: "Metrics couldn't be loaded right now. Try again in a minute." });
       setState({ kind: "ready", data: (await res.json()) as MetricsResponse });
@@ -42,6 +44,13 @@ export default function MetricsDashboard() {
       setState({ kind: "error", message: "Couldn't reach the server. Check your connection and try again." });
     }
   }
+
+  // A signed-in Super Admin's charts load as soon as the page opens.
+  useEffect(() => {
+    if (signedIn) void load("24h");
+    // Runs once, when the page opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function onUnlock(event: FormEvent) {
     event.preventDefault();
@@ -52,7 +61,7 @@ export default function MetricsDashboard() {
   const formatTime = (iso: string) =>
     new Date(iso).toLocaleString(undefined, range === "7d" ? { month: "short", day: "numeric" } : { hour: "numeric", minute: "2-digit" });
 
-  if (state.kind === "locked" || (state.kind === "error" && !adminKey)) {
+  if (state.kind === "locked" || (state.kind === "error" && !adminKey && !signedIn)) {
     return (
       <form onSubmit={onUnlock} className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className="flex flex-1 flex-col gap-1">

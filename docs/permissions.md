@@ -67,12 +67,14 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | See the no-show count | ✅ | ✅ | 🔸 | ❌ | pro: for their own clients. Strikes are counted per shop. They are a record only and never block booking. |
 | Remove a no-show strike | ✅ | ✅ | 🔸 | ❌ | pro: only for an appointment they were reserved for (for example, the pro was running late). The owner can see all strikes and removals. |
 | **Super Admin tools** | | | | | |
-| View logs | ✅ | ❌ | ❌ | ❌ | |
-| View metrics and web performance | ✅ | ❌ | ❌ | ❌ | |
+| View logs | ✅ | ❌ | ❌ | ❌ | /admin/logs. Real Super Admin only: never the demo Super Admin, never during "view as" |
+| View metrics and web performance | ✅ | ❌ | ❌ | ❌ | /metrics: a real Super Admin's login, or the admin key |
+| Turn demo mode on or off, reset the demo | ✅ | ❌ | ❌ | ❌ | real Super Admin only (or the admin key from a script). Logged as demo_mode_changed and demo_reset with the Super Admin's ID |
+| Open a demo owner or pro view from /demo | – | – | – | – | anyone, no login, only while demo mode is on, and only demo owners and pros in demo shops. The session stays inside the demo shops, every page shows a "Demo" banner, and the Super Admin pages are closed to it |
 | View stack links | ✅ | ❌ | ❌ | ❌ | |
 | Run or view service embedding status | ✅ | ❌ | ❌ | ❌ | |
 | Run a semantic-search test in the dashboard | ✅ | ❌ | ❌ | ❌ | |
-| "View as" another user (audited) | ✅ | ❌ | ❌ | ❌ | every session is logged |
+| "View as" another user (audited) | ✅ | ❌ | ❌ | ❌ | owners and pros only (never a client or another Super Admin). Logged as view_as_started and view_as_ended; lasts up to an hour; a banner shows "Viewing as …" with "Stop viewing as". Admin tools are closed while viewing as |
 
 ## Client invite links
 - A client invite link opens the sign-up page with that pro already chosen, so the new client is that pro's client right after signing up.

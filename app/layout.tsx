@@ -9,6 +9,8 @@
 import type { Metadata } from "next";
 // Loads the shared colors and base styles (white and gray) for the whole app.
 import "./globals.css";
+// SessionBanner (components/SessionBanner.tsx) shows "Demo" or "Viewing as …" when that applies.
+import SessionBanner from "@/components/SessionBanner";
 
 // The tab title and description for search engines and phones.
 export const metadata: Metadata = {
@@ -24,7 +26,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SessionBanner />
+        {children}
+      </body>
     </html>
   );
 }

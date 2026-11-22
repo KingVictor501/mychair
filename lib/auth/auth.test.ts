@@ -15,6 +15,7 @@ import { ApiError } from "../api-error";
 import type { CurrentUser } from "../types";
 import { normalizePhone, parseIdentifier } from "./identifier";
 import { hashPassword, verifyPassword } from "./password";
+import { canEnterDemo, canUseAdmin, canViewAs } from "./access-rules";
 import { assertShopAccess, canAccessShop, canSeeClient, requireRole, requireUser } from "./permissions";
 import { createSessionToken, readSessionToken } from "./session";
 
@@ -135,4 +136,41 @@ test("a pro sees only their own clients; owners see all; clients see none", () =
   assert.equal(canSeeClient(pro, ["someone-else"]), false);
   assert.equal(canSeeClient(user("owner", "real"), []), true);
   assert.equal(canSeeClient(user("client", "real"), ["u-client"]), false);
+});
+
+test("only a real Super Admin acting as themselves can use the admin tools", () => {
+  assert.equal(canUseAdmin({ role: "super_admin", isDemo: false }, {}), true);
+  assert.equal(canUseAdmin({ role: "super_admin", isDemo: true }, {}), false, "the demo Super Admin is boxed out");
+  assert.equal(canUseAdmin({ role: "super_admin", isDemo: false }, { actorId: "admin-1" }), false, "not while viewing as someone");
+  assert.equal(canUseAdmin({ role: "owner", isDemo: false }, {}), false);
+  assert.equal(canUseAdmin(null, null), false);
+});
+
+test("view as works for owners and pros only, and demo accounts only while demo mode is on", () => {
+  assert.equal(canViewAs({ role: "owner", isDemo: false }, false), true);
+  assert.equal(canViewAs({ role: "pro", isDemo: false }, false), true);
+  assert.equal(canViewAs({ role: "client", isDemo: false }, true), false, "never a client");
+  assert.equal(canViewAs({ role: "super_admin", isDemo: false }, true), false, "never another Super Admin");
+  assert.equal(canViewAs({ role: "pro", isDemo: true }, false), false);
+  assert.equal(canViewAs({ role: "pro", isDemo: true }, true), true);
+});
+
+test("the demo page only opens demo owners and pros in demo shops while demo mode is on", () => {
+  const demoShop = { isDemo: true };
+  assert.equal(canEnterDemo({ role: "owner", isDemo: true }, demoShop, true), true);
+  assert.equal(canEnterDemo({ role: "pro", isDemo: true }, demoShop, true), true);
+  assert.equal(canEnterDemo({ role: "pro", isDemo: true }, demoShop, false), false, "demo mode off");
+  assert.equal(canEnterDemo({ role: "pro", isDemo: false }, demoShop, true), false, "a real account, never");
+  assert.equal(canEnterDemo({ role: "pro", isDemo: true }, { isDemo: false }, true), false, "a real shop, never");
+  assert.equal(canEnterDemo({ role: "client", isDemo: true }, demoShop, true), false, "not a client");
+  assert.equal(canEnterDemo({ role: "super_admin", isDemo: true }, demoShop, true), false, "not the demo Super Admin");
+});
+
+test("a view-as session token keeps the Super Admin's ID", async () => {
+  const token = await createSessionToken({ userId: "u-owner", role: "owner", shopId: "s1", demo: false, actorId: "u-admin" });
+  const claims = await readSessionToken(token);
+  assert.equal(claims?.actorId, "u-admin");
+  assert.equal(claims?.userId, "u-owner");
+  const normal = await readSessionToken(await createSessionToken({ userId: "u1", role: "pro", shopId: "s1", demo: false }));
+  assert.equal(normal?.actorId, undefined, "normal sessions have no actor");
 });
