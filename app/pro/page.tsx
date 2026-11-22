@@ -10,7 +10,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AppointmentActions from "@/components/AppointmentActions";
 import LiveStatusPicker from "@/components/LiveStatusPicker";
-import { HOME_FOR_ROLE } from "@/components/LoginForm";
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getPro, getShop } from "@/lib/booking/data";
 import { parseLocalDate } from "@/lib/booking/slots";

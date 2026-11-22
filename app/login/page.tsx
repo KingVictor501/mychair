@@ -6,7 +6,8 @@
 
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import LoginForm, { HOME_FOR_ROLE } from "@/components/LoginForm";
+import LoginForm from "@/components/LoginForm";
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
 export const metadata: Metadata = { title: "Log in · MyChair" };

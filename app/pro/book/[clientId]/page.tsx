@@ -10,7 +10,7 @@ import { and, eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingForm from "@/components/BookingForm";
-import { HOME_FOR_ROLE } from "@/components/LoginForm";
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { bookableDates, bookablePros, getPro, getShop, listProServices } from "@/lib/booking/data";
 import { getDb } from "@/lib/db/client";

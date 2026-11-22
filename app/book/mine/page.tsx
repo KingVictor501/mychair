@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import CancelButton from "@/components/CancelButton";
-import { HOME_FOR_ROLE } from "@/components/LoginForm";
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop, listClientAppointments, type ClientAppointment } from "@/lib/booking/data";
 import { APPOINTMENT_STATUS, money, shopDateTime } from "@/lib/format";

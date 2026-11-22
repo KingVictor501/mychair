@@ -9,7 +9,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingForm from "@/components/BookingForm";
 import PreferredProButton from "@/components/PreferredProButton";
-import { HOME_FOR_ROLE } from "@/components/LoginForm";
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { canAccessShop } from "@/lib/auth/permissions";
 import { bookableDates, getPro, getShop, listProServices } from "@/lib/booking/data";

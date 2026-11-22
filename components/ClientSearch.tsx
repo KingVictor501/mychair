@@ -3,7 +3,7 @@
 // book them in; if nobody has that number, the pro can add the caller as a new client (first name
 // and phone). Owners and the Super Admin can also search by name (handled by the same API).
 // Uses GET /api/clients/search and POST /api/clients.
-// WHO USES IT: app/pro/clients/page.tsx.
+// WHO USES IT: app/pro/clients/page.tsx (phone only) and app/owner/page.tsx (name or phone).
 // WHY THE NAME: client search; ".tsx" = screen code.
 
 "use client";

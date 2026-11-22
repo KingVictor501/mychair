@@ -7,7 +7,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { HOME_FOR_ROLE } from "@/components/LoginForm";
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import LogoutButton from "@/components/LogoutButton";
 import ProSettingsToggles from "@/components/ProSettingsToggles";
 import { getCurrentUser } from "@/lib/auth/current-user";

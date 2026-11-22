@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { HOME_FOR_ROLE } from "@/components/LoginForm";
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import StyleCardEditor from "@/components/StyleCardEditor";
 import VisitHistory from "@/components/VisitHistory";
 import { ApiError } from "@/lib/api-error";

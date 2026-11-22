@@ -9,15 +9,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import type { MeResponse, Role } from "@/lib/types";
-
-// Where each role lands after logging in.
-export const HOME_FOR_ROLE: Record<Role, string> = {
-  super_admin: "/admin",
-  owner: "/owner",
-  pro: "/pro",
-  client: "/book",
-};
+import { HOME_FOR_ROLE } from "@/lib/auth/home";
+import type { MeResponse } from "@/lib/types";
 
 export default function LoginForm() {
   const router = useRouter();
