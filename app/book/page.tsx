@@ -1,7 +1,8 @@
 // app/book/page.tsx
 // WHAT IT'S FOR: the client home, shown at /book: the pros in the client's shop, with their
 // title, live status and starting price. Each links to that pro's booking page.
-// WHO USES IT: clients (anyone else is sent to their own home page; logged-out visitors to /login).
+// WHO USES IT: clients (anyone else is sent to their own home page; logged-out visitors to
+// /guest, "Book without an account").
 // WHY THE NAME: folder name = URL ("app/book" -> /book).
 
 import type { Metadata } from "next";
@@ -19,7 +20,8 @@ export const metadata: Metadata = { title: "Book · MyChair" };
 
 export default async function BookPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  // Someone logged out who types /book most likely wants to book: send them to guest booking.
+  if (!user) redirect("/guest");
   if (user.role !== "client") redirect(HOME_FOR_ROLE[user.role]);
   const shop = user.shopId ? await getShop(user.shopId) : null;
   if (!shop) redirect("/login");
