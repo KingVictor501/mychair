@@ -6,7 +6,6 @@
 // WHO USES IT: pros.
 // WHY THE NAME: "[clientId]" is the client's ID from the URL.
 
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import StyleCardEditor from "@/components/StyleCardEditor";
@@ -17,6 +16,7 @@ import { getShop } from "@/lib/booking/data";
 import { shopDateTime } from "@/lib/format";
 import { photoStorageReady } from "@/lib/photos/data";
 import { getClientForPro, type ClientDetail } from "@/lib/pro/data";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default async function ClientPage({ params }: { params: Promise<{ clientId: string }> }) {
   const user = await getCurrentUser();
@@ -38,7 +38,7 @@ export default async function ClientPage({ params }: { params: Promise<{ clientI
 
   return (
     <main className="!max-w-3xl">
-      <Link href="/pro/clients">← My clients</Link>
+      <Breadcrumbs items={[{ label: "My schedule", href: "/pro" }, { label: "My clients", href: "/pro/clients" }, { label: client.name }]} />
       <h1 className="!mt-2 !mb-1">{client.name}</h1>
       <p className="!mt-0">
         {client.phone ?? "No phone"}

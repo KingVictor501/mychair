@@ -21,6 +21,7 @@ import { getCurrentUser, getSessionClaims } from "@/lib/auth/current-user";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { isDemoModeOn } from "@/lib/demo/mode";
 import { money } from "@/lib/format";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Super Admin · MyChair", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -41,6 +42,7 @@ export default async function AdminHome() {
 
   return (
     <main className="!max-w-5xl">
+      <Breadcrumbs items={[{ label: "Super Admin" }]} />
       <h1 className="!mb-1">Super Admin</h1>
       <p className="!mt-0">Hi, {user.name}. Everything across every shop.</p>
 

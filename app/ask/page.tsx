@@ -7,6 +7,7 @@
 import type { Metadata } from "next";
 // AskBox comes from components/AskBox.tsx: the interactive question box.
 import AskBox from "@/components/AskBox";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Ask MyChair",
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 export default function AskPage() {
   return (
     <main>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Ask MyChair" }]} />
       <h1>Ask MyChair</h1>
       <p>
         Ask how MyChair works: booking, cancellations, refunds, privacy, and more. Answers come only from

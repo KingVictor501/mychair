@@ -7,6 +7,7 @@
 import type { Metadata } from "next";
 // CorpusSearch comes from components/CorpusSearch.tsx: the interactive search widget.
 import CorpusSearch from "@/components/CorpusSearch";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 // Ask search engines not to list this admin page.
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
 export default function SearchPage() {
   return (
     <main>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Search by meaning" }]} />
       <h1>Search by meaning</h1>
       <p>Type a question. Results are ranked by meaning, not by matching words.</p>
       <CorpusSearch />

@@ -15,6 +15,7 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { bookableDates, bookablePros, getPro, getShop, listProServices } from "@/lib/booking/data";
 import { getDb } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default async function BookForClientPage({ params, searchParams }: { params: Promise<{ clientId: string }>; searchParams: Promise<{ pro?: string }> }) {
   const user = await getCurrentUser();
@@ -45,7 +46,7 @@ export default async function BookForClientPage({ params, searchParams }: { para
 
   return (
     <main>
-      <Link href="/pro/clients">← Client search</Link>
+      <Breadcrumbs items={[{ label: "My schedule", href: "/pro" }, { label: "My clients", href: "/pro/clients" }, { label: `Book ${client.name}` }]} />
       <h1 className="!mt-2 !mb-1">Book {client.name}</h1>
       <p className="!mt-0">
         With {pro.id === user.id ? "you" : pro.name} at {shop.name}.

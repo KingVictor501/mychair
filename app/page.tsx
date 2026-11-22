@@ -7,10 +7,12 @@
 // this one sits directly in "app", so it is the home page.
 
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default function HomePage() {
   return (
     <main className="!max-w-md">
+      <Breadcrumbs items={[{ label: "Home" }]} />
       <h1 className="!mb-1">MyChair</h1>
       <p className="!mt-0">Book your next appointment in a few taps.</p>
       <div className="mt-6 grid gap-3">

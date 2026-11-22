@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { listGuestShops } from "@/lib/guest/booking";
 import { LIVE_STATUS, money } from "@/lib/format";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Book without an account · MyChair" };
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export default async function GuestPage() {
 
   return (
     <main>
-      <Link href="/">← Home</Link>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Book without an account" }]} />
       <h1 className="!mt-2 !mb-1">Book without an account</h1>
       <p className="!mt-0">Pick any pro to see their open times.</p>
       {shops.length === 0 ? (

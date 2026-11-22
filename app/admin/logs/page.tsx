@@ -10,7 +10,6 @@
 // IDs and facts, never passwords, emails or phones. Details are shown as text, never as HTML.
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminLocked from "@/components/AdminLocked";
 import { listShopSummaries, searchLogs } from "@/lib/admin/data";
@@ -18,6 +17,7 @@ import { LOG_LEVELS, LOG_RANGES, parseLogFilters } from "@/lib/admin/rules";
 import { canUseAdmin } from "@/lib/auth/admin-access";
 import { getCurrentUser, getSessionClaims } from "@/lib/auth/current-user";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Logs · MyChair", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
 
   return (
     <main className="!max-w-6xl">
-      <Link href="/admin">← Super Admin</Link>
+      <Breadcrumbs items={[{ label: "Super Admin", href: "/admin" }, { label: "Logs" }]} />
       <h1 className="!mt-2">Logs</h1>
 
       <form method="get" className="grid gap-2 rounded-lg border border-border bg-surface p-3 sm:grid-cols-6 sm:items-end">

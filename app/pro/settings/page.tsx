@@ -5,13 +5,13 @@
 // WHY THE NAME: folder path = URL (/pro/settings).
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import LogoutButton from "@/components/LogoutButton";
 import ProSettingsToggles from "@/components/ProSettingsToggles";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getPro } from "@/lib/booking/data";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Settings · MyChair" };
 
@@ -24,7 +24,7 @@ export default async function ProSettingsPage() {
 
   return (
     <main className="!max-w-3xl">
-      <Link href="/pro">← My schedule</Link>
+      <Breadcrumbs items={[{ label: "My schedule", href: "/pro" }, { label: "Settings" }]} />
       <h1 className="!mt-2">Settings</h1>
       <ProSettingsToggles initial={{ allowOthersToBook: pro.allowOthersToBook }} />
       <section aria-label="Account" className="mt-8 border-t border-border pt-4">

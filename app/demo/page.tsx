@@ -11,6 +11,7 @@ import Link from "next/link";
 import SwitchSessionButton from "@/components/SwitchSessionButton";
 import { listDemoViews } from "@/lib/demo/entry";
 import { isDemoModeOn } from "@/lib/demo/mode";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Demo · MyChair" };
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export default async function DemoPage() {
 
   return (
     <main className="!max-w-3xl">
-      <Link href="/">← Home</Link>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Demo" }]} />
       <h1 className="!mt-2 !mb-1">MyChair demo</h1>
       {!on ? (
         <p className="rounded-lg border border-border bg-surface p-3">Demo not available right now. Please check back later.</p>

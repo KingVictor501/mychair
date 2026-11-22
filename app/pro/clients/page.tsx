@@ -13,6 +13,7 @@ import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop } from "@/lib/booking/data";
 import { listMyClients } from "@/lib/pro/data";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "My clients · MyChair" };
 
@@ -26,7 +27,7 @@ export default async function MyClientsPage() {
 
   return (
     <main className="!max-w-3xl">
-      <Link href="/pro">← My schedule</Link>
+      <Breadcrumbs items={[{ label: "My schedule", href: "/pro" }, { label: "My clients" }]} />
       <h1 className="!mt-2">My clients</h1>
       <ClientSearch mode="phone" />
       <h2>Your clients</h2>

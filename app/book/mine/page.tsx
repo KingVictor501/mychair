@@ -12,6 +12,7 @@ import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop, listClientAppointments, type ClientAppointment } from "@/lib/booking/data";
 import { APPOINTMENT_STATUS, money, shopDateTime } from "@/lib/format";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "My appointments · MyChair" };
 
@@ -43,7 +44,7 @@ export default async function MyAppointmentsPage() {
 
   return (
     <main>
-      <Link href="/book">← Book another</Link>
+      <Breadcrumbs items={[{ label: shop.name, href: "/book" }, { label: "My appointments" }]} />
       <h1 className="!mt-2">My appointments</h1>
       <h2>Upcoming</h2>
       {upcoming.length === 0 ? (

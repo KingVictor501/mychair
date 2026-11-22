@@ -17,6 +17,7 @@ import { parseLocalDate } from "@/lib/booking/slots";
 import { addDays, localDateParts, type LocalDate } from "@/lib/demo/time";
 import { APPOINTMENT_STATUS, money, shopTime } from "@/lib/format";
 import { listSchedule, type ScheduleItem } from "@/lib/pro/data";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "My schedule · MyChair" };
 
@@ -53,6 +54,7 @@ export default async function ProHome({ searchParams }: { searchParams: Promise<
 
   return (
     <main className="!max-w-3xl">
+      <Breadcrumbs items={[{ label: "My schedule" }]} />
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="!mb-1">Hi, {pro.name}</h1>
         <span className="flex gap-4">

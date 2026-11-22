@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import LoginForm from "@/components/LoginForm";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Log in · MyChair" };
 
@@ -18,6 +19,7 @@ export default async function LoginPage() {
 
   return (
     <main className="!max-w-sm">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Log in" }]} />
       <h1>Log in</h1>
       <p>Owners, pros and clients all log in here.</p>
       <LoginForm />

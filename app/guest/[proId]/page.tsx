@@ -6,12 +6,12 @@
 // WHO USES IT: anyone, from /guest.
 // WHY THE NAME: "[proId]" is the pro's ID from the URL.
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import BookingForm from "@/components/BookingForm";
 import { ApiError } from "@/lib/api-error";
 import { bookableDates, listProServices } from "@/lib/booking/data";
 import { loadGuestPro } from "@/lib/guest/booking";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export default async function GuestProPage({ params }: { params: Promise<{ proId
 
   return (
     <main>
-      <Link href="/guest">← All pros</Link>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Book without an account", href: "/guest" }, { label: pro.name }]} />
       <h1 className="!mt-2 !mb-1">{pro.name}</h1>
       <p className="!mt-0">
         {pro.title} at {shop.name}

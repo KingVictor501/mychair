@@ -23,6 +23,7 @@ import { addDays, localDateParts, type LocalDate } from "@/lib/demo/time";
 import { APPOINTMENT_STATUS, LIVE_STATUS, money, shopTime } from "@/lib/format";
 import { listShopDay, listTeam, shopRevenue } from "@/lib/owner/data";
 import { payLabel } from "@/lib/owner/rules";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "My shop · MyChair" };
 export const dynamic = "force-dynamic";
@@ -49,6 +50,7 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
 
   return (
     <main className="!max-w-4xl">
+      <Breadcrumbs items={[{ label: shop.name }]} />
       <h1 className="!mb-1">{shop.name}</h1>
       <p className="!mt-0">Hi, {user.name}. Here&apos;s your shop.</p>
 

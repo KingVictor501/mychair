@@ -5,7 +5,6 @@
 // WHO USES IT: clients.
 // WHY THE NAME: "[proId]" is a dynamic route: the pro's ID comes from the URL.
 
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingForm from "@/components/BookingForm";
 import PreferredProButton from "@/components/PreferredProButton";
@@ -14,6 +13,7 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { canAccessShop } from "@/lib/auth/permissions";
 import { bookableDates, getPro, getShop, listProServices } from "@/lib/booking/data";
 import { getPreferredProId } from "@/lib/clients/preferred";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default async function ProBookingPage({ params }: { params: Promise<{ proId: string }> }) {
   const user = await getCurrentUser();
@@ -30,7 +30,7 @@ export default async function ProBookingPage({ params }: { params: Promise<{ pro
 
   return (
     <main>
-      <Link href="/book">← All pros</Link>
+      <Breadcrumbs items={[{ label: shop.name, href: "/book" }, { label: pro.name }]} />
       <h1 className="!mt-2 !mb-1">
         {pro.name}
         {preferredProId === pro.id && (

@@ -12,6 +12,7 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop, listPros } from "@/lib/booking/data";
 import { getPreferredProId } from "@/lib/clients/preferred";
 import { LIVE_STATUS, money } from "@/lib/format";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Book · MyChair" };
 
@@ -27,6 +28,7 @@ export default async function BookPage() {
 
   return (
     <main>
+      <Breadcrumbs items={[{ label: shop.name }]} />
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="!mb-1">{shop.name}</h1>
         <Link href="/book/mine">My appointments</Link>
