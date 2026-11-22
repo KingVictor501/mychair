@@ -4,7 +4,7 @@
 //   setLiveStatus         Available / With a client / Unavailable
 //   setProSettings        the pro's own toggles (for now: "Let other pros book for me")
 //   changeAppointmentStatus  move an appointment along (lib/pro/lifecycle.ts decides what's allowed)
-//   listMyClients         the pro's OWN clients only: people they have an appointment or style card with
+//   listMyClients         the "Your clients" list: only clients who picked this pro as their preferred pro
 //   getClientForPro       one of those clients: name, phone, style card and visit history with this
 //                         pro, plus other pros' cards for that client (read-only), at any time
 //   saveStyleCard         create or update this pro's card for this client
@@ -117,15 +117,8 @@ export async function listMyClients(proId: string): Promise<MyClient[]> {
     .from(users)
     .leftJoin(clientProfiles, eq(clientProfiles.userId, users.id))
     .leftJoin(styleCards, and(eq(styleCards.clientId, users.id), eq(styleCards.proId, proId)))
-    .where(
-      and(
-        eq(users.role, "client"),
-        or(
-          sql`exists (select 1 from ${appointments} a where a.client_id = ${users.id} and a.pro_id = ${proId})`,
-          sql`exists (select 1 from ${styleCards} c where c.client_id = ${users.id} and c.pro_id = ${proId})`,
-        ),
-      ),
-    )
+    // Only clients whose preferred pro is this pro.
+    .where(and(eq(users.role, "client"), eq(clientProfiles.preferredProId, proId)))
     .orderBy(asc(users.name));
   return linked.map((c) => {
     const v = visits.find((x) => x.clientId === c.id);

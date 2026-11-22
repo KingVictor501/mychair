@@ -1,16 +1,19 @@
 // app/book/[proId]/page.tsx
 // WHAT IT'S FOR: one pro's booking page, at /book/<pro ID>: their profile, services and prices,
-// and the booking form. A fake or other-shop ID shows the "not found" page.
+// a "Make … my preferred pro" button, and the booking form. A fake or other-shop ID shows the
+// "not found" page.
 // WHO USES IT: clients.
 // WHY THE NAME: "[proId]" is a dynamic route: the pro's ID comes from the URL.
 
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingForm from "@/components/BookingForm";
+import PreferredProButton from "@/components/PreferredProButton";
 import { HOME_FOR_ROLE } from "@/components/LoginForm";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { canAccessShop } from "@/lib/auth/permissions";
 import { bookableDates, getPro, getShop, listProServices } from "@/lib/booking/data";
+import { getPreferredProId } from "@/lib/clients/preferred";
 
 export default async function ProBookingPage({ params }: { params: Promise<{ proId: string }> }) {
   const user = await getCurrentUser();
@@ -22,7 +25,7 @@ export default async function ProBookingPage({ params }: { params: Promise<{ pro
   const shop = pro?.shopId ? await getShop(pro.shopId) : null;
   if (!pro || !shop || !canAccessShop(user, shop)) notFound();
 
-  const services = await listProServices(pro.id, pro.priceMode, user.id);
+  const [services, preferredProId] = await Promise.all([listProServices(pro.id, pro.priceMode, user.id), getPreferredProId(user.id)]);
   const dates = bookableDates(shop).map((d) => `${d.year}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")}`);
 
   return (
@@ -33,6 +36,7 @@ export default async function ProBookingPage({ params }: { params: Promise<{ pro
         {pro.title} at {shop.name}
       </p>
       {pro.bio && <p>{pro.bio}</p>}
+      <PreferredProButton proId={pro.id} proName={pro.name} isPreferred={preferredProId === pro.id} />
       <BookingForm proId={pro.id} services={services} dates={dates} timeZone={shop.timezone} cancellationWindowHours={shop.cancellationWindowHours} />
     </main>
   );

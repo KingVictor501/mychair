@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { HOME_FOR_ROLE } from "@/components/LoginForm";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop, listPros } from "@/lib/booking/data";
+import { getPreferredProId } from "@/lib/clients/preferred";
 import { LIVE_STATUS, money } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Book · MyChair" };
@@ -20,7 +21,9 @@ export default async function BookPage() {
   if (user.role !== "client") redirect(HOME_FOR_ROLE[user.role]);
   const shop = user.shopId ? await getShop(user.shopId) : null;
   if (!shop) redirect("/login");
-  const pros = await listPros(shop.id);
+  // The client's preferred pro (if they picked one) is listed first, with a label.
+  const [all, preferredProId] = await Promise.all([listPros(shop.id), getPreferredProId(user.id)]);
+  const pros = [...all.filter((p) => p.id === preferredProId), ...all.filter((p) => p.id !== preferredProId)];
 
   return (
     <main>
@@ -28,7 +31,7 @@ export default async function BookPage() {
         <h1 className="!mb-1">{shop.name}</h1>
         <Link href="/book/mine">My appointments</Link>
       </div>
-      <p>Pick a pro to see their services and open times.</p>
+      <p>Pick a pro to see their services and open times. You can book with any pro, and make one your preferred pro on their page.</p>
       {pros.length === 0 ? (
         <p className="rounded-lg border border-border bg-surface p-3">No pros are taking bookings yet. Check back soon.</p>
       ) : (
@@ -41,6 +44,7 @@ export default async function BookPage() {
                   <span className="text-xs text-text-muted">{LIVE_STATUS[p.liveStatus] ?? p.liveStatus}</span>
                 </div>
                 <div className="text-sm text-text-muted">{p.title}</div>
+                {p.id === preferredProId && <div className="text-xs font-semibold text-text">Your preferred pro</div>}
                 {p.bio && <p className="!mt-2 !mb-0 text-sm">{p.bio}</p>}
                 {p.fromPriceCents !== null && <div className="mt-2 text-sm text-text">From {money(p.fromPriceCents)}</div>}
               </Link>

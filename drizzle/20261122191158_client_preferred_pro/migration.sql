@@ -1,0 +1,2 @@
+ALTER TABLE "client_profiles" ADD COLUMN "preferred_pro_id" uuid;--> statement-breakpoint
+ALTER TABLE "client_profiles" ADD CONSTRAINT "client_profiles_preferred_pro_id_users_id_fkey" FOREIGN KEY ("preferred_pro_id") REFERENCES "users"("id") ON DELETE SET NULL;

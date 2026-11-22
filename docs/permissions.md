@@ -52,7 +52,8 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | Change status (in chair, completed, no-show) | ✅ | ✅ | 🔸 | ❌ | pro: own appointments only. Allowed order: waiting → in chair → completed; waiting → no-show; waiting or in chair → cancelled |
 | Set payment status | ✅ | ✅ | 🔸 | ❌ | pro: own appointments only (record only, no real payments) |
 | **Clients and style cards** | | | | | |
-| View a client | ✅ | ✅ | 🔸 | ❌ | owner and Super Admin: every client, any time. pro: **only their own clients (anyone they've had an appointment or card with), and only name, phone and style cards.** Never email. |
+| View a client | ✅ | ✅ | 🔸 | ❌ | owner and Super Admin: every client, any time. pro: **only their own clients (anyone they've had an appointment or card with), and only name, phone and style cards.** Their "Your clients" list shows only clients who picked them as preferred pro. Never email. |
+| Set or clear my preferred pro | ❌ | ❌ | ❌ | ✅ | client: their own, and only a pro in their shop. A client appears under a pro's "Your clients" only when that pro is their preferred pro. Clients can still book with any pro |
 | Client search | ✅ | ✅ | 🔸 | ❌ | owner: by name or phone, in their shop. Super Admin: by name or phone, in every shop. pro: **by full phone number only**, in their shop, to find and book a client who calls in |
 | Add a client (phone-in) | ✅ | ✅ | ✅ | ❌ | first name and phone only; the phone must not belong to another account |
 | Book for a client | ✅ | ✅ | 🔸 | ❌ | pro: for a client of their shop, with themselves, or with another pro in the shop who turned on "Let other pros book for me" |

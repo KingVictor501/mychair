@@ -6,6 +6,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { preferredProInput } from "./preferred";
 import { newClientInput, parseClientSearch } from "./search";
 
 test("a pro can search only by a full phone number", () => {
@@ -29,4 +30,12 @@ test("a new client needs a first name and a phone, and nothing else", () => {
   assert.equal(newClientInput.safeParse({ name: "Jordan", phone: "212-555-0199" }).success, true);
   assert.equal(newClientInput.safeParse({ name: "", phone: "212-555-0199" }).success, false);
   assert.equal(newClientInput.safeParse({ name: "Jordan", phone: "212-555-0199", role: "owner" }).success, false, "no extra fields (like a role)");
+});
+
+test("a preferred-pro request takes a pro ID or null, and nothing else", () => {
+  assert.equal(preferredProInput.safeParse({ proId: "6f1c3d2e-8a4b-4c5d-9e6f-1a2b3c4d5e6f" }).success, true);
+  assert.equal(preferredProInput.safeParse({ proId: null }).success, true, "null clears it");
+  assert.equal(preferredProInput.safeParse({ proId: "Ray" }).success, false, "must be an ID");
+  assert.equal(preferredProInput.safeParse({}).success, false);
+  assert.equal(preferredProInput.safeParse({ proId: null, clientId: "6f1c3d2e-8a4b-4c5d-9e6f-1a2b3c4d5e6f" }).success, false, "can't set it for someone else");
 });

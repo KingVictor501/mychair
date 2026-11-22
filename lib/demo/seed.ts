@@ -162,6 +162,14 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
 
   // Each pro has two clients of their own (6 clients, 3 pros).
   const regulars = pros.map((_, i) => [clientRows[(i * 2) % clientRows.length]!, clientRows[(i * 2 + 1) % clientRows.length]!]);
+  // Each client's preferred pro is the pro they book with, except the last client in each shop,
+  // who hasn't picked one (so the demo shows both cases).
+  for (const [i, pair] of regulars.entries()) {
+    for (const client of pair) {
+      if (client.id === clientRows[clientRows.length - 1]!.id) continue;
+      await db.update(clientProfiles).set({ preferredProId: pros[i]!.id }).where(eq(clientProfiles.userId, client.id));
+    }
+  }
 
   // Appointments: about three months back to 5 days ahead, in the shop's local time.
   const rows: AppointmentRow[] = [];

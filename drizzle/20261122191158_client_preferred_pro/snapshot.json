@@ -1,0 +1,90 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "9c1e91c1-6794-4894-876f-cfadd19c96fa",
+  "prevIds": [
+    "bc5e34bd-66d1-458c-a4e8-eaadabd0ba15"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "client_profiles",
+        "preferred_pro_id"
+      ],
+      "writes": [
+        "s|col|public.client_profiles.preferred_pro_id",
+        "n|col|public.client_profiles.preferred_pro_id",
+        "e|col|public.client_profiles.preferred_pro_id"
+      ],
+      "reads": [
+        "n|tbl|public.client_profiles",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "client_profiles"
+      ],
+      "writes": [
+        "s|fk|public.client_profiles.client_profiles_preferred_pro_id_users_id_fkey",
+        "n|fk|public.client_profiles.client_profiles_preferred_pro_id_users_id_fkey",
+        "e|fk|public.client_profiles.client_profiles_preferred_pro_id_users_id_fkey",
+        "n|con|public.client_profiles.client_profiles_preferred_pro_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.client_profiles",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.client_profiles.preferred_pro_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "client_profiles",
+        "name": "preferred_pro_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "client_profiles",
+        "name": "client_profiles_preferred_pro_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "preferred_pro_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    }
+  ]
+}

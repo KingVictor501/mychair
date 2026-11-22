@@ -188,6 +188,10 @@ export const clientProfiles = pgTable("client_profiles", {
     .references(() => users.id, { onDelete: "cascade" }),
   // No-show strikes at this shop. They never block booking.
   noShowCount: integer("no_show_count").notNull().default(0),
+  // The client's preferred pro (they pick it themselves), or null. A client is listed under a
+  // pro's "Your clients" only when that pro is their preferred pro. If the pro's account is
+  // removed, this goes back to null.
+  preferredProId: uuid("preferred_pro_id").references(() => users.id, { onDelete: "set null" }),
 });
 
 // The shop's service list and standard prices.

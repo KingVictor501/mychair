@@ -1,7 +1,7 @@
 // app/pro/clients/page.tsx
 // WHAT IT'S FOR: the pro's clients page, at /pro/clients: Client search (by full phone number, to
-// find and book a client who calls in) and the pro's own clients: first name, phone, visits, last
-// visit and no-show strikes. Only clients this pro has an appointment or style card with. Never email.
+// find and book a client who calls in) and "Your clients": first name, phone, visits, last visit
+// and no-show strikes, only for clients who picked this pro as their preferred pro. Never email.
 // WHO USES IT: pros.
 // WHY THE NAME: folder path = URL (/pro/clients).
 
@@ -31,7 +31,7 @@ export default async function MyClientsPage() {
       <ClientSearch mode="phone" />
       <h2>Your clients</h2>
       {clients.length === 0 ? (
-        <p className="rounded-lg border border-border bg-surface p-3">No clients yet. Clients appear here after they book with you.</p>
+        <p className="rounded-lg border border-border bg-surface p-3">No clients yet. Clients appear here when they pick you as their preferred pro.</p>
       ) : (
         <ul className="!list-none !p-0 grid gap-2 sm:grid-cols-2">
           {clients.map((c) => (
