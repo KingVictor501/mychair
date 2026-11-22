@@ -16,6 +16,7 @@ import type { CurrentUser } from "../types";
 import { normalizePhone, parseIdentifier } from "./identifier";
 import { hashPassword, verifyPassword } from "./password";
 import { canEnterDemo, canUseAdmin, canViewAs } from "./access-rules";
+import { superAdminSettings } from "./super-admin";
 import { assertShopAccess, canAccessShop, canSeeClient, requireRole, requireUser } from "./permissions";
 import { createSessionToken, readSessionToken } from "./session";
 
@@ -173,4 +174,12 @@ test("a view-as session token keeps the Super Admin's ID", async () => {
   assert.equal(claims?.userId, "u-owner");
   const normal = await readSessionToken(await createSessionToken({ userId: "u1", role: "pro", shopId: "s1", demo: false }));
   assert.equal(normal?.actorId, undefined, "normal sessions have no actor");
+});
+
+test("the Super Admin settings need a real email and a password of 12 or more characters", () => {
+  const ok = superAdminSettings({ SUPER_ADMIN_EMAIL: " Me@Example.com ", SUPER_ADMIN_PASSWORD: "a-long-password-1" });
+  assert.deepEqual(ok, { ok: true, settings: { email: "me@example.com", password: "a-long-password-1", name: "Admin" } });
+  assert.equal(superAdminSettings({ SUPER_ADMIN_EMAIL: "", SUPER_ADMIN_PASSWORD: "a-long-password-1" }).ok, false);
+  assert.equal(superAdminSettings({ SUPER_ADMIN_EMAIL: "not-an-email", SUPER_ADMIN_PASSWORD: "a-long-password-1" }).ok, false);
+  assert.equal(superAdminSettings({ SUPER_ADMIN_EMAIL: "me@example.com", SUPER_ADMIN_PASSWORD: "short" }).ok, false, "too short");
 });
