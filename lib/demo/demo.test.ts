@@ -7,7 +7,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEMO_SHOPS, DEMO_SUPER_ADMIN } from "./catalog";
+import { DEMO_SHOPS, DEMO_SUPER_ADMIN, demoDropInClients } from "./catalog";
 import { demoId } from "./seed";
 import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
@@ -24,7 +24,7 @@ test("three demo shops, each with 1 owner, 3 pros and a priced service list", ()
 });
 
 test("every demo contact is fictional and unique", () => {
-  const people = DEMO_SHOPS.flatMap((s) => [s.owner, ...s.pros, ...s.clients]);
+  const people = DEMO_SHOPS.flatMap((s) => [s.owner, ...s.pros, ...s.clients, ...demoDropInClients(s)]);
   for (const p of people) {
     assert.match(p.email, /@example\.com$/, p.email);
     assert.match(p.phone, /^\+1\d{3}55501\d{2}$/, p.phone);
@@ -50,9 +50,18 @@ test("dates, weekdays and minutes are calculated correctly", () => {
 });
 
 test("demo IDs are fixed per person and shop, unique, and valid UUIDs", () => {
-  const keys = [DEMO_SUPER_ADMIN.email, ...DEMO_SHOPS.flatMap((s) => [s.slug, s.owner.email, ...s.pros.map((p) => p.email), ...s.clients.map((c) => c.email)])];
+  const keys = [DEMO_SUPER_ADMIN.email, ...DEMO_SHOPS.flatMap((s) => [s.slug, s.owner.email, ...s.pros.map((p) => p.email), ...s.clients.map((c) => c.email), ...demoDropInClients(s).map((c) => c.email)])];
   const ids = keys.map(demoId);
   assert.deepEqual(keys.map(demoId), ids, "same input, same ID every time");
   assert.equal(new Set(ids).size, ids.length, "no two demo records share an ID");
   for (const id of ids) assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+});
+
+test("each shop gets 320 drop-in clients that never reuse a regular's first name", () => {
+  for (const shop of DEMO_SHOPS) {
+    const dropIns = demoDropInClients(shop);
+    assert.equal(dropIns.length, 320, shop.name);
+    const regulars = new Set(shop.clients.map((c) => c.name));
+    assert.ok(dropIns.every((c) => !regulars.has(c.name)), "so searching a regular's name finds just them");
+  }
 });

@@ -1,8 +1,9 @@
 // lib/demo/seed.ts
 // WHAT IT'S FOR: adding and removing the demo shops.
 //   seedDemo   creates the three demo shops from lib/demo/catalog.ts, with their owners, pros,
-//              clients, services and prices, hours, about three months of past appointments and
-//              five days of upcoming ones, and style cards. Skips if demo data already exists,
+//              clients (six regulars plus 320 drop-ins per shop), services and prices, hours,
+//              about three months of past visits and five days of upcoming ones (one appointment
+//              per visit, 1 to 3 services), and style cards. Skips if demo data already exists,
 //              so running it twice never makes duplicates.
 //   removeDemo deletes every demo shop (everything under a shop goes with it, because of the
 //              "onDelete: cascade" links in the schema), their photo files in storage, and the
@@ -14,11 +15,12 @@
 // WHO USES IT: scripts/demo-seed.ts, scripts/demo-remove.ts and the Super Admin "Reset demo" route.
 // WHY THE NAME: "seed" = put starting data into the database; ".ts" = no screen code.
 
-import { createHash } from "node:crypto";
-import { count, eq } from "drizzle-orm";
+import { createHash, randomUUID } from "node:crypto";
+import { count, eq, sql } from "drizzle-orm";
 import { hashPassword } from "../auth/password";
 import { getDb } from "../db/client";
 import {
+  appointmentServices,
   appointments,
   availabilityRules,
   clientProfiles,
@@ -31,7 +33,7 @@ import {
   users,
 } from "../db/schema";
 import { deleteBlobs } from "../photos/data";
-import { DEMO_SHOPS, DEMO_SUPER_ADMIN, type DemoShop } from "./catalog";
+import { DEMO_SHOPS, DEMO_SUPER_ADMIN, demoDropInClients, type DemoShop } from "./catalog";
 import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
 type Db = ReturnType<typeof getDb>;
@@ -153,70 +155,90 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
     pros.push({ id: proRow.id, custom });
   }
 
-  // Clients. Each client has a client profile (for no-show strikes).
-  const clientRows = await db
-    .insert(users)
-    .values(shop.clients.map((c) => ({ id: demoId(c.email), shopId, role: "client", name: c.name, email: c.email, phone: c.phone, passwordHash, isDemo: true })))
-    .returning({ id: users.id });
-  await db.insert(clientProfiles).values(clientRows.map((c) => ({ userId: c.id })));
-
-  // Each pro has two clients of their own (6 clients, 3 pros).
-  const regulars = pros.map((_, i) => [clientRows[(i * 2) % clientRows.length]!, clientRows[(i * 2 + 1) % clientRows.length]!]);
-  // Each client's preferred pro is the pro they book with, so every pro has two clients under
-  // "Your clients".
-  for (const [i, pair] of regulars.entries()) {
-    for (const client of pair) {
-      await db.update(clientProfiles).set({ preferredProId: pros[i]!.id }).where(eq(clientProfiles.userId, client.id));
-    }
+  // Clients: the catalog's six regulars (two per pro; they pick that pro as preferred, so each
+  // pro has two clients under "Your clients"), plus drop-in clients so the shop has a realistic
+  // client list. Each client has a client profile (no-show strikes and preferred pro).
+  const regularCount = shop.clients.length;
+  const allClients = [...shop.clients, ...demoDropInClients(shop)].map((c) => ({ ...c, id: demoId(c.email) }));
+  for (let i = 0; i < allClients.length; i += 200) {
+    await db.insert(users).values(allClients.slice(i, i + 200).map((c) => ({ id: c.id, shopId, role: "client", name: c.name, email: c.email, phone: c.phone, passwordHash, isDemo: true })));
   }
+  // Each client's "home" pro: regulars two per pro in order (Chris and Tyler with the first pro,
+  // and so on); drop-ins spread evenly across the pros.
+  const homePro = (i: number) => (i < regularCount ? Math.floor(i / 2) % pros.length : (i - regularCount) % pros.length);
+  const profiles = allClients.map((c, i) => ({ userId: c.id, preferredProId: i < regularCount ? pros[homePro(i)]!.id : null }));
+  for (let i = 0; i < profiles.length; i += 200) await db.insert(clientProfiles).values(profiles.slice(i, i + 200));
+  const regulars = pros.map((_, p) => allClients.filter((_, i) => i < regularCount && homePro(i) === p));
 
-  // Appointments: about three months back to 5 days ahead, in the shop's local time.
+  // Appointments: about three months back to 5 days ahead, in the shop's local time. Each client
+  // comes back every so often (regulars every 1 to 2 weeks, drop-ins every 2 to 5 weeks), and each
+  // visit is ONE appointment with 1 to 3 different services, mostly with their own pro.
   const rows: AppointmentRow[] = [];
+  const lines: Array<typeof appointmentServices.$inferInsert> = [];
   const today = localDateParts(now, shop.timezone);
   const open = timeToMinutes(shop.hours.start);
   const close = timeToMinutes(shop.hours.end);
   const breakStart = timeToMinutes(shop.hours.breakStart);
   const breakEnd = timeToMinutes(shop.hours.breakEnd);
+  // Booked minutes per pro per day ("proIndex|dayOffset"), so visits never overlap.
+  const booked = new Map<string, Array<[number, number]>>();
+  const fits = (key: string, start: number, length: number) => {
+    const end = start + length;
+    if (start < open || end > close || (start < breakEnd && end > breakStart)) return false;
+    return !(booked.get(key) ?? []).some(([s, e]) => start < e && end > s);
+  };
 
-  for (let offset = -HISTORY_DAYS; offset <= 5; offset++) {
-    const day = addDays(today, offset);
-    if (!shop.openDays.includes(day.weekday)) continue;
-    pros.forEach((pro, p) => {
-      let cursor = open;
-      while (true) {
-        if (cursor >= breakStart && cursor < breakEnd) cursor = breakEnd;
-        // Leave gaps so the schedule isn't packed.
-        if (rand() < 0.35) {
-          cursor += 15 + Math.floor(rand() * 2) * 15;
-          continue;
-        }
-        const service = serviceRows[Math.floor(rand() * serviceRows.length)]!;
-        const end = cursor + service.durationMin;
-        if (end > close) break;
-        if (cursor < breakStart && end > breakStart) {
-          cursor = breakEnd;
-          continue;
-        }
-        const startsAt = zonedToUtc(day, minutesToTime(cursor), shop.timezone);
-        const endsAt = zonedToUtc(day, minutesToTime(end), shop.timezone);
-        // Clients only book with their own pro, so each pro's client list is truly their own
-        // (and the demo shows that one pro never sees another pro's clients).
-        const client = regulars[p]![Math.floor(rand() * 2)]!;
-        const price = pro.custom[service.name] ?? service.priceCents;
-        rows.push(makeAppointment({ shopId, proId: pro.id, clientId: client.id, serviceId: service.id, startsAt, endsAt, priceCents: price }, now, rand));
-        cursor = end + (rand() < 0.5 ? 0 : 15);
+  allClients.forEach((client, i) => {
+    const cadence = i < regularCount ? 7 + Math.floor(rand() * 8) : 14 + Math.floor(rand() * 22);
+    for (let offset = -HISTORY_DAYS + Math.floor(rand() * cadence); offset <= 5; offset += cadence + Math.floor(rand() * 7) - 3) {
+      // If the shop is closed that day, come the next open day instead.
+      let o = offset;
+      let day = addDays(today, o);
+      for (let tries = 0; tries < 3 && !shop.openDays.includes(day.weekday); tries++) day = addDays(today, ++o);
+      if (!shop.openDays.includes(day.weekday) || o > 5) continue;
+      // Usually their own pro; now and then someone else in the shop.
+      const p = rand() < 0.9 ? homePro(i) : Math.floor(rand() * pros.length);
+      const pro = pros[p]!;
+      // One service most visits, sometimes two or three, never the same one twice.
+      const howMany = rand() < 0.65 ? 1 : rand() < 0.8 ? 2 : 3;
+      const pool = [...serviceRows];
+      const picked = Array.from({ length: howMany }, () => pool.splice(Math.floor(rand() * pool.length), 1)[0]!);
+      const length = picked.reduce((sum, sv) => sum + sv.durationMin, 0);
+      // Find a free start time on the 15-minute grid; if the day is full, skip this visit.
+      const key = `${p}|${o}`;
+      let start: number | null = null;
+      for (let t = 0; t < 25 && start === null; t++) {
+        const candidate = open + Math.floor(rand() * ((close - open) / 15)) * 15;
+        if (fits(key, candidate, length)) start = candidate;
       }
-    });
-  }
+      if (start === null) continue;
+      booked.set(key, [...(booked.get(key) ?? []), [start, start + length]]);
+      const prices = picked.map((sv) => pro.custom[sv.name] ?? sv.priceCents);
+      const id = randomUUID();
+      const base = {
+        shopId,
+        proId: pro.id,
+        clientId: client.id,
+        serviceId: picked[0]!.id,
+        startsAt: zonedToUtc(day, minutesToTime(start), shop.timezone),
+        endsAt: zonedToUtc(day, minutesToTime(start + length), shop.timezone),
+        priceCents: prices.reduce((sum, c) => sum + c, 0),
+      };
+      rows.push({ ...makeAppointment(base, now, rand), id });
+      // An appointment with more than one service lists each one, with its own price and length.
+      if (picked.length > 1) picked.forEach((sv, k) => lines.push({ appointmentId: id, position: k + 1, serviceId: sv.id, priceCents: prices[k]!, durationMin: sv.durationMin }));
+    }
+  });
 
   // Insert in batches to keep each request small.
   for (let i = 0; i < rows.length; i += 200) await db.insert(appointments).values(rows.slice(i, i + 200));
+  // Service lines after their appointments (each line points at one).
+  for (let i = 0; i < lines.length; i += 500) await db.insert(appointmentServices).values(lines.slice(i, i + 500));
 
-  // No-show strikes match the no-show appointments.
-  for (const client of clientRows) {
-    const strikes = rows.filter((r) => r.clientId === client.id && r.status === "no_show").length;
-    if (strikes > 0) await db.update(clientProfiles).set({ noShowCount: strikes }).where(eq(clientProfiles.userId, client.id));
-  }
+  // No-show strikes match the no-show appointments: one database statement for the whole shop.
+  await db.execute(
+    sql`update ${clientProfiles} set no_show_count = s.n from (select client_id, count(*)::int as n from ${appointments} where shop_id = ${shopId} and status = 'no_show' group by client_id) s where ${clientProfiles.userId} = s.client_id`,
+  );
 
   // Style cards for each pro's regulars: preferences, notes, usual service and time estimate.
   const cards = pros.flatMap((pro, p) =>

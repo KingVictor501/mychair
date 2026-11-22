@@ -25,6 +25,9 @@ export type DemoShop = {
   owner: { name: string; email: string; phone: string };
   pros: DemoPro[];
   clients: Array<{ name: string; phone: string; email: string }>;
+  // Area codes for the drop-in clients (demoDropInClients). Each gives 80 numbers, 555-0120 to
+  // 555-0199, all inside the range reserved for fiction.
+  dropInAreaCodes: string[];
   services: DemoService[];
   // Open days (0 = Sunday) and hours in local time, plus a short break.
   openDays: number[];
@@ -41,6 +44,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     name: "Fade Factory",
     businessType: "barbershop",
     timezone: "America/New_York",
+    dropInAreaCodes: ["212", "646", "718", "917"],
     owner: { name: "Ben", email: "ben.fadefactory@example.com", phone: "+12125550101" },
     pros: [
       {
@@ -81,6 +85,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     name: "Gloss & Tips",
     businessType: "nail_salon",
     timezone: "America/New_York",
+    dropInAreaCodes: ["305", "786", "954", "561"],
     owner: { name: "Paula", email: "paula.glossandtips@example.com", phone: "+13055550101" },
     pros: [
       {
@@ -122,6 +127,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     name: "Flutter Lash Lounge",
     businessType: "lash_studio",
     timezone: "America/New_York",
+    dropInAreaCodes: ["415", "628", "510", "650"],
     owner: { name: "Lana", email: "lana.flutter@example.com", phone: "+14155550101" },
     pros: [
       {
@@ -159,3 +165,31 @@ export const DEMO_SHOPS: DemoShop[] = [
     ],
   },
 ];
+
+// First names for the drop-in clients. Made up and shown by first name only, like everyone else.
+export const DROP_IN_NAMES = [
+  "Aaron", "Abby", "Adrian", "Alexis", "Amara", "Ben", "Blake", "Brooke", "Caleb", "Carmen",
+  "Cora", "Dante", "Devon", "Eli", "Elena", "Emma", "Felix", "Gabe", "Gia", "Hector",
+  "Iris", "Isaac", "Ivy", "Jada", "Jalen", "Jasmine", "Jonah", "Jordan", "Kai", "Kayla",
+  "Kendall", "Leah", "Liam", "Luca", "Maya", "Miles", "Mina", "Naomi", "Nate", "Nia",
+  "Noah", "Olivia", "Omar", "Paige", "Quinn", "Reese", "Riley", "Rosa", "Sam", "Sienna",
+  "Simone", "Theo", "Tori", "Uma", "Vince", "Wes", "Xavier", "Yara", "Zane", "Zoe",
+];
+
+// The drop-in clients for a shop: people who book now and then, so the shop has a realistic
+// client list (the six catalog clients are the pros' regulars). Same rules as every demo
+// contact: first name only, an @example.com email, and a 555-01xx phone number.
+export function demoDropInClients(shop: DemoShop): Array<{ name: string; phone: string; email: string }> {
+  const regularNames = new Set(shop.clients.map((c) => c.name));
+  const names = DROP_IN_NAMES.filter((n) => !regularNames.has(n));
+  const compact = shop.slug.replace(/-/g, "");
+  const out: Array<{ name: string; phone: string; email: string }> = [];
+  for (const code of shop.dropInAreaCodes) {
+    for (let n = 20; n <= 99; n++) {
+      const i = out.length;
+      const name = names[i % names.length]!;
+      out.push({ name, phone: `+1${code}55501${n}`, email: `${name.toLowerCase()}.${i + 1}.${compact}@example.com` });
+    }
+  }
+  return out;
+}
