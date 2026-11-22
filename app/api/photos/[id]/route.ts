@@ -1,7 +1,7 @@
 // app/api/photos/[id]/route.ts
 // WHAT IT'S FOR: one style-card photo.
 //   GET    /api/photos/<id>  shows the image to the card's pro, an owner of that shop, the Super
-//                            Admin, or another pro on a day the client is booked with them.
+//                            Admin, or another pro who also has that client.
 //                            Photos are in private storage, so this route is the only way to see one.
 //   DELETE /api/photos/<id>  removes it (the card's pro, an owner of that shop, or the Super Admin).
 // Anyone else, or a made-up ID, gets 404.

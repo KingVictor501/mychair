@@ -1,12 +1,14 @@
 // app/pro/clients/page.tsx
-// WHAT IT'S FOR: the pro's own clients, at /pro/clients: first name, phone, visits, last visit
-// and no-show strikes. Only clients this pro has an appointment or style card with. Never email.
+// WHAT IT'S FOR: the pro's clients page, at /pro/clients: Client search (by full phone number, to
+// find and book a client who calls in) and the pro's own clients: first name, phone, visits, last
+// visit and no-show strikes. Only clients this pro has an appointment or style card with. Never email.
 // WHO USES IT: pros.
 // WHY THE NAME: folder path = URL (/pro/clients).
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import ClientSearch from "@/components/ClientSearch";
 import { HOME_FOR_ROLE } from "@/components/LoginForm";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop } from "@/lib/booking/data";
@@ -26,6 +28,8 @@ export default async function MyClientsPage() {
     <main className="!max-w-3xl">
       <Link href="/pro">← My schedule</Link>
       <h1 className="!mt-2">My clients</h1>
+      <ClientSearch mode="phone" />
+      <h2>Your clients</h2>
       {clients.length === 0 ? (
         <p className="rounded-lg border border-border bg-surface p-3">No clients yet. Clients appear here after they book with you.</p>
       ) : (

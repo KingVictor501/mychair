@@ -55,7 +55,10 @@ export default async function ProHome({ searchParams }: { searchParams: Promise<
     <main className="!max-w-3xl">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="!mb-1">Hi, {pro.name}</h1>
-        <Link href="/pro/clients">My clients</Link>
+        <span className="flex gap-4">
+          <Link href="/pro/clients">My clients</Link>
+          <Link href="/pro/settings">Settings</Link>
+        </span>
       </div>
       <p className="!mt-0">
         {pro.title} at {shop.name}

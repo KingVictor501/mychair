@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "bc5e34bd-66d1-458c-a4e8-eaadabd0ba15",
+  "prevIds": [
+    "849280af-65c8-4351-8617-1ff2644fb3ab"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "pro_profiles",
+        "allow_others_to_book"
+      ],
+      "writes": [
+        "s|col|public.pro_profiles.allow_others_to_book",
+        "n|col|public.pro_profiles.allow_others_to_book",
+        "e|col|public.pro_profiles.allow_others_to_book"
+      ],
+      "reads": [
+        "n|tbl|public.pro_profiles",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "pro_profiles",
+        "name": "allow_others_to_book",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

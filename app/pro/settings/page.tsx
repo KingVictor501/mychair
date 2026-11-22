@@ -1,0 +1,31 @@
+// app/pro/settings/page.tsx
+// WHAT IT'S FOR: the pro's settings, at /pro/settings: on/off toggles for the pro's own choices.
+// For now: "Let other pros book for me".
+// WHO USES IT: pros.
+// WHY THE NAME: folder path = URL (/pro/settings).
+
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { HOME_FOR_ROLE } from "@/components/LoginForm";
+import ProSettingsToggles from "@/components/ProSettingsToggles";
+import { getCurrentUser } from "@/lib/auth/current-user";
+import { getPro } from "@/lib/booking/data";
+
+export const metadata: Metadata = { title: "Settings · MyChair" };
+
+export default async function ProSettingsPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  if (user.role !== "pro") redirect(HOME_FOR_ROLE[user.role]);
+  const pro = await getPro(user.id);
+  if (!pro) redirect("/login");
+
+  return (
+    <main className="!max-w-3xl">
+      <Link href="/pro">← My schedule</Link>
+      <h1 className="!mt-2">Settings</h1>
+      <ProSettingsToggles initial={{ allowOthersToBook: pro.allowOthersToBook }} />
+    </main>
+  );
+}

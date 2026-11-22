@@ -4,7 +4,7 @@
 //   uploadPhoto      a pro adds a photo to their card for one of their own clients
 //   listPhotos       the photos on a card (IDs and captions only; never a storage address)
 //   readPhotoFor     the image itself, for the card's pro, an owner of that shop, the Super Admin,
-//                    or another pro on a day the client is booked with them
+//                    or another pro who also has that client
 //   deletePhoto      removes the file from storage and its row
 //   deleteBlobs      removes stored files by address (used when demo data is removed)
 // The storage is PRIVATE: files can't be opened by URL. They're only served by /api/photos/<id>
@@ -22,7 +22,7 @@ import { ApiError } from "../api-error";
 import { getDb } from "../db/client";
 import { styleCardPhotos, styleCards } from "../db/schema";
 import type { ShopRow } from "../booking/data";
-import { bookedWithToday, isMyClient } from "../pro/data";
+import { isMyClient } from "../pro/data";
 import { canViewCard } from "../pro/lifecycle";
 import type { CurrentUser } from "../types";
 import { checkPhoto } from "./validate";
@@ -104,12 +104,13 @@ export async function findPhoto(photoId: string) {
 }
 
 // Reads the image for an allowed viewer: the same people who may view the card
-// (lib/pro/lifecycle.ts canViewCard), including another pro on a day the client is booked with
-// them. Not found and not allowed look the same (404).
+// (lib/pro/lifecycle.ts canViewCard), including another pro who also has that client, at any
+// time. Not found and not allowed look the same (404).
 export async function readPhotoFor(user: CurrentUser, photoId: string, shop: ShopRow): Promise<{ stream: ReadableStream<Uint8Array>; contentType: string }> {
   const photo = await findPhoto(photoId);
-  const bookedToday = Boolean(photo && user.role === "pro" && user.id !== photo.proId && (await bookedWithToday(user.id, photo.clientId, shop)));
-  if (!photo || !canViewCard(user, photo, bookedToday)) throw new ApiError(404, "NOT_FOUND", "Not found.");
+  // A different pro may see it if the client is also one of their clients.
+  const viewerHasClient = Boolean(photo && user.role === "pro" && user.id !== photo.proId && (await isMyClient(user.id, photo.clientId)));
+  if (!photo || !canViewCard(user, photo, viewerHasClient)) throw new ApiError(404, "NOT_FOUND", "Not found.");
   requireStorage();
   const result = await get(photo.pathname, { access: "private" });
   if (!result || result.statusCode !== 200 || !result.stream) throw new ApiError(404, "NOT_FOUND", "Not found.");

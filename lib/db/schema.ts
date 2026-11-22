@@ -170,6 +170,9 @@ export const proProfiles = pgTable(
     // standard (the shop's price list) or custom (prices set per service in pro_services).
     priceMode: text("price_mode").notNull().default("standard"),
     bio: text("bio"),
+    // Pro setting: true lets other pros in the shop book clients onto this pro's calendar
+    // (for clients who call in). Off until the pro turns it on.
+    allowOthersToBook: boolean("allow_others_to_book").notNull().default(false),
   },
   (t) => [
     check("pro_profiles_live_status_check", sql`${t.liveStatus} in ('available', 'with_client', 'unavailable')`),

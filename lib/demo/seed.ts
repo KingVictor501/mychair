@@ -126,7 +126,7 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
 
   // Pros, their profiles, the services they offer (custom prices where set) and their hours.
   const pros: Array<{ id: string; custom: Record<string, number> }> = [];
-  for (const pro of shop.pros) {
+  for (const [index, pro] of shop.pros.entries()) {
     const [proRow] = await db
       .insert(users)
       .values({ id: demoId(pro.email), shopId, role: "pro", name: pro.name, email: pro.email, phone: pro.phone, passwordHash, isDemo: true })
@@ -141,6 +141,8 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
       payAmount: pro.payAmount,
       priceMode: Object.keys(custom).length > 0 ? "custom" : "standard",
       bio: pro.bio,
+      // The first two pros in each shop let others book for them, so the demo shows both cases.
+      allowOthersToBook: index < 2,
     });
     await db.insert(proServices).values(serviceRows.map((s) => ({ proId: proRow.id, serviceId: s.id, customPriceCents: custom[s.name] ?? null })));
     const weekly = shop.openDays.flatMap((weekday) => [

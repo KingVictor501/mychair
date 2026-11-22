@@ -2,13 +2,14 @@
 // WHAT IT'S FOR: the database side of the pro view.
 //   listSchedule          a pro's appointments for one day or a week, with client first name
 //   setLiveStatus         Available / With a client / Unavailable
+//   setProSettings        the pro's own toggles (for now: "Let other pros book for me")
 //   changeAppointmentStatus  move an appointment along (lib/pro/lifecycle.ts decides what's allowed)
 //   listMyClients         the pro's OWN clients only: people they have an appointment or style card with
 //   getClientForPro       one of those clients: name, phone, style card and visit history with this
-//                         pro, plus other pros' cards (read-only) on a day the client is booked with them
+//                         pro, plus other pros' cards for that client (read-only), at any time
 //   saveStyleCard         create or update this pro's card for this client
-// PRIVACY: a pro gets a client's name, phone and style card only. Never email, never another
-// pro's clients or cards. Every function here is scoped by the pro's own ID.
+// PRIVACY: a pro gets a client's name, phone and style cards only. Never email, never another
+// pro's clients. Every function here is scoped by the pro's own ID.
 // WHO USES IT: app/api/pro/*, app/api/appointments/[id]/status and the /pro pages.
 // WHY THE NAME: pro data; ".ts" = no screen code.
 
@@ -39,10 +40,8 @@ export type MyClient = { id: string; name: string; phone: string | null; visits:
 export type ClientDetail = {
   client: { id: string; name: string; phone: string | null; noShows: number };
   card: { preferences: Record<string, string>; notes: string; usualServiceId: string | null; timeEstimateMin: number | null; updatedAt: string; photos: PhotoSummary[] } | null;
-  // Other pros' cards for this client: shown read-only, and only on a day the client is booked
-  // with this pro (empty otherwise).
+  // Other pros' cards for this client, shown read-only. Always included.
   otherCards: Array<{ proName: string; preferences: Record<string, string>; notes: string; usualServiceName: string | null; timeEstimateMin: number | null; updatedAt: string; photos: PhotoSummary[] }>;
-  bookedToday: boolean;
   visits: Array<{ id: string; startsAt: string; serviceName: string; priceCents: number; status: string }>;
   services: Array<{ id: string; name: string; durationMin: number }>;
 };
@@ -142,6 +141,11 @@ export async function listMyClients(proId: string): Promise<MyClient[]> {
   });
 }
 
+// Saves the pro's own settings.
+export async function setProSettings(proId: string, settings: { allowOthersToBook: boolean }): Promise<void> {
+  await getDb().update(proProfiles).set({ allowOthersToBook: settings.allowOthersToBook }).where(eq(proProfiles.userId, proId));
+}
+
 // True if this client is one of this pro's clients.
 export async function isMyClient(proId: string, clientId: string): Promise<boolean> {
   const [row] = await getDb()
@@ -153,19 +157,8 @@ export async function isMyClient(proId: string, clientId: string): Promise<boole
   return Boolean(card);
 }
 
-// One of the pro's clients, with this pro's style card and visit history. 404 if not theirs.
-// True if the client has an appointment with this pro today (shop time) that wasn't cancelled.
-export async function bookedWithToday(proId: string, clientId: string, shop: ShopRow, now: Date = new Date()): Promise<boolean> {
-  const today = localDateParts(now, shop.timezone);
-  const from = zonedToUtc(today, "00:00", shop.timezone);
-  const to = zonedToUtc(addDays(today, 1), "00:00", shop.timezone);
-  const [row] = await getDb()
-    .select({ n: count() })
-    .from(appointments)
-    .where(and(eq(appointments.proId, proId), eq(appointments.clientId, clientId), gte(appointments.startsAt, from), lt(appointments.startsAt, to), ne(appointments.status, "cancelled")));
-  return Number(row?.n ?? 0) > 0;
-}
-
+// One of the pro's clients: name, phone, this pro's style card, every other pro's card for the
+// client (read-only) and visit history with this pro. 404 if not their client.
 export async function getClientForPro(proId: string, shop: ShopRow, clientId: string): Promise<ClientDetail> {
   const db = getDb();
   const shopId = shop.id;
@@ -185,16 +178,13 @@ export async function getClientForPro(proId: string, shop: ShopRow, clientId: st
     .orderBy(desc(appointments.startsAt))
     .limit(500);
 
-  // Other pros' cards for this client, only when the client is booked with this pro today.
-  const bookedToday = await bookedWithToday(proId, clientId, shop);
-  const otherRows = bookedToday
-    ? await db
-        .select({ id: styleCards.id, proName: users.name, preferences: styleCards.preferences, notes: styleCards.notes, usualServiceName: services.name, timeEstimateMin: styleCards.timeEstimateMin, updatedAt: styleCards.updatedAt })
-        .from(styleCards)
-        .innerJoin(users, eq(users.id, styleCards.proId))
-        .leftJoin(services, eq(services.id, styleCards.usualServiceId))
-        .where(and(eq(styleCards.clientId, clientId), eq(styleCards.shopId, shopId), ne(styleCards.proId, proId)))
-    : [];
+  // Other pros' cards for this client in this shop, read-only, at any time.
+  const otherRows = await db
+    .select({ id: styleCards.id, proName: users.name, preferences: styleCards.preferences, notes: styleCards.notes, usualServiceName: services.name, timeEstimateMin: styleCards.timeEstimateMin, updatedAt: styleCards.updatedAt })
+    .from(styleCards)
+    .innerJoin(users, eq(users.id, styleCards.proId))
+    .leftJoin(services, eq(services.id, styleCards.usualServiceId))
+    .where(and(eq(styleCards.clientId, clientId), eq(styleCards.shopId, shopId), ne(styleCards.proId, proId)));
   const otherCards = await Promise.all(
     otherRows.map(async (c) => ({
       proName: c.proName,
@@ -213,7 +203,6 @@ export async function getClientForPro(proId: string, shop: ShopRow, clientId: st
       ? { preferences: card.preferences ?? {}, notes: card.notes ?? "", usualServiceId: card.usualServiceId, timeEstimateMin: card.timeEstimateMin, updatedAt: card.updatedAt.toISOString(), photos: await listPhotos(card.id) }
       : null,
     otherCards,
-    bookedToday,
     visits: visits.map((v) => ({ ...v, startsAt: v.startsAt.toISOString() })),
     services: offered,
   };

@@ -1,7 +1,7 @@
 // app/pro/clients/[clientId]/page.tsx
 // WHAT IT'S FOR: one of the pro's clients, at /pro/clients/<id>: first name, phone, no-show
-// strikes, the style card editor, other pros' cards (read-only, only on a day the client is
-// booked with this pro), and visit history with this pro grouped by month. Another pro's client (or a
+// strikes, the style card editor, other pros' cards for the client (read-only, at any time),
+// and visit history with this pro grouped by month. Another pro's client (or a
 // made-up ID) shows the "not found" page.
 // WHO USES IT: pros.
 // WHY THE NAME: "[clientId]" is the client's ID from the URL.
@@ -53,7 +53,7 @@ export default async function ClientPage({ params }: { params: Promise<{ clientI
         <section aria-label="Style cards from other pros" className="mt-6">
           <h2>From other pros</h2>
           <p className="!mt-0 text-sm">
-            {client.name} is booked with you today, so you can see these cards today. They&apos;re read-only.
+            Other pros&apos; cards for {client.name}. They&apos;re read-only.
           </p>
           <div className="grid gap-3">
             {otherCards.map((c) => (

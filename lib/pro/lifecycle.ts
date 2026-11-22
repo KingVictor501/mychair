@@ -48,17 +48,27 @@ export function canManageAppointment(user: CurrentUser, appointment: { proId: st
   return false;
 }
 
+// True if a pro may book a client onto "target" pro's calendar: always for themselves; for
+// another pro only in the same shop, and only if that pro turned on "Let other pros book for me".
+export function canBookFor(booker: CurrentUser, target: { id: string; shopId: string | null; allowOthersToBook: boolean }): boolean {
+  if (booker.role !== "pro" || !booker.shopId || booker.shopId !== target.shopId) return false;
+  return booker.id === target.id || target.allowOthersToBook;
+}
+
+// What the pro settings form may send.
+export const proSettingsInput = z.object({ allowOthersToBook: z.boolean() }).strict();
+
 // True if this user may VIEW a style card (and its photos):
 //   - the Super Admin, or an owner of that shop: every card,
 //   - the pro who owns the card,
-//   - another pro in the same shop, but only on a day the client is booked with them
-//     ("bookedWithViewerToday"), so they can see how the client likes it before they sit down.
+//   - another pro in the same shop, at any time, if the client is also their client
+//     ("viewerHasClient"), so they can see how the client likes it before they sit down.
 // Editing stays with the card's own pro.
-export function canViewCard(user: CurrentUser, card: { proId: string; shopId: string }, bookedWithViewerToday: boolean): boolean {
+export function canViewCard(user: CurrentUser, card: { proId: string; shopId: string }, viewerHasClient: boolean): boolean {
   if (user.role === "super_admin") return true;
   if (user.role === "owner") return user.shopId === card.shopId;
   if (user.role !== "pro" || user.shopId !== card.shopId) return false;
-  return user.id === card.proId || bookedWithViewerToday;
+  return user.id === card.proId || viewerHasClient;
 }
 
 // What a status change request may contain.

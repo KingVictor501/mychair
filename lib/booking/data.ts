@@ -10,7 +10,7 @@
 // PRIVACY: what goes back to a client is a pro's public profile and prices. Never pay details,
 // other clients, or anyone's email or phone.
 
-import { and, asc, desc, eq, gte, inArray, lt, notInArray } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lt, notInArray, or } from "drizzle-orm";
 import { ApiError } from "../api-error";
 import { getDb } from "../db/client";
 import { appointments, availabilityRules, proProfiles, proServices, services, shops, styleCards, users } from "../db/schema";
@@ -60,10 +60,23 @@ export async function listPros(shopId: string): Promise<ProSummary[]> {
   });
 }
 
-// One pro's public profile, or null if there's no such pro.
+// The pros a pro can book a caller with: themselves, plus every other pro in the shop who turned
+// on "Let other pros book for me". Names only, themselves first.
+export async function bookablePros(proId: string, shopId: string): Promise<Array<{ id: string; name: string }>> {
+  const rows = await getDb()
+    .select({ id: users.id, name: users.name })
+    .from(users)
+    .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
+    .where(and(eq(users.shopId, shopId), eq(users.role, "pro"), or(eq(users.id, proId), eq(proProfiles.allowOthersToBook, true))))
+    .orderBy(asc(users.name));
+  return [...rows.filter((r) => r.id === proId), ...rows.filter((r) => r.id !== proId)];
+}
+
+// One pro's profile, or null if there's no such pro. ("allowOthersToBook" is the pro's own
+// setting; the public pages don't show it.)
 export async function getPro(proId: string) {
   const [row] = await getDb()
-    .select({ id: users.id, name: users.name, shopId: users.shopId, title: proProfiles.title, bio: proProfiles.bio, liveStatus: proProfiles.liveStatus, priceMode: proProfiles.priceMode })
+    .select({ id: users.id, name: users.name, shopId: users.shopId, title: proProfiles.title, bio: proProfiles.bio, liveStatus: proProfiles.liveStatus, priceMode: proProfiles.priceMode, allowOthersToBook: proProfiles.allowOthersToBook })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
     .where(and(eq(users.id, proId), eq(users.role, "pro")));

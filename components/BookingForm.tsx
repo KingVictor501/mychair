@@ -3,7 +3,8 @@
 // time (loaded from GET /api/pros/<id>/slots), then confirm (POST /api/appointments).
 // The cancellation window is shown before confirming. Loading, empty, error and success are
 // all shown.
-// WHO USES IT: app/book/[proId]/page.tsx.
+// WHO USES IT: app/book/[proId]/page.tsx (a client booking), and app/pro/book/[clientId]/page.tsx
+// (a pro booking a client who called in, using the bookFor prop).
 // WHY THE NAME: the booking form; ".tsx" = screen code.
 
 "use client";
@@ -14,14 +15,24 @@ import type { ProService } from "@/lib/booking/data";
 import type { Slot } from "@/lib/booking/slots";
 import { dayLabel, money, shopDateTime, shopTime } from "@/lib/format";
 
-type Props = { proId: string; services: ProService[]; dates: string[]; timeZone: string; cancellationWindowHours: number };
+type Props = {
+  proId: string;
+  services: ProService[];
+  dates: string[];
+  timeZone: string;
+  cancellationWindowHours: number;
+  // Set when a pro books on a client's behalf (a client who called in). The booking then goes to
+  // POST /api/pro/appointments for that client (with the pro in "proId", who may be another pro
+  // who allows it) instead of the logged-in client's own booking.
+  bookFor?: { clientId: string; clientName: string };
+};
 type SlotState = { kind: "idle" } | { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready"; slots: Slot[] };
 type SaveState = { kind: "idle" } | { kind: "saving" } | { kind: "done" } | { kind: "error"; message: string };
 
 // The look of a chosen option, so the selected service, day and time stand out.
 const selected = (on: boolean) => (on ? "!bg-text !text-bg" : "");
 
-export default function BookingForm({ proId, services, dates, timeZone, cancellationWindowHours }: Props) {
+export default function BookingForm({ proId, services, dates, timeZone, cancellationWindowHours, bookFor }: Props) {
   const [service, setService] = useState<ProService | null>(null);
   const [date, setDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<SlotState>({ kind: "idle" });
@@ -47,10 +58,12 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
     if (!service || !chosen) return;
     setSave({ kind: "saving" });
     try {
-      const res = await fetch("/api/appointments", {
+      const res = await fetch(bookFor ? "/api/pro/appointments" : "/api/appointments", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ proId, serviceId: service.id, startsAt: chosen.startsAt }),
+        body: JSON.stringify(
+          bookFor ? { clientId: bookFor.clientId, proId, serviceId: service.id, startsAt: chosen.startsAt } : { proId, serviceId: service.id, startsAt: chosen.startsAt },
+        ),
       });
       const body = (await res.json()) as { error?: { message: string } };
       if (!res.ok) {
@@ -67,11 +80,11 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
   if (save.kind === "done" && service && chosen) {
     return (
       <div role="status" className="rounded-lg border border-border bg-surface p-4">
-        <p className="!mt-0 font-semibold text-text">You&apos;re booked.</p>
+        <p className="!mt-0 font-semibold text-text">{bookFor ? `${bookFor.clientName} is booked.` : "You're booked."}</p>
         <p>
           {service.name} on {shopDateTime(chosen.startsAt, timeZone)}.
         </p>
-        <Link href="/book/mine">See my appointments</Link>
+        <Link href={bookFor ? "/pro" : "/book/mine"}>{bookFor ? "Back to my schedule" : "See my appointments"}</Link>
       </div>
     );
   }
@@ -154,7 +167,9 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
           <p className="!mt-0">
             <strong className="text-text">{service.name}</strong> · {shopDateTime(chosen.startsAt, timeZone)} · {money(service.priceCents)}
           </p>
-          <p className="text-sm">You can cancel up to {cancellationWindowHours} hours before your appointment.</p>
+          <p className="text-sm">
+            {bookFor ? `${bookFor.clientName} can cancel` : "You can cancel"} up to {cancellationWindowHours} hours before the appointment.
+          </p>
           {save.kind === "error" && (
             <p role="alert" className="text-text">
               {save.message}
