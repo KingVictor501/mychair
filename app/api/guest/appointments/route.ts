@@ -1,5 +1,5 @@
 // app/api/guest/appointments/route.ts
-// WHAT IT'S FOR: POST /api/guest/appointments with { proId, serviceId, startsAt, name, phone }
+// WHAT IT'S FOR: POST /api/guest/appointments with { proId, serviceIds, startsAt, name, phone }
 // books an appointment without an account. Public (no login). The input is checked
 // (lib/guest/booking.ts guestBookingInput), the shop must be one a guest may see, the time must
 // be open, and the database refuses overlaps. The booking goes on the shop's client with that
@@ -11,7 +11,7 @@
 // whether the phone number already had a client record.
 
 import { ApiError } from "@/lib/api-error";
-import { createAppointment } from "@/lib/booking/data";
+import { createAppointment, pickServices } from "@/lib/booking/data";
 import { findOrAddGuestClient, guestBookingInput, loadGuestPro } from "@/lib/guest/booking";
 import { log } from "@/lib/logger";
 import { withLogging } from "@/lib/with-logging";
@@ -22,8 +22,10 @@ export const POST = withLogging("/api/guest/appointments", async (request) => {
   const parsed = guestBookingInput.safeParse(await request.json().catch(() => null));
   if (!parsed.success) throw new ApiError(400, "BAD_INPUT", parsed.error.issues[0]?.message ?? "Check your booking and try again.");
   const { pro, shop } = await loadGuestPro(parsed.data.proId);
+  // Check the services first, so a bad pick never adds a client record.
+  await pickServices(pro.id, pro.priceMode, parsed.data.serviceIds);
   const clientId = await findOrAddGuestClient(shop, parsed.data.name, parsed.data.phone);
-  const appointment = await createAppointment({ shop, proId: pro.id, priceMode: pro.priceMode, clientId, serviceId: parsed.data.serviceId, startsAt: new Date(parsed.data.startsAt) });
+  const appointment = await createAppointment({ shop, proId: pro.id, priceMode: pro.priceMode, clientId, serviceIds: parsed.data.serviceIds, startsAt: new Date(parsed.data.startsAt) });
   log.info("appointment_booked", { appointmentId: appointment.id, shopId: shop.id, proId: pro.id, by: "guest" });
   // Only what the confirmation needs: not the client ID.
   return Response.json({ appointment: { id: appointment.id, startsAt: appointment.startsAt } }, { status: 201 });

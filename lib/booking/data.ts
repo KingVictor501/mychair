@@ -10,12 +10,13 @@
 // PRIVACY: what goes back to a client is a pro's public profile and prices. Never pay details,
 // other clients, or anyone's email or phone.
 
-import { and, asc, desc, eq, gte, inArray, lt, notInArray, or } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { and, asc, desc, eq, gte, inArray, lt, notInArray, or, sql } from "drizzle-orm";
 import { ApiError } from "../api-error";
 import { getDb } from "../db/client";
-import { appointments, availabilityRules, proProfiles, proServices, services, shops, styleCards, users } from "../db/schema";
+import { appointmentServices, appointments, availabilityRules, proProfiles, proServices, services, shops, styleCards, users } from "../db/schema";
 import { addDays, localDateParts, type LocalDate } from "../demo/time";
-import { canClientCancel, effectivePrice, openSlots, type Rule, type Slot } from "./slots";
+import { canClientCancel, combineServices, effectivePrice, openSlots, type Rule, type Slot } from "./slots";
 
 export type ShopRow = typeof shops.$inferSelect;
 export type ProSummary = { id: string; name: string; title: string; liveStatus: string; bio: string | null; priceMode: string; fromPriceCents: number | null };
@@ -133,25 +134,41 @@ export function bookableDates(shop: ShopRow, now: Date = new Date()): LocalDate[
   return Array.from({ length: shop.bookingWindowDays + 1 }, (_, i) => addDays(today, i));
 }
 
-// Books an appointment after checking the time is really open. The database's no-overlap rule
-// is the final guard: if two people book the same slot at the same moment, one gets 409.
-export async function createAppointment(args: { shop: ShopRow; proId: string; priceMode: string; clientId: string; serviceId: string; startsAt: Date; now?: Date }) {
-  const { shop, proId, priceMode, clientId, serviceId, startsAt } = args;
-  const service = (await listProServices(proId, priceMode, clientId)).find((s) => s.id === serviceId);
-  if (!service) throw new ApiError(400, "BAD_SERVICE", "That pro doesn't offer that service.");
+// The services a client picked, with the pro's real prices and lengths (and this client's
+// style-card time estimate), plus the totals. 400 if the pick isn't allowed.
+export async function pickServices(proId: string, priceMode: string, serviceIds: string[], clientId?: string) {
+  const picked = combineServices(await listProServices(proId, priceMode, clientId), serviceIds);
+  if (!picked.ok) throw new ApiError(400, "BAD_SERVICE", picked.reason);
+  return picked;
+}
+
+// Books one appointment for one or more services, after checking the whole stretch of time
+// (all the services back to back) is really open. The appointment and its service lines are
+// saved together ("batch"), so there's never an appointment without its lines. The database's
+// no-overlap rule is the final guard: if two people book the same time at once, one gets 409.
+export async function createAppointment(args: { shop: ShopRow; proId: string; priceMode: string; clientId: string; serviceIds: string[]; startsAt: Date; now?: Date }) {
+  const { shop, proId, priceMode, clientId, serviceIds, startsAt } = args;
+  const picked = await pickServices(proId, priceMode, serviceIds, clientId);
 
   const date = localDateParts(startsAt, shop.timezone);
-  const slots = await getSlots(proId, shop, date, service.durationMin, args.now);
+  const slots = await getSlots(proId, shop, date, picked.durationMin, args.now);
   if (!slots.some((s) => s.startsAt === startsAt.toISOString())) {
     throw new ApiError(409, "SLOT_TAKEN", "That time isn't available anymore. Pick another time.");
   }
 
+  // The ID is made here so the service lines can point at it in the same batch.
+  const id = randomUUID();
+  const endsAt = new Date(startsAt.getTime() + picked.durationMin * 60000);
   try {
-    const [row] = await getDb()
-      .insert(appointments)
-      .values({ shopId: shop.id, proId, clientId, serviceId, startsAt, endsAt: new Date(startsAt.getTime() + service.durationMin * 60000), priceCents: service.priceCents, status: "waiting" })
-      .returning({ id: appointments.id, startsAt: appointments.startsAt, endsAt: appointments.endsAt, priceCents: appointments.priceCents });
-    return row!;
+    const db = getDb();
+    const [inserted] = await db.batch([
+      db
+        .insert(appointments)
+        .values({ id, shopId: shop.id, proId, clientId, serviceId: picked.services[0]!.id, startsAt, endsAt, priceCents: picked.priceCents, status: "waiting" })
+        .returning({ id: appointments.id, startsAt: appointments.startsAt, endsAt: appointments.endsAt, priceCents: appointments.priceCents }),
+      db.insert(appointmentServices).values(picked.services.map((s, i) => ({ appointmentId: id, position: i + 1, serviceId: s.id, priceCents: s.priceCents, durationMin: s.durationMin }))),
+    ]);
+    return inserted[0]!;
   } catch (error) {
     // 23P01 = the no-overlap rule refused it (someone booked that slot a moment earlier).
     if (pgCode(error) === "23P01") throw new ApiError(409, "SLOT_TAKEN", "That time was just booked. Pick another time.");
@@ -159,10 +176,15 @@ export async function createAppointment(args: { shop: ShopRow; proId: string; pr
   }
 }
 
+// The service names of an appointment as one line, for example "Skin fade + Beard trim", in the
+// order picked. Appointments with no service lines show their one service. Used inside
+// queries that already join "services" on appointments.service_id.
+export const serviceNamesSql = sql<string>`coalesce((select string_agg(s.name, ' + ' order by l.position) from ${appointmentServices} l join ${services} s on s.id = l.service_id where l.appointment_id = ${appointments.id}), ${services.name})`;
+
 // A client's appointments: upcoming first (soonest first), then past (newest first).
 export async function listClientAppointments(clientId: string, shop: ShopRow, now: Date = new Date()): Promise<ClientAppointment[]> {
   const rows = await getDb()
-    .select({ id: appointments.id, startsAt: appointments.startsAt, endsAt: appointments.endsAt, status: appointments.status, priceCents: appointments.priceCents, serviceName: services.name, proName: users.name })
+    .select({ id: appointments.id, startsAt: appointments.startsAt, endsAt: appointments.endsAt, status: appointments.status, priceCents: appointments.priceCents, serviceName: serviceNamesSql, proName: users.name })
     .from(appointments)
     .innerJoin(services, eq(services.id, appointments.serviceId))
     .innerJoin(users, eq(users.id, appointments.proId))

@@ -6,7 +6,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { canClientCancel, effectivePrice, openSlots, parseLocalDate, type Rule } from "./slots";
+import { canClientCancel, combineServices, effectivePrice, MAX_SERVICES, openSlots, parseLocalDate, parseServiceIds, type Rule } from "./slots";
 
 const TZ = "America/New_York";
 const TUESDAY = { year: 2026, month: 11, day: 24, weekday: 2 };
@@ -60,4 +60,30 @@ test("dates are read strictly", () => {
   assert.deepEqual(parseLocalDate("2026-11-24"), TUESDAY);
   assert.equal(parseLocalDate("2026-02-30"), null);
   assert.equal(parseLocalDate("11/24/2026"), null);
+});
+
+test("several services add up to one visit, in the order picked", () => {
+  const offered = [
+    { id: "fade", durationMin: 45, priceCents: 3500 },
+    { id: "beard", durationMin: 20, priceCents: 1500 },
+    { id: "towel", durationMin: 15, priceCents: 1000 },
+  ];
+  const both = combineServices(offered, ["beard", "fade"]);
+  assert.equal(both.ok, true);
+  if (both.ok) {
+    assert.deepEqual(both.services.map((s) => s.id), ["beard", "fade"]);
+    assert.equal(both.durationMin, 65);
+    assert.equal(both.priceCents, 5000);
+  }
+  assert.equal(combineServices(offered, []).ok, false, "at least one");
+  assert.equal(combineServices(offered, ["fade", "fade"]).ok, false, "no repeats");
+  assert.equal(combineServices(offered, ["fade", "lashes"]).ok, false, "only what this pro offers");
+  const many = Array.from({ length: MAX_SERVICES + 1 }, (_, i) => ({ id: `s${i}`, durationMin: 10, priceCents: 100 }));
+  assert.equal(combineServices(many, many.map((s) => s.id)).ok, false, `no more than ${MAX_SERVICES}`);
+});
+
+test("the services list in a URL is read as IDs separated by commas", () => {
+  assert.deepEqual(parseServiceIds("a,b, c"), ["a", "b", "c"]);
+  assert.deepEqual(parseServiceIds(""), []);
+  assert.deepEqual(parseServiceIds(null), []);
 });

@@ -77,3 +77,35 @@ export function parseLocalDate(text: string): LocalDate | null {
   if (check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d) return null;
   return { year: y, month: mo, day: d, weekday: check.getUTCDay() };
 }
+
+// The most services one booking can hold.
+export const MAX_SERVICES = 4;
+
+// Combines the services a client picked into one booking: the chosen services in the order
+// picked, the total length and the total price. "offered" is what this pro offers (with this
+// pro's price and length). Returns a plain-English reason if the pick isn't allowed.
+export function combineServices<S extends { id: string; durationMin: number; priceCents: number }>(
+  offered: S[],
+  ids: string[],
+): { ok: true; services: S[]; durationMin: number; priceCents: number } | { ok: false; reason: string } {
+  if (ids.length === 0) return { ok: false, reason: "Pick at least one service." };
+  if (ids.length > MAX_SERVICES) return { ok: false, reason: `Pick up to ${MAX_SERVICES} services.` };
+  if (new Set(ids).size !== ids.length) return { ok: false, reason: "Each service can be picked once." };
+  const chosen: S[] = [];
+  for (const id of ids) {
+    const s = offered.find((o) => o.id === id);
+    if (!s) return { ok: false, reason: "Pick services this pro offers." };
+    chosen.push(s);
+  }
+  return {
+    ok: true,
+    services: chosen,
+    durationMin: chosen.reduce((sum, s) => sum + s.durationMin, 0),
+    priceCents: chosen.reduce((sum, s) => sum + s.priceCents, 0),
+  };
+}
+
+// Reads "serviceIds=a,b,c" from a URL's query into a list (empty if missing).
+export function parseServiceIds(value: string | null): string[] {
+  return (value ?? "").split(",").map((v) => v.trim()).filter(Boolean);
+}

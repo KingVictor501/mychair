@@ -15,7 +15,7 @@
 
 import { and, asc, count, desc, eq, gte, lt, max, ne, or, sql } from "drizzle-orm";
 import { ApiError } from "../api-error";
-import type { ShopRow } from "../booking/data";
+import { serviceNamesSql, type ShopRow } from "../booking/data";
 import { getDb } from "../db/client";
 import { appointments, clientProfiles, proProfiles, services, styleCards, users } from "../db/schema";
 import { addDays, localDateParts, type LocalDate, zonedToUtc } from "../demo/time";
@@ -58,7 +58,7 @@ export async function listSchedule(proId: string, shop: ShopRow, date: LocalDate
       status: appointments.status,
       paymentStatus: appointments.paymentStatus,
       priceCents: appointments.priceCents,
-      serviceName: services.name,
+      serviceName: serviceNamesSql,
       clientId: users.id,
       clientName: users.name,
     })
@@ -164,7 +164,7 @@ export async function getClientForPro(proId: string, shop: ShopRow, clientId: st
   if (!client) throw new ApiError(404, "NOT_FOUND", "Not found.");
   const [card] = await db.select().from(styleCards).where(and(eq(styleCards.proId, proId), eq(styleCards.clientId, clientId)));
   const visits = await db
-    .select({ id: appointments.id, startsAt: appointments.startsAt, serviceName: services.name, priceCents: appointments.priceCents, status: appointments.status })
+    .select({ id: appointments.id, startsAt: appointments.startsAt, serviceName: serviceNamesSql, priceCents: appointments.priceCents, status: appointments.status })
     .from(appointments)
     .innerJoin(services, eq(services.id, appointments.serviceId))
     .where(and(eq(appointments.proId, proId), eq(appointments.clientId, clientId), lt(appointments.startsAt, new Date())))

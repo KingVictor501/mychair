@@ -14,8 +14,8 @@ test("guests see real shops always, and demo shops only while demo mode is on", 
   assert.equal(guestCanSeeShop({ isDemo: true }, false), false);
 });
 
-test("a guest booking needs a pro, service, time, first name and phone, and nothing else", () => {
-  const good = { proId: "6f1c3d2e-8a4b-4c5d-9e6f-1a2b3c4d5e6f", serviceId: "7a1c3d2e-8a4b-4c5d-9e6f-1a2b3c4d5e6f", startsAt: "2026-12-01T15:00:00Z", name: "Sam", phone: "(212) 555-0199" };
+test("a guest booking needs a pro, services, time, first name and phone, and nothing else", () => {
+  const good = { proId: "6f1c3d2e-8a4b-4c5d-9e6f-1a2b3c4d5e6f", serviceIds: ["7a1c3d2e-8a4b-4c5d-9e6f-1a2b3c4d5e6f"], startsAt: "2026-12-01T15:00:00Z", name: "Sam", phone: "(212) 555-0199" };
   assert.equal(guestBookingInput.safeParse(good).success, true);
   assert.equal(guestBookingInput.safeParse({ ...good, name: "  " }).success, false, "a name is required");
   assert.equal(guestBookingInput.safeParse({ ...good, phone: "" }).success, false, "a phone is required");

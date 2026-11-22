@@ -298,6 +298,27 @@ export const appointments = pgTable(
   ],
 );
 
+// The services in one appointment, when a client books more than one (for example a fade and a
+// beard trim). Each line keeps the price and length it was booked at. The appointment's own
+// price and end time are the totals, and its service_id is the first service. Appointments
+// booked with one service may have no lines; they use service_id alone.
+export const appointmentServices = pgTable(
+  "appointment_services",
+  {
+    appointmentId: uuid("appointment_id")
+      .notNull()
+      .references(() => appointments.id, { onDelete: "cascade" }),
+    // The order the client picked them in, starting at 1.
+    position: integer("position").notNull(),
+    serviceId: uuid("service_id")
+      .notNull()
+      .references(() => services.id, { onDelete: "cascade" }),
+    priceCents: integer("price_cents").notNull(),
+    durationMin: integer("duration_min").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.appointmentId, t.position] })],
+);
+
 // One style card per pro-and-client pair: how this client likes it, and how long it takes.
 export const styleCards = pgTable(
   "style_cards",

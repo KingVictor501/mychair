@@ -1,0 +1,221 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "f20da22f-ec86-424d-8d87-711b8b84ac7e",
+  "prevIds": [
+    "9c1e91c1-6794-4894-876f-cfadd19c96fa"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "appointment_services"
+      ],
+      "writes": [
+        "s|tbl|public.appointment_services",
+        "n|tbl|public.appointment_services",
+        "e|tbl|public.appointment_services",
+        "n|rel|public.appointment_services",
+        "n|type|public.appointment_services",
+        "n|rel|public.appointment_services_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "appointment_services"
+      ],
+      "writes": [
+        "s|fk|public.appointment_services.appointment_services_appointment_id_appointments_id_fkey",
+        "n|fk|public.appointment_services.appointment_services_appointment_id_appointments_id_fkey",
+        "e|fk|public.appointment_services.appointment_services_appointment_id_appointments_id_fkey",
+        "n|con|public.appointment_services.appointment_services_appointment_id_appointments_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.appointment_services",
+        "n|sch|public",
+        "n|tbl|public.appointments",
+        "n|sch|public",
+        "n|col|public.appointment_services.appointment_id",
+        "n|col|public.appointments.id",
+        "e|uniqueness|public.appointments.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "appointment_services"
+      ],
+      "writes": [
+        "s|fk|public.appointment_services.appointment_services_service_id_services_id_fkey",
+        "n|fk|public.appointment_services.appointment_services_service_id_services_id_fkey",
+        "e|fk|public.appointment_services.appointment_services_service_id_services_id_fkey",
+        "n|con|public.appointment_services.appointment_services_service_id_services_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.appointment_services",
+        "n|sch|public",
+        "n|tbl|public.services",
+        "n|sch|public",
+        "n|col|public.appointment_services.service_id",
+        "n|col|public.services.id",
+        "e|uniqueness|public.services.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "appointment_services",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "appointment_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "position",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "service_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "price_cents",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "duration_min",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "appointment_services_appointment_id_appointments_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "appointment_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "appointments",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "appointment_services_service_id_services_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "service_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "services",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "appointment_services",
+        "name": "appointment_services_pkey",
+        "columns": [
+          "appointment_id",
+          "position"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

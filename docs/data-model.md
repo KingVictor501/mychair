@@ -26,6 +26,8 @@ erDiagram
     users ||--o{ appointments : "pro"
     users ||--o{ appointments : "client"
     services ||--o{ appointments : "booked service"
+    appointments ||--o{ appointment_services : "services in the visit"
+    services ||--o{ appointment_services : "booked as"
     users ||--o{ log_entries : "caused"
 ```
 
@@ -70,12 +72,14 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | cancellation_window_hours | int | no | empty means use the shop's window. Only used when the shop has `allow_pro_cancellation_window` on. |
 | show_policy_on_profile | boolean | yes | default true. A pro can turn it off only when the shop has `allow_pro_policy_display_choice` on. The window is always shown when a client confirms a booking, whatever this says. |
 | bio | text | no | |
+| allow_others_to_book | boolean | yes | default false. The pro's own setting: lets other pros in the shop book callers onto this pro's calendar. |
 
 ### client_profiles
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | user_id | uuid FK users | yes | PK |
 | no_show_count | int | yes | strike count, default 0 |
+| preferred_pro_id | uuid FK users | no | the client's preferred pro, set by the client. The client is listed under that pro's "Your clients". Cleared if the pro's account is removed. |
 
 ### invites
 | Field | Type | Required | Notes |
@@ -171,14 +175,27 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | **shop_id** | uuid FK shops | yes | |
 | **pro_id** | uuid FK users | yes | |
 | **client_id** | uuid FK users | yes | |
-| service_id | uuid FK services | yes | |
-| starts_at / ends_at | timestamptz | yes | length = style-card estimate if one exists, else service default |
+| service_id | uuid FK services | yes | the first service picked (all of them are in appointment_services) |
+| starts_at / ends_at | timestamptz | yes | length = the services' lengths added up (each uses the style-card estimate if one exists, else the service default) |
+| price_cents | int | yes | the services' prices added up, at booking time |
 | status | text | yes | `waiting`, `in_chair`, `completed`, `no_show`, `cancelled` |
 | payment_status | text | yes | `paid`, `deposit_held`, `cash` (record only, no real payments) |
 | checked_in_at / chair_at / finished_at | timestamptz | no | |
 | | | | **Double-booking guard:** a database rule rejects two active appointments for the same pro with overlapping times. |
 
 Visit history is not its own table: it is the client's `completed` appointments with that pro.
+
+### appointment_services (the services in one visit)
+A client can book up to 4 services in one appointment, done back to back.
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| appointment_id | uuid FK appointments | yes | part of the PK. Removed with the appointment. |
+| position | int | yes | part of the PK. The order picked, from 1. |
+| service_id | uuid FK services | yes | |
+| price_cents | int | yes | this service's price when booked |
+| duration_min | int | yes | this service's length when booked |
+
+Appointments booked with a single service before this table existed (and the demo history) have no lines; their one service is `appointments.service_id`.
 
 ### corpus_chunks (the search passages; the embedded count comes from here)
 The MyChair help documents (`mychair-corpus/`, which are in the repo), cut into passages and embedded. `npm run corpus:embed` reads them and fills this table.

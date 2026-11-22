@@ -18,6 +18,7 @@ import { z } from "zod";
 import { ApiError } from "../api-error";
 import { normalizePhone } from "../auth/identifier";
 import { getPro, getShop, listPros, type ProSummary, type ShopRow } from "../booking/data";
+import { MAX_SERVICES } from "../booking/slots";
 import { getDb } from "../db/client";
 import { clientProfiles, shops, users } from "../db/schema";
 import { isDemoModeOn } from "../demo/mode";
@@ -27,11 +28,11 @@ export function guestCanSeeShop(shop: { isDemo: boolean }, demoModeOn: boolean):
   return !shop.isDemo || demoModeOn;
 }
 
-// A guest booking: the pro, service and time, plus the guest's first name and phone.
+// A guest booking: the pro, one or more services and the time, plus the guest's first name and phone.
 export const guestBookingInput = z
   .object({
     proId: z.string().uuid(),
-    serviceId: z.string().uuid(),
+    serviceIds: z.array(z.string().uuid()).min(1, "Pick a service.").max(MAX_SERVICES, `Pick up to ${MAX_SERVICES} services.`),
     startsAt: z.string().datetime(),
     name: z.string().trim().min(1, "Enter your first name.").max(40, "Keep your name under 40 characters."),
     phone: z.string().trim().min(7, "Enter your phone number.").max(30),

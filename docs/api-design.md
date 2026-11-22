@@ -62,14 +62,17 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 ### Availability
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
-| GET | `/api/pros/[id]/availability` | `?date=YYYY-MM-DD&serviceId=` | open start times in the shop's time zone | Protected |
+| GET | `/api/pros/[id]/slots` | `?date=YYYY-MM-DD&serviceIds=<id>,<id>` (1 to 4 services) | open start times for the services back to back, in the shop's time zone | Protected |
+| GET | `/api/guest/pros/[id]/slots` | same as above | open start times | Public (shops a guest may see) |
 | PUT | `/api/pros/[id]/hours` | `{ rules: [{ weekday, start, end, kind }] }` | saved rules | The pro themself, Owner, Super Admin |
 | PUT | `/api/pros/[id]/time-off` | `{ ranges: [{ startsOn, endsOn }] }` | saved ranges | The pro themself, Owner, Super Admin |
 
 ### Appointments
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
-| POST | `/api/appointments` | `{ proId, serviceId, startsAt }` | 201 `{ appointment }`, or 409 if the time is taken | Client (own), Owner, Super Admin |
+| POST | `/api/appointments` | `{ proId, serviceIds: [1 to 4 IDs], startsAt }` | 201 `{ appointment }` (total price and end time), or 409 if the time is taken | Client (own), Owner, Super Admin |
+| POST | `/api/pro/appointments` | `{ clientId, serviceIds, startsAt, proId? }` | 201 `{ appointment }` | Pro (with themselves, or a pro who allows it) |
+| POST | `/api/guest/appointments` | `{ proId, serviceIds, startsAt, name, phone }` | 201 `{ appointment: { id, startsAt } }` | Public (no login) |
 | GET | `/api/appointments` | `?from=&to=` | client: own. Pro: own. Owner: whole shop. | Protected |
 | GET | `/api/appointments/[id]` | none | one appointment (404 if not yours) | Protected |
 | PATCH | `/api/appointments/[id]` | `{ startsAt }` (reschedule) | `{ appointment }` | Client (own), Pro (own), Owner, Super Admin |
