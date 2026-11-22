@@ -3,8 +3,10 @@
 // time (loaded from GET /api/pros/<id>/slots), then confirm (POST /api/appointments).
 // The cancellation window is shown before confirming. Loading, empty, error and success are
 // all shown.
-// WHO USES IT: app/book/[proId]/page.tsx (a client booking), and app/pro/book/[clientId]/page.tsx
-// (a pro booking a client who called in, using the bookFor prop).
+// WHO USES IT: app/book/[proId]/page.tsx (a client booking), app/pro/book/[clientId]/page.tsx
+// (a pro booking a client who called in, using the bookFor prop), and app/guest/[proId]/page.tsx
+// (booking without an account, using the guest prop: asks for first name and phone, and uses the
+// public /api/guest/* routes).
 // WHY THE NAME: the booking form; ".tsx" = screen code.
 
 "use client";
@@ -25,6 +27,8 @@ type Props = {
   // POST /api/pro/appointments for that client (with the pro in "proId", who may be another pro
   // who allows it) instead of the logged-in client's own booking.
   bookFor?: { clientId: string; clientName: string };
+  // Set when someone books without an account.
+  guest?: boolean;
 };
 type SlotState = { kind: "idle" } | { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready"; slots: Slot[] };
 type SaveState = { kind: "idle" } | { kind: "saving" } | { kind: "done" } | { kind: "error"; message: string };
@@ -32,19 +36,23 @@ type SaveState = { kind: "idle" } | { kind: "saving" } | { kind: "done" } | { ki
 // The look of a chosen option, so the selected service, day and time stand out.
 const selected = (on: boolean) => (on ? "!bg-text !text-bg" : "");
 
-export default function BookingForm({ proId, services, dates, timeZone, cancellationWindowHours, bookFor }: Props) {
+export default function BookingForm({ proId, services, dates, timeZone, cancellationWindowHours, bookFor, guest = false }: Props) {
   const [service, setService] = useState<ProService | null>(null);
   const [date, setDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<SlotState>({ kind: "idle" });
   const [chosen, setChosen] = useState<Slot | null>(null);
   const [save, setSave] = useState<SaveState>({ kind: "idle" });
+  // A guest's first name and phone (only used when "guest" is set).
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
 
   // Loads the open times for a service on a day.
   async function loadSlots(nextService: ProService, nextDate: string) {
     setChosen(null);
     setSlots({ kind: "loading" });
     try {
-      const res = await fetch(`/api/pros/${proId}/slots?date=${nextDate}&serviceId=${nextService.id}`);
+      const base = guest ? "/api/guest/pros" : "/api/pros";
+      const res = await fetch(`${base}/${proId}/slots?date=${nextDate}&serviceId=${nextService.id}`);
       const body = (await res.json()) as { slots?: Slot[]; error?: { message: string } };
       if (!res.ok || !body.slots) return setSlots({ kind: "error", message: body.error?.message ?? "Couldn't load times." });
       setSlots({ kind: "ready", slots: body.slots });
@@ -58,13 +66,13 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
     if (!service || !chosen) return;
     setSave({ kind: "saving" });
     try {
-      const res = await fetch(bookFor ? "/api/pro/appointments" : "/api/appointments", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(
-          bookFor ? { clientId: bookFor.clientId, proId, serviceId: service.id, startsAt: chosen.startsAt } : { proId, serviceId: service.id, startsAt: chosen.startsAt },
-        ),
-      });
+      const url = guest ? "/api/guest/appointments" : bookFor ? "/api/pro/appointments" : "/api/appointments";
+      const payload = guest
+        ? { proId, serviceId: service.id, startsAt: chosen.startsAt, name: guestName, phone: guestPhone }
+        : bookFor
+          ? { clientId: bookFor.clientId, proId, serviceId: service.id, startsAt: chosen.startsAt }
+          : { proId, serviceId: service.id, startsAt: chosen.startsAt };
+      const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
       const body = (await res.json()) as { error?: { message: string } };
       if (!res.ok) {
         setSave({ kind: "error", message: body.error?.message ?? "Couldn't book. Try another time." });
@@ -80,11 +88,16 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
   if (save.kind === "done" && service && chosen) {
     return (
       <div role="status" className="rounded-lg border border-border bg-surface p-4">
-        <p className="!mt-0 font-semibold text-text">{bookFor ? `${bookFor.clientName} is booked.` : "You're booked."}</p>
+        <p className="!mt-0 font-semibold text-text">{bookFor ? `${bookFor.clientName} is booked.` : guest ? `You're booked, ${guestName}.` : "You're booked."}</p>
         <p>
           {service.name} on {shopDateTime(chosen.startsAt, timeZone)}.
         </p>
-        <Link href={bookFor ? "/pro" : "/book/mine"}>{bookFor ? "Back to my schedule" : "See my appointments"}</Link>
+        {guest && <p>To change or cancel, call the shop.</p>}
+        {guest ? (
+          <Link href="/guest">Book another appointment</Link>
+        ) : (
+          <Link href={bookFor ? "/pro" : "/book/mine"}>{bookFor ? "Back to my schedule" : "See my appointments"}</Link>
+        )}
       </div>
     );
   }
@@ -167,15 +180,31 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
           <p className="!mt-0">
             <strong className="text-text">{service.name}</strong> · {shopDateTime(chosen.startsAt, timeZone)} · {money(service.priceCents)}
           </p>
-          <p className="text-sm">
-            {bookFor ? `${bookFor.clientName} can cancel` : "You can cancel"} up to {cancellationWindowHours} hours before the appointment.
-          </p>
+          {guest ? (
+            <>
+              <p className="text-sm">Without an account, call the shop to change or cancel, up to {cancellationWindowHours} hours before.</p>
+              <div className="mb-3 grid gap-2 sm:grid-cols-2">
+                <label className="flex flex-col gap-1">
+                  <span>First name</span>
+                  <input value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={40} autoComplete="given-name" required />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span>Phone number</span>
+                  <input value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="(212) 555-0111" required />
+                </label>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm">
+              {bookFor ? `${bookFor.clientName} can cancel` : "You can cancel"} up to {cancellationWindowHours} hours before the appointment.
+            </p>
+          )}
           {save.kind === "error" && (
             <p role="alert" className="text-text">
               {save.message}
             </p>
           )}
-          <button type="button" onClick={() => void confirm()} disabled={save.kind === "saving"}>
+          <button type="button" onClick={() => void confirm()} disabled={save.kind === "saving" || (guest && (!guestName.trim() || !guestPhone.trim()))}>
             {save.kind === "saving" ? "Booking…" : "Confirm booking"}
           </button>
         </section>

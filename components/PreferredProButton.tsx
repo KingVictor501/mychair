@@ -39,7 +39,14 @@ export default function PreferredProButton({ proId, proName, isPreferred }: { pr
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
-      {isPreferred && <span className="text-sm font-semibold text-text">{proName} is your preferred pro.</span>}
+      {isPreferred && (
+        <span className="text-sm font-semibold text-text">
+          <span className="text-star" aria-hidden="true">
+            ★
+          </span>{" "}
+          {proName} is your preferred pro.
+        </span>
+      )}
       <button type="button" onClick={() => void toggle()} disabled={busy}>
         {busy ? "Saving…" : isPreferred ? "Remove as preferred pro" : `Make ${proName} my preferred pro`}
       </button>

@@ -22,6 +22,7 @@
   /* Chart line colors, checked for colorblind separation and 3:1 contrast on white. */
   --color-series-1: #2a78d6;  /* blue: the main line */
   --color-series-2: #eb6834;  /* orange: the second line */
+  --color-star: #b8860b;      /* gold: the star next to a client's preferred pro (3:1 on white) */
 }
 
 /* Tailwind's reset makes every heading the same size as body text and removes list bullets.

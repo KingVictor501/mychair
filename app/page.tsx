@@ -1,24 +1,33 @@
 // app/page.tsx
-// WHAT IT'S FOR: the hello-world home page, shown at the site's root address ("/").
-// WHO USES IT: Next.js itself. It shows this page when someone visits the site.
+// WHAT IT'S FOR: the home page, at the site's root address ("/"). A visitor can book without an
+// account. "Create an account" is shown but not available yet. People who already have an
+// account (clients, pros, owners) use "Log in".
+// WHO USES IT: everyone. Next.js shows it when someone visits the site.
 // WHY THE NAME: in the App Router, a file named "page.tsx" is the page for its folder;
 // this one sits directly in "app", so it is the home page.
 
-// HealthStatus comes from components/HealthStatus.tsx: the widget that calls /api/health.
 import Link from "next/link";
-import HealthStatus from "@/components/HealthStatus";
 
-// This is a server component (the default): it has no "use client" because it only
-// lays out static text and drops in the interactive widget.
 export default function HomePage() {
   return (
-    <main>
-      <h1>MyChair</h1>
-      <p>Hello, world. This is the MyChair skeleton.</p>
-      <p>
-        <Link href="/ask">Ask MyChair a question</Link>
+    <main className="!max-w-md">
+      <h1 className="!mb-1">MyChair</h1>
+      <p className="!mt-0">Book your next appointment in a few taps.</p>
+      <div className="mt-6 grid gap-3">
+        <Link href="/guest" className="block rounded-lg border border-border !bg-text px-4 py-3 text-center font-semibold !text-bg !no-underline">
+          Book without an account
+        </Link>
+        {/* Not available yet: accounts will let clients choose their shop and a preferred pro. */}
+        <button type="button" disabled aria-describedby="account-soon" className="w-full">
+          Create an account
+        </button>
+        <p id="account-soon" className="!my-0 text-center text-sm">
+          Coming soon. An account lets you choose your shop and a preferred pro.
+        </p>
+      </div>
+      <p className="mt-8 text-center text-sm">
+        Already have an account? <Link href="/login">Log in</Link>
       </p>
-      <HealthStatus />
     </main>
   );
 }

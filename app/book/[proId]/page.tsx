@@ -31,7 +31,14 @@ export default async function ProBookingPage({ params }: { params: Promise<{ pro
   return (
     <main>
       <Link href="/book">← All pros</Link>
-      <h1 className="!mt-2 !mb-1">{pro.name}</h1>
+      <h1 className="!mt-2 !mb-1">
+        {pro.name}
+        {preferredProId === pro.id && (
+          <span className="ml-2 text-star" role="img" aria-label="Your preferred pro">
+            ★
+          </span>
+        )}
+      </h1>
       <p className="!mt-0">
         {pro.title} at {shop.name}
       </p>

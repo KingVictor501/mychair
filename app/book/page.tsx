@@ -40,11 +40,18 @@ export default async function BookPage() {
             <li key={p.id}>
               <Link href={`/book/${p.id}`} className="block rounded-lg border border-border bg-bg p-4 !no-underline hover:bg-surface">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-text">{p.name}</span>
+                  <span className="font-semibold text-text">
+                    {p.name}
+                    {/* A gold star marks the client's preferred pro. */}
+                    {p.id === preferredProId && (
+                      <span className="ml-1 text-star" role="img" aria-label="Your preferred pro">
+                        ★
+                      </span>
+                    )}
+                  </span>
                   <span className="text-xs text-text-muted">{LIVE_STATUS[p.liveStatus] ?? p.liveStatus}</span>
                 </div>
                 <div className="text-sm text-text-muted">{p.title}</div>
-                {p.id === preferredProId && <div className="text-xs font-semibold text-text">Your preferred pro</div>}
                 {p.bio && <p className="!mt-2 !mb-0 text-sm">{p.bio}</p>}
                 {p.fromPriceCents !== null && <div className="mt-2 text-sm text-text">From {money(p.fromPriceCents)}</div>}
               </Link>

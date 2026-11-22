@@ -47,6 +47,7 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | See a pro's open times | ✅ | ✅ | ✅ | ✅ | |
 | **Appointments** | | | | | |
 | Book an appointment | ✅ | ✅ | ❌ | 🔸 | client: for themselves, inside the pro's booking window |
+| Book without an account (guest) | – | – | – | – | anyone, no login: see any pro's open times and book with first name and phone, at real shops (and demo shops while demo mode is on). The booking goes on the shop's client with that phone, or a new client. A guest sees nothing about existing clients and changes or cancels by calling the shop |
 | View appointments | ✅ | 🔸 | 🔸 | 🔸 | owner: whole shop. Pro: own. Client: own. |
 | Reschedule or cancel | ✅ | ✅ | 🔸 | 🔸 | client: own, outside the cancellation window. Pro: own appointments. |
 | Change status (in chair, completed, no-show) | ✅ | ✅ | 🔸 | ❌ | pro: own appointments only. Allowed order: waiting → in chair → completed; waiting → no-show; waiting or in chair → cancelled |
