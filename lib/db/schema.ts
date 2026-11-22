@@ -19,6 +19,7 @@ import {
   index,
   integer,
   jsonb,
+  real,
   pgTable,
   primaryKey,
   text,
@@ -383,3 +384,24 @@ export const appSettings = pgTable("app_settings", {
   // The Super Admin who changed it (ID only).
   updatedBy: uuid("updated_by"),
 });
+
+// Site performance: one row per Core Web Vitals reading from a real visitor's browser (how fast a
+// page loaded, how quickly it responded, how much it jumped around). Only the page's address
+// pattern (IDs replaced with [id]), the measure and its value: nothing about who the visitor is.
+// Rows older than 30 days are deleted (lib/logger.ts).
+export const webVitals = pgTable(
+  "web_vitals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ts: timestamp("ts", { withTimezone: true }).defaultNow().notNull(),
+    // The page, for example /pro/clients/[id].
+    page: text("page").notNull(),
+    // LCP, INP, CLS, FCP or TTFB.
+    name: text("name").notNull(),
+    // Milliseconds (CLS has no unit: it's a score).
+    value: real("value").notNull(),
+    // good, needs-improvement or poor, as the browser rated it.
+    rating: text("rating").notNull(),
+  },
+  (t) => [index("web_vitals_ts_idx").on(t.ts), check("web_vitals_name_check", sql`${t.name} in ('LCP', 'INP', 'CLS', 'FCP', 'TTFB')`)],
+);

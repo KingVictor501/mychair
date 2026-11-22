@@ -128,6 +128,9 @@ export async function flushLogs(): Promise<void> {
       lastPruneAt = Date.now();
       const cutoff = new Date(Date.now() - LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000);
       await db.delete(logEntries).where(lt(logEntries.ts, cutoff));
+      // Site performance readings are kept a little longer (30 days), for trends.
+      const { webVitals } = await import("./db/schema");
+      await db.delete(webVitals).where(lt(webVitals.ts, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)));
       log.info("logs_pruned", { retentionDays: LOG_RETENTION_DAYS });
     }
   } catch (error) {

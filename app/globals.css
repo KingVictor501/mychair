@@ -22,6 +22,7 @@
   /* Chart line colors, checked for colorblind separation and 3:1 contrast on white. */
   --color-series-1: #2a78d6;  /* blue: the main line */
   --color-series-2: #eb6834;  /* orange: the second line */
+  --color-rating-good: #067647; /* site performance: "Good", dark green (readable on white) */
   --color-level-warn: #b54708;  /* log viewer: warnings, dark orange (readable on white) */
   --color-level-error: #b42318; /* log viewer: errors, dark red (readable on white) */
   --color-star: #b8860b;      /* gold: the star next to a client's preferred pro (3:1 on white) */

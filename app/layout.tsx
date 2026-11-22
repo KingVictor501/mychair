@@ -13,6 +13,8 @@ import "./globals.css";
 import SessionBanner from "@/components/SessionBanner";
 // SiteHeader (components/SiteHeader.tsx) is the bar with MyChair, the role's links and Log out.
 import SiteHeader from "@/components/SiteHeader";
+// WebVitals (components/WebVitals.tsx) measures each page in the visitor's browser; shows nothing.
+import WebVitals from "@/components/WebVitals";
 
 // The tab title and description for search engines and phones.
 export const metadata: Metadata = {
@@ -32,6 +34,7 @@ export default function RootLayout({
         <SessionBanner />
         <SiteHeader />
         {children}
+        <WebVitals />
       </body>
     </html>
   );

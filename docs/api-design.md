@@ -17,7 +17,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
 | GET | `/api/health` | none | `{ "status": "ok" }` (and confirms DB reachable) | Public |
-| POST | `/api/vitals` | `{ page, metric, value, rating }` | 204 | Public (rate limited) |
+| POST | `/api/vitals` | `{ name, value, rating, page }` (one Core Web Vitals reading; extra fields dropped, IDs removed from the page) | 204 | Public (rate limit planned) |
 
 ### Auth
 | Method | URL | Request body | Response | Who |
