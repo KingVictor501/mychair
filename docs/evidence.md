@@ -13,4 +13,5 @@ Where to find the proof for each part of MyChair. Everything here ran against th
 | Logs and metrics | [Observability](observability.md) · `/metrics` on the live app (admin key) | Structured logs, requests / errors / latency over time |
 | Rollback | [Rollback drill](observability.md#rollback-drill-2026-11-21) | A bad deploy, Instant Rollback, the fix promoted, with times, commits, request IDs and screenshots |
 | Architecture | [Decision document](decision-document.md) | Tradeoffs written before the code, the road not taken, lessons from my previous project |
+| Self-taught | [Login sessions with `jose`](self-taught.md) | Why I chose it, how I learned it, how it's set up, and how I checked it works in the live app |
 | Value | [Value memo](value-memo.md) | Course 2 vs. this build on time, friction and quality, with confounds named |
