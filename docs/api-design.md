@@ -16,6 +16,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
   | `POST /api/auth/login` | 30 per 15 min per IP, and 10 per 15 min per email or phone |
   | `POST /api/guest/appointments` | 10 per hour per IP, and 5 per hour per phone |
   | `GET /api/guest/shops` | 300 per 10 min per IP |
+  | `POST /api/appointments` | 20 per hour per account |
   | `POST /api/demo/enter` | 30 per hour per IP |
   | `POST /api/ask` | 10 per hour per IP (plus the global hourly cap) |
   | `GET /api/clients/search` | 60 per 10 min per account |

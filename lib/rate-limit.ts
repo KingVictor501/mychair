@@ -9,8 +9,8 @@
 //   retryAfterSec    seconds until the current window ends
 //   limitKey         a one-way scrambled key, so no IP address, email or phone is ever stored
 //   enforceRateLimit counts one try and stops the request with 429 when the limit is passed
-// WHO USES IT: app/api/auth/login, app/api/guest/appointments, app/api/demo/enter,
-// app/api/vitals, app/api/ask and app/api/clients/search. Tested by lib/rate-limit.test.ts.
+// WHO USES IT: app/api/auth/login, app/api/guest/appointments, app/api/guest/shops,
+// app/api/appointments, app/api/demo/enter, app/api/vitals, app/api/ask and app/api/clients/search. Tested by lib/rate-limit.test.ts.
 // WHY THE NAME: it limits the rate of requests; ".ts" = no screen code.
 //
 // PRIVACY: the database stores only the scrambled key and a count. Log lines name the limit
@@ -32,6 +32,8 @@ export const RATE_LIMITS = {
   guest_booking_phone: { max: 5, windowMin: 60, message: "Too many bookings for this phone number. Please try again in a little while." },
   // The predictive shop search asks again as the guest types (after a short pause), so it's roomy.
   shop_search_ip: { max: 300, windowMin: 10, message: "Too many searches. Please wait a few minutes and try again." },
+  // A logged-in client booking, per account.
+  client_booking_user: { max: 20, windowMin: 60, message: "Too many bookings. Please try again in a little while." },
   // One-click demo entry creates a session each time.
   demo_enter_ip: { max: 30, windowMin: 60, message: "Too many demo sessions from here. Please try again in a little while." },
   // Every page view sends up to five performance readings, so this one is generous.

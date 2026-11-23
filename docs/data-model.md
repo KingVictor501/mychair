@@ -249,5 +249,15 @@ Metrics can also be calculated straight from `request_done` and `request_failed`
 | value | float | yes | |
 | rating | text | yes | good, needs-improvement, poor |
 
+### rate_limits
+One counter per limit, per visitor (or account), per time window (`lib/rate-limit.ts`).
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| key | text | yes | The limit's name plus a keyed one-way hash (HMAC) of the IP, email, phone or user ID. Nothing personal is stored. |
+| window_start | timestamptz | yes | Start of the fixed window (for example 10:00 for 10:00 to 10:15). Primary key with `key`. |
+| count | integer | yes | Tries so far in the window. Added to in one statement (insert, or add one on conflict). |
+
+Rows older than a day are deleted with the log pruning.
+
 ### Not in the database
-Rate-limit counters live in Upstash Redis. Photo files live in Vercel Blob. Secrets live in environment variables.
+Photo files live in Vercel Blob (a private store). Secrets live in environment variables.

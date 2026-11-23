@@ -5,6 +5,8 @@
 // WHO USES IT: the booking form and the future mobile app.
 // WHY THE NAME: folder path = URL (app/api/appointments -> /api/appointments).
 //
+// RATE LIMIT: 20 bookings an hour per account (429).
+//
 // PRIVACY: logs appointment_booked with IDs only.
 
 import { z } from "zod";
@@ -15,6 +17,7 @@ import { requireRole } from "@/lib/auth/permissions";
 import { createAppointment } from "@/lib/booking/data";
 import { MAX_SERVICES } from "@/lib/booking/slots";
 import { log } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { withLogging } from "@/lib/with-logging";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +30,8 @@ const body = z.object({
 
 export const POST = withLogging("/api/appointments", async (request) => {
   const user = requireRole(await getCurrentUser(), "client");
+  // Rate limit per account (lib/rate-limit.ts).
+  await enforceRateLimit("client_booking_user", user.id);
   const parsed = body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) throw new ApiError(400, "BAD_INPUT", "Pick a pro, up to 4 services and a time.");
   const { pro, shop } = await loadProFor(user, parsed.data.proId);

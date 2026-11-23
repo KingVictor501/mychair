@@ -7,14 +7,14 @@ flowchart LR
     B["Browser or phone<br/>(React pages)"] -->|HTTPS| V
     subgraph V["Vercel (hosting)"]
         MW["Request wrapper<br/>request ID, start/done logs"]
-        RL["Rate limit check"]
+        RL["Rate limit check<br/>(public routes by IP, logged-in by account)"]
         API["API routes<br/>(Next.js route handlers)"]
         AUTH["Auth + permission helper<br/>checks token, role, shop"]
         VAL["Input validation"]
         MW --> RL --> AUTH --> VAL --> API
     end
-    RL <--> UP[("Upstash Redis<br/>rate-limit counters")]
-    API <--> DB[("Neon Postgres<br/>app data + service vectors<br/>+ log table")]
+    API <--> DB[("Neon Postgres<br/>app data + service vectors<br/>+ log table + rate-limit counters")]
+    RL <--> DB
     API -->|embed text| EMB["OpenAI embeddings"]
     API <--> BL[("Vercel Blob<br/>photos")]
     MW -->|"JSON log lines"| LOGS["Vercel log stream"]
@@ -28,7 +28,7 @@ flowchart LR
 sequenceDiagram
     participant C as Client browser
     participant W as Request wrapper
-    participant R as Rate limit (Upstash)
+    participant R as Rate limit (Neon rate_limits)
     participant A as Auth + permissions
     participant H as Booking route
     participant D as Neon Postgres
@@ -36,10 +36,10 @@ sequenceDiagram
 
     C->>W: POST /api/appointments {proId, serviceId, startsAt}
     W->>L: request_start (debug)
-    W->>R: too many attempts?
-    R-->>W: no
     W->>A: valid token? role = client? shop matches?
     A-->>W: yes, user + shop
+    W->>R: too many bookings from this account?
+    R-->>W: no
     W->>H: run the route
     H->>H: validate body, check booking window and open time
     H->>D: look up style-card time estimate, else service default
@@ -65,7 +65,7 @@ flowchart LR
 | Layer | What it does |
 |---|---|
 | Request wrapper | Gives every request an ID and logs its edges once, for all routes. |
-| Rate limit | Stops floods on login, sign-up, booking, and search. |
+| Rate limit | Stops floods on login, guest and client booking, shop search, demo entry, the Ask box, client search and the performance beacon. Over the limit: 429 with a friendly message. |
 | Auth + permission helper | One shared function reads `docs/permissions.md` rules: role and shop, on the server. |
 | Validation | Rejects bad input before it touches the database. |
 | Log redaction | Strips passwords, tokens, emails, phones from log details before they are saved anywhere. |
