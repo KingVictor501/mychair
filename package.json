@@ -41,5 +41,10 @@
     "tailwindcss": "^4.3.5",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "$zod"
+    }
   }
 }
