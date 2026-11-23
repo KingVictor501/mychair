@@ -4,7 +4,8 @@
 // public "ask MyChair" feature, so it protects itself three ways:
 //   1. the question is checked on the server (3 to 300 characters, and the body is tiny),
 //   2. a global hourly cap (from the log table) answers 429 "busy" once it is reached,
-//   3. a spending limit in the Anthropic Console (set outside the code).
+//   3. a spending limit in the Anthropic Console (set outside the code),
+//   4. a per-visitor limit: 10 questions an hour per IP (lib/rate-limit.ts), checked first.
 // WHO USES IT: components/AskBox.tsx (the /ask page), and you in Postman or curl.
 // WHY THE NAME: folder path = URL (app/api/ask -> /api/ask); "route.ts" = an API route.
 //
@@ -22,6 +23,7 @@ import {
   parseHourlyCap,
 } from "@/lib/ask";
 import { log } from "@/lib/logger";
+import { clientIp, enforceRateLimit } from "@/lib/rate-limit";
 import { withLogging } from "@/lib/with-logging";
 
 // Never cache: every question is live.
@@ -30,6 +32,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export const POST = withLogging("/api/ask", async (request) => {
+  // 0. Per-visitor limit, so one person can't use up the whole hourly cap.
+  await enforceRateLimit("ask_ip", clientIp(request.headers));
+
   // 1. Read the body, but refuse anything oversized before parsing it.
   const raw = await request.text();
   if (raw.length > MAX_BODY_CHARS) {

@@ -6,6 +6,8 @@
 // WHO USES IT: the login page (components/LoginForm.tsx) and curl.
 // WHY THE NAME: folder path = URL (app/api/auth/login -> /api/auth/login).
 //
+// RATE LIMIT: 30 tries per 15 minutes per IP, and 10 per 15 minutes per email or phone (429).
+//
 // PRIVACY: logs login_attempt with the user ID (if found) and ok true/false. Never the email,
 // phone or password.
 
@@ -20,6 +22,7 @@ import { getDb } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
 import { isDemoModeOn } from "@/lib/demo/mode";
 import { log } from "@/lib/logger";
+import { clientIp, enforceRateLimit } from "@/lib/rate-limit";
 import type { MeResponse, Role } from "@/lib/types";
 import { withLogging } from "@/lib/with-logging";
 
@@ -41,10 +44,14 @@ function dummyHash(): Promise<string> {
 }
 
 export const POST = withLogging("/api/auth/login", async (request) => {
+  // Rate limits (lib/rate-limit.ts): by IP first, then by the email or phone being tried, before
+  // any password is checked, so guessing is slow from one place and against one account.
+  await enforceRateLimit("login_ip", clientIp(request.headers));
   const parsed = body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) throw new ApiError(400, "BAD_INPUT", "Enter your email or phone and your password.");
 
   const id = parseIdentifier(parsed.data.identifier);
+  await enforceRateLimit("login_account", id?.value ?? parsed.data.identifier);
   if (!id) {
     log.info("login_attempt", { ok: false });
     throw new ApiError(401, "INVALID_LOGIN", INVALID);

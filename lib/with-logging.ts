@@ -56,7 +56,8 @@ export function withLogging<C = unknown>(routeName: string, handler: Handler<C>)
           message: apiError ? apiError.message : "Something went wrong. Please try again.",
         },
       };
-      response = Response.json(body, { status });
+      // Any extra headers the route asked for (for example Retry-After on a 429).
+      response = Response.json(body, { status, headers: apiError?.headers });
     }
 
     const ms = Math.round(performance.now() - startedAt);

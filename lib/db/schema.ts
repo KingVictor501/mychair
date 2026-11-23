@@ -405,3 +405,18 @@ export const webVitals = pgTable(
   },
   (t) => [index("web_vitals_ts_idx").on(t.ts), check("web_vitals_name_check", sql`${t.name} in ('LCP', 'INP', 'CLS', 'FCP', 'TTFB')`)],
 );
+
+// Rate limit counters (lib/rate-limit.ts): one row per limit, per visitor, per time window.
+// "key" is a one-way scramble of the limit name and the IP, email, phone or user ID, so nothing
+// personal is stored. Rows older than a day are deleted (lib/logger.ts, with the log pruning).
+export const rateLimits = pgTable(
+  "rate_limits",
+  {
+    key: text("key").notNull(),
+    // When this time window began (for example 10:00 for a 15-minute window from 10:00 to 10:15).
+    windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+    // How many tries so far in this window.
+    count: integer("count").notNull().default(1),
+  },
+  (t) => [primaryKey({ columns: [t.key, t.windowStart] }), index("rate_limits_window_idx").on(t.windowStart)],
+);

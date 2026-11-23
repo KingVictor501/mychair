@@ -9,7 +9,16 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 - Statuses: 400 bad input, 401 not logged in, 403 not allowed, 404 not found (or not yours), 409 conflict (double-booking), 429 too many requests.
 - Every write validates its body on the server. Responses never include `password_hash`, tokens, or `pay_*` fields unless the caller is owner or Super Admin.
 - "Public" means no login needed. Everything else is protected and follows `docs/permissions.md`.
-- Rate limited (by IP and account): login, sign-up, booking, search.
+- Rate limited, with counters stored in the `rate_limits` table so the limits hold across every server (`lib/rate-limit.ts`). Over the limit, the reply is 429 with a friendly message and a `Retry-After` header (seconds). IPs, emails and phones are stored only as keyed one-way hashes.
+
+  | Route | Limit |
+  |---|---|
+  | `POST /api/auth/login` | 30 per 15 min per IP, and 10 per 15 min per email or phone |
+  | `POST /api/guest/appointments` | 10 per hour per IP, and 5 per hour per phone |
+  | `POST /api/demo/enter` | 30 per hour per IP |
+  | `POST /api/ask` | 10 per hour per IP (plus the global hourly cap) |
+  | `GET /api/clients/search` | 60 per 10 min per account |
+  | `POST /api/vitals` | 200 per 10 min per IP |
 
 ## Endpoints
 
@@ -17,7 +26,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
 | GET | `/api/health` | none | `{ "status": "ok" }` (and confirms DB reachable) | Public |
-| POST | `/api/vitals` | `{ name, value, rating, page }` (one Core Web Vitals reading; extra fields dropped, IDs removed from the page) | 204 | Public (rate limit planned) |
+| POST | `/api/vitals` | `{ name, value, rating, page }` (one Core Web Vitals reading; extra fields dropped, IDs removed from the page) | 204 | Public (rate limited) |
 
 ### Auth
 | Method | URL | Request body | Response | Who |

@@ -7,6 +7,8 @@
 // WHO USES IT: the booking form on /guest/<pro ID>.
 // WHY THE NAME: folder path = URL.
 //
+// RATE LIMIT: 10 bookings an hour per IP, and 5 an hour per phone number (429).
+//
 // PRIVACY: logs appointment_booked with IDs only (never the name or phone). The reply never says
 // whether the phone number already had a client record.
 
@@ -14,13 +16,18 @@ import { ApiError } from "@/lib/api-error";
 import { createAppointment, pickServices } from "@/lib/booking/data";
 import { findOrAddGuestClient, guestBookingInput, loadGuestPro } from "@/lib/guest/booking";
 import { log } from "@/lib/logger";
+import { clientIp, enforceRateLimit } from "@/lib/rate-limit";
 import { withLogging } from "@/lib/with-logging";
 
 export const dynamic = "force-dynamic";
 
 export const POST = withLogging("/api/guest/appointments", async (request) => {
+  // Rate limits (lib/rate-limit.ts): no account is needed here, so cap by IP and by phone number,
+  // so nobody can fill a pro's calendar with fake bookings.
+  await enforceRateLimit("guest_booking_ip", clientIp(request.headers));
   const parsed = guestBookingInput.safeParse(await request.json().catch(() => null));
   if (!parsed.success) throw new ApiError(400, "BAD_INPUT", parsed.error.issues[0]?.message ?? "Check your booking and try again.");
+  await enforceRateLimit("guest_booking_phone", parsed.data.phone);
   const { pro, shop } = await loadGuestPro(parsed.data.proId);
   // Check the services first, so a bad pick never adds a client record.
   await pickServices(pro.id, pro.priceMode, parsed.data.serviceIds);

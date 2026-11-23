@@ -7,6 +7,8 @@
 // WHO USES IT: app/demo/page.tsx (components/DemoEnterButton.tsx).
 // WHY THE NAME: folder path = URL.
 //
+// RATE LIMIT: 30 entries an hour per IP (429).
+//
 // PRIVACY: logs demo_entered with IDs and the role only.
 
 import { eq } from "drizzle-orm";
@@ -21,6 +23,7 @@ import { users } from "@/lib/db/schema";
 import { canEnterDemo } from "@/lib/auth/access-rules";
 import { isDemoModeOn } from "@/lib/demo/mode";
 import { log } from "@/lib/logger";
+import { clientIp, enforceRateLimit } from "@/lib/rate-limit";
 import type { Role } from "@/lib/types";
 import { withLogging } from "@/lib/with-logging";
 
@@ -29,6 +32,8 @@ export const dynamic = "force-dynamic";
 const body = z.object({ userId: z.string().uuid() }).strict();
 
 export const POST = withLogging("/api/demo/enter", async (request) => {
+  // Rate limit (lib/rate-limit.ts): each click makes a session, so cap it per IP.
+  await enforceRateLimit("demo_enter_ip", clientIp(request.headers));
   const parsed = body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) throw new ApiError(400, "BAD_INPUT", "Pick a demo view.");
   const [target] = await getDb()

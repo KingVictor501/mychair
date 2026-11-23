@@ -131,6 +131,9 @@ export async function flushLogs(): Promise<void> {
       // Site performance readings are kept a little longer (30 days), for trends.
       const { webVitals } = await import("./db/schema");
       await db.delete(webVitals).where(lt(webVitals.ts, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)));
+      // Rate limit counters are only needed for their window (at most an hour), so keep a day.
+      const { rateLimits } = await import("./db/schema");
+      await db.delete(rateLimits).where(lt(rateLimits.windowStart, new Date(Date.now() - 24 * 60 * 60 * 1000)));
       log.info("logs_pruned", { retentionDays: LOG_RETENTION_DAYS });
     }
   } catch (error) {

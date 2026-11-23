@@ -12,12 +12,15 @@ export class ApiError extends Error {
   readonly status: number;
   // A short machine-readable label, e.g. "DB_UNREACHABLE".
   readonly code: string;
+  // Extra response headers, for example "Retry-After" on a 429 (too many tries).
+  readonly headers: Record<string, string>;
 
   // "publicMessage" is what the visitor sees. "options.cause" is the real reason, for logs only.
-  constructor(status: number, code: string, publicMessage: string, options?: { cause?: unknown }) {
-    super(publicMessage, options);
+  constructor(status: number, code: string, publicMessage: string, options?: { cause?: unknown; headers?: Record<string, string> }) {
+    super(publicMessage, options?.cause === undefined ? undefined : { cause: options.cause });
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.headers = options?.headers ?? {};
   }
 }

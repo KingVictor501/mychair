@@ -7,6 +7,8 @@
 // WHO USES IT: the Client search box (pros, owners, Super Admin) and the future mobile app.
 // WHY THE NAME: folder path = URL (/api/clients/search).
 //
+// RATE LIMIT: 60 searches per 10 minutes per account (429).
+//
 // PRIVACY: logs client_search with the role and result count only, never the search text.
 
 import { eq } from "drizzle-orm";
@@ -17,12 +19,15 @@ import { parseClientSearch, searchClients } from "@/lib/clients/search";
 import { getDb } from "@/lib/db/client";
 import { shops } from "@/lib/db/schema";
 import { log } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { withLogging } from "@/lib/with-logging";
 
 export const dynamic = "force-dynamic";
 
 export const GET = withLogging("/api/clients/search", async (request) => {
   const user = requireRole(await getCurrentUser(), "pro", "owner", "super_admin");
+  // Rate limit per account (lib/rate-limit.ts), so nobody can walk through every phone number.
+  await enforceRateLimit("client_search_user", user.id);
   const parsed = parseClientSearch(user.role, new URL(request.url).searchParams.get("q") ?? "");
   if (!parsed.ok) throw new ApiError(400, "BAD_SEARCH", parsed.reason);
 
