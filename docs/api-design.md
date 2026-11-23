@@ -15,6 +15,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
   |---|---|
   | `POST /api/auth/login` | 30 per 15 min per IP, and 10 per 15 min per email or phone |
   | `POST /api/guest/appointments` | 10 per hour per IP, and 5 per hour per phone |
+  | `GET /api/guest/shops` | 300 per 10 min per IP |
   | `POST /api/demo/enter` | 30 per hour per IP |
   | `POST /api/ask` | 10 per hour per IP (plus the global hourly cap) |
   | `GET /api/clients/search` | 60 per 10 min per account |
@@ -72,6 +73,7 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 | Method | URL | Request body | Response | Who |
 |---|---|---|---|---|
 | GET | `/api/pros/[id]/slots` | `?date=YYYY-MM-DD&serviceIds=<id>,<id>` (1 to 4 services) | open start times for the services back to back, in the shop's time zone | Protected |
+| GET | `/api/guest/shops?q=` | none (`q` = what was typed, up to 80 characters; empty lists shops A to Z) | `{ shops: [{ slug, name, businessType }] }`, up to 6, closest name first (tolerates small typos) | Public (shops a guest may see) |
 | GET | `/api/guest/pros/[id]/slots` | same as above | open start times | Public (shops a guest may see) |
 | PUT | `/api/pros/[id]/hours` | `{ rules: [{ weekday, start, end, kind }] }` | saved rules | The pro themself, Owner, Super Admin |
 | PUT | `/api/pros/[id]/time-off` | `{ ranges: [{ startsOn, endsOn }] }` | saved ranges | The pro themself, Owner, Super Admin |

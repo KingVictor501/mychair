@@ -30,6 +30,8 @@ export const RATE_LIMITS = {
   // Guest booking needs no account, so it's capped by IP and by the phone number used.
   guest_booking_ip: { max: 10, windowMin: 60, message: "Too many bookings from here. Please try again in a little while." },
   guest_booking_phone: { max: 5, windowMin: 60, message: "Too many bookings for this phone number. Please try again in a little while." },
+  // The predictive shop search asks again as the guest types (after a short pause), so it's roomy.
+  shop_search_ip: { max: 300, windowMin: 10, message: "Too many searches. Please wait a few minutes and try again." },
   // One-click demo entry creates a session each time.
   demo_enter_ip: { max: 30, windowMin: 60, message: "Too many demo sessions from here. Please try again in a little while." },
   // Every page view sends up to five performance readings, so this one is generous.

@@ -4,6 +4,9 @@
 // GET /api/pros/<id>/slots), then confirm (POST /api/appointments).
 // The cancellation window is shown before confirming. Loading, empty, error and success are
 // all shown.
+// To keep it quick: after the first service is picked, it jumps to the first day that has open
+// times, and after a time is picked it scrolls to the last step (for a guest, straight into the
+// first-name box). A guest can press Enter to confirm.
 // WHO USES IT: app/book/[proId]/page.tsx (a client booking), app/pro/book/[clientId]/page.tsx
 // (a pro booking a client who called in, using the bookFor prop), and app/guest/[proId]/page.tsx
 // (booking without an account, using the guest prop: asks for first name and phone, and uses the
@@ -13,7 +16,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProService } from "@/lib/booking/data";
 import type { Slot } from "@/lib/booking/slots";
 import { MAX_SERVICES } from "@/lib/booking/slots";
@@ -31,14 +34,17 @@ type Props = {
   bookFor?: { clientId: string; clientName: string };
   // Set when someone books without an account.
   guest?: boolean;
+  // For a guest: where "Book another appointment" goes (their shop's page).
+  guestBackHref?: string;
 };
 type SlotState = { kind: "idle" } | { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready"; slots: Slot[] };
 type SaveState = { kind: "idle" } | { kind: "saving" } | { kind: "done" } | { kind: "error"; message: string };
 
-// The look of a chosen option, so the selected service, day and time stand out.
-const selected = (on: boolean) => (on ? "!bg-text !text-bg" : "");
+// The look of an option: outlined when not chosen, filled in when chosen, so the picked service,
+// day and time stand out at a glance.
+const selected = (on: boolean) => (on ? "!bg-text !text-bg" : "!bg-bg !text-text !border-border");
 
-export default function BookingForm({ proId, services, dates, timeZone, cancellationWindowHours, bookFor, guest = false }: Props) {
+export default function BookingForm({ proId, services, dates, timeZone, cancellationWindowHours, bookFor, guest = false, guestBackHref = "/guest" }: Props) {
   // The services picked, in the order picked. Their lengths and prices add up.
   const [picked, setPicked] = useState<ProService[]>([]);
   const totalMin = picked.reduce((sum, s) => sum + s.durationMin, 0);
@@ -51,18 +57,60 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
   // A guest's first name and phone (only used when "guest" is set).
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+  // The last step and the first-name box, so picking a time can bring them into view.
+  const confirmRef = useRef<HTMLElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  // When a time is picked, scroll the confirm step into view (and, for a guest, put the cursor
+  // in the first-name box if it's still empty).
+  useEffect(() => {
+    if (!chosen) return;
+    confirmRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (guest && !guestName) nameRef.current?.focus({ preventScroll: true });
+    // Only when the picked time changes, not on every letter typed.
+  }, [chosen]);
+
+  // Asks for the open times on one day. Returns them, or an error message.
+  async function fetchSlots(nextPicked: ProService[], day: string): Promise<{ slots: Slot[] } | { message: string }> {
+    const base = guest ? "/api/guest/pros" : "/api/pros";
+    const ids = nextPicked.map((s) => s.id).join(",");
+    const res = await fetch(`${base}/${proId}/slots?date=${day}&serviceIds=${ids}`);
+    const body = (await res.json()) as { slots?: Slot[]; error?: { message: string } };
+    if (!res.ok || !body.slots) return { message: body.error?.message ?? "Couldn't load times." };
+    return { slots: body.slots };
+  }
+
+  // After the first service is picked: go through the days in order and stop at the first one
+  // with an open time, so the guest sees times right away instead of trying day after day.
+  async function jumpToFirstOpenDay(nextPicked: ProService[]) {
+    setChosen(null);
+    setSlots({ kind: "loading" });
+    setDate(dates[0] ?? null);
+    try {
+      for (const day of dates) {
+        const result = await fetchSlots(nextPicked, day);
+        if ("message" in result) return setSlots({ kind: "error", message: result.message });
+        if (result.slots.length > 0) {
+          setDate(day);
+          return setSlots({ kind: "ready", slots: result.slots });
+        }
+      }
+      // No open times on any day: show the first day's empty state.
+      setDate(dates[0] ?? null);
+      setSlots({ kind: "ready", slots: [] });
+    } catch {
+      setSlots({ kind: "error", message: "Couldn't reach the server. Try again." });
+    }
+  }
 
   // Loads the open times on a day for the picked services, back to back.
   async function loadSlots(nextPicked: ProService[], nextDate: string) {
     setChosen(null);
     setSlots({ kind: "loading" });
     try {
-      const base = guest ? "/api/guest/pros" : "/api/pros";
-      const ids = nextPicked.map((s) => s.id).join(",");
-      const res = await fetch(`${base}/${proId}/slots?date=${nextDate}&serviceIds=${ids}`);
-      const body = (await res.json()) as { slots?: Slot[]; error?: { message: string } };
-      if (!res.ok || !body.slots) return setSlots({ kind: "error", message: body.error?.message ?? "Couldn't load times." });
-      setSlots({ kind: "ready", slots: body.slots });
+      const result = await fetchSlots(nextPicked, nextDate);
+      if ("message" in result) return setSlots({ kind: "error", message: result.message });
+      setSlots({ kind: "ready", slots: result.slots });
     } catch {
       setSlots({ kind: "error", message: "Couldn't reach the server. Try again." });
     }
@@ -102,7 +150,7 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
         </p>
         {guest && <p>To change or cancel, call the shop.</p>}
         {guest ? (
-          <Link href="/guest">Book another appointment</Link>
+          <Link href={guestBackHref}>Book another appointment</Link>
         ) : (
           <Link href={bookFor ? "/pro" : "/book/mine"}>{bookFor ? "Back to my schedule" : "See my appointments"}</Link>
         )}
@@ -136,6 +184,7 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
                       setChosen(null);
                       setSlots({ kind: "idle" });
                     } else if (date) void loadSlots(next, date);
+                    else void jumpToFirstOpenDay(next);
                   }}
                   className={`!flex !justify-between !text-left gap-3 ${selected(on)}`}
                 >
@@ -203,24 +252,32 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
       )}
 
       {picked.length > 0 && chosen && (
-        <section className="rounded-lg border border-border bg-surface p-4">
+        <section ref={confirmRef} className="rounded-lg border border-border bg-surface p-4">
+          <h2 className="!mt-0">4. Confirm</h2>
           <p className="!mt-0">
             <strong className="text-text">{pickedNames}</strong> · {shopDateTime(chosen.startsAt, timeZone)} · {totalMin} min · {money(totalCents)}
           </p>
           {guest ? (
-            <>
+            // A form, so pressing Enter (or "Go" on a phone keyboard) books.
+            <form
+              id="guest-details"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void confirm();
+              }}
+            >
               <p className="text-sm">Without an account, call the shop to change or cancel, up to {cancellationWindowHours} hours before.</p>
               <div className="mb-3 grid gap-2 sm:grid-cols-2">
                 <label className="flex flex-col gap-1">
                   <span>First name</span>
-                  <input value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={40} autoComplete="given-name" required />
+                  <input ref={nameRef} value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={40} autoComplete="given-name" autoCapitalize="words" enterKeyHint="next" required />
                 </label>
                 <label className="flex flex-col gap-1">
                   <span>Phone number</span>
-                  <input value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="(212) 555-0111" required />
+                  <input type="tel" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} inputMode="tel" autoComplete="tel" enterKeyHint="go" placeholder="(212) 555-0111" maxLength={30} required />
                 </label>
               </div>
-            </>
+            </form>
           ) : (
             <p className="text-sm">
               {bookFor ? `${bookFor.clientName} can cancel` : "You can cancel"} up to {cancellationWindowHours} hours before the appointment.
@@ -231,7 +288,12 @@ export default function BookingForm({ proId, services, dates, timeZone, cancella
               {save.message}
             </p>
           )}
-          <button type="button" onClick={() => void confirm()} disabled={save.kind === "saving" || (guest && (!guestName.trim() || !guestPhone.trim()))}>
+          <button
+            // For a guest this is the form's submit button; otherwise a plain button.
+            type={guest ? "submit" : "button"}
+            form={guest ? "guest-details" : undefined}
+            onClick={guest ? undefined : () => void confirm()}
+            disabled={save.kind === "saving" || (guest && (!guestName.trim() || !guestPhone.trim()))}>
             {save.kind === "saving" ? "Booking…" : "Confirm booking"}
           </button>
         </section>

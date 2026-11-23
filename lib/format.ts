@@ -26,6 +26,8 @@ export function dayLabel(ymd: string): string {
 }
 
 // Live status and appointment status in words.
+// The kind of shop, in plain words.
+export const BUSINESS_TYPE: Record<string, string> = { barbershop: "Barbershop", nail_salon: "Nail salon", lash_studio: "Lash studio" };
 export const LIVE_STATUS: Record<string, string> = { available: "Available", with_client: "With a client", unavailable: "Unavailable" };
 export const APPOINTMENT_STATUS: Record<string, string> = {
   waiting: "Booked",
