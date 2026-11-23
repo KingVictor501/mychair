@@ -30,7 +30,7 @@
 
 ## Lessons from my previous project (The Vegas Backroom)
 
-The Vegas Backroom (https://github.com/KingVictor501/backroom-vegas) was an NFL and NBA odds, news and bet slip app built in about 11 hours. This is what I kept, what I changed, and why, based on that repo and my notes from building it.
+The Vegas Backroom (https://github.com/KingVictor501/backroom-vegas) was an NFL and NBA odds, news and bet slip app built in about 31 hours. This is what I kept, what I changed, and why, based on that repo and my notes from building it.
 
 | Vegas Backroom choice | MyChair | Kept or changed | Why |
 | --------------- | ------- | --------------- | --- |
