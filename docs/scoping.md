@@ -35,3 +35,6 @@ A loyal regular is wrongly flagged, gets asked for a deposit at their next booki
 
 **Size check:**
 One worker (the weekly Digest), one door (one shop's appointment records, read-only), one write (a deposit flag on a client, after my yes). In scope.
+
+**Later idea (parked):**
+A second worker that takes the Digest's approved deposit list and drafts a short, polite heads-up for each of those clients, for Ben to send himself. It would be a handoff between two workers, so it would need its own limits, its own entries in the log and its own place in the stop switch, and it would treat the Digest's output as data, never as instructions. Parked until the one-worker core is finished and proven; it's my candidate for the self-taught stretch.
