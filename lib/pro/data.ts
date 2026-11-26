@@ -17,6 +17,7 @@ import { and, asc, count, desc, eq, gte, lt, max, ne, or, sql } from "drizzle-or
 import { ApiError } from "../api-error";
 import { serviceListSql, serviceNamesSql, type ShopRow } from "../booking/data";
 import { getDb } from "../db/client";
+import { staffNameSql } from "../db/names";
 import { appointments, clientProfiles, proProfiles, services, styleCards, users } from "../db/schema";
 import { addDays, localDateParts, type LocalDate, zonedToUtc } from "../demo/time";
 import { listPhotos, type PhotoSummary } from "../photos/data";
@@ -173,7 +174,7 @@ export async function getClientForPro(proId: string, shop: ShopRow, clientId: st
 
   // Other pros' cards for this client in this shop, read-only, at any time.
   const otherRows = await db
-    .select({ id: styleCards.id, proName: users.name, preferences: styleCards.preferences, notes: styleCards.notes, usualServiceName: services.name, timeEstimateMin: styleCards.timeEstimateMin, updatedAt: styleCards.updatedAt })
+    .select({ id: styleCards.id, proName: staffNameSql(users), preferences: styleCards.preferences, notes: styleCards.notes, usualServiceName: services.name, timeEstimateMin: styleCards.timeEstimateMin, updatedAt: styleCards.updatedAt })
     .from(styleCards)
     .innerJoin(users, eq(users.id, styleCards.proId))
     .leftJoin(services, eq(services.id, styleCards.usualServiceId))

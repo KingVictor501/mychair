@@ -5,6 +5,13 @@
 // WHY THE NAME: formatting helpers; ".ts" = no screen code.
 
 // 5000 -> "$50", 2250 -> "$22.50".
+// A pro's or owner's name as others see it: first name plus last initial ("Ray K."), or just
+// the first name if there's no last name. Matches staffNameSql in lib/db/names.ts.
+export function staffName(name: string, lastName: string | null | undefined): string {
+  const initial = lastName?.trim().charAt(0).toUpperCase();
+  return initial ? `${name} ${initial}.` : name;
+}
+
 export function money(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 }

@@ -10,6 +10,7 @@
 
 import { and, asc, count, desc, eq, gte, ilike, inArray, lt, ne, sql, type SQL } from "drizzle-orm";
 import { getDb } from "../db/client";
+import { staffNameSql } from "../db/names";
 import { appointments, logEntries, proProfiles, shops, users } from "../db/schema";
 import { addDays, localDateParts, zonedToUtc } from "../demo/time";
 import { revenueRanges } from "../owner/rules";
@@ -36,7 +37,7 @@ export async function listShopSummaries(now: Date = new Date()): Promise<ShopSum
   const ids = all.map((s) => s.id);
   const [people, clientCounts] = await Promise.all([
     db
-      .select({ id: users.id, name: users.name, role: users.role, shopId: users.shopId, title: proProfiles.title, station: proProfiles.stationNumber })
+      .select({ id: users.id, name: staffNameSql(users), role: users.role, shopId: users.shopId, title: proProfiles.title, station: proProfiles.stationNumber })
       .from(users)
       .leftJoin(proProfiles, eq(proProfiles.userId, users.id))
       .where(and(inArray(users.shopId, ids), inArray(users.role, ["owner", "pro"])))

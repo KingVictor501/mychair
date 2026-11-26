@@ -8,6 +8,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEMO_SHOPS, DEMO_SUPER_ADMIN, demoDropInClients } from "./catalog";
+import { staffName } from "../format";
 import { demoId } from "./seed";
 import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
@@ -63,5 +64,18 @@ test("each shop gets 320 drop-in clients that never reuse a regular's first name
     assert.equal(dropIns.length, 320, shop.name);
     const regulars = new Set(shop.clients.map((c) => c.name));
     assert.ok(dropIns.every((c) => !regulars.has(c.name)), "so searching a regular's name finds just them");
+  }
+});
+
+test("pros and owners show first name and last initial, and no two in a shop look the same", () => {
+  assert.equal(staffName("Ray", "Kendall"), "Ray K.");
+  assert.equal(staffName("Ray", " kendall "), "Ray K.", "trims and capitalises");
+  assert.equal(staffName("Ray", null), "Ray", "no last name: first name only");
+  assert.equal(staffName("Ray", ""), "Ray");
+  for (const shop of DEMO_SHOPS) {
+    const staff = [shop.owner, ...shop.pros];
+    assert.ok(staff.every((p) => p.lastName.trim().length > 0), `${shop.name}: everyone has a last name`);
+    const labels = staff.map((p) => staffName(p.name, p.lastName));
+    assert.equal(new Set(labels).size, labels.length, `${shop.name}: labels are all different`);
   }
 });

@@ -6,6 +6,7 @@
 
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb } from "../db/client";
+import { staffNameSql } from "../db/names";
 import { proProfiles, shops, users } from "../db/schema";
 
 export type DemoShopView = { id: string; name: string; businessType: string; owner: { id: string; name: string } | null; pros: Array<{ id: string; name: string; title: string }> };
@@ -16,7 +17,7 @@ export async function listDemoViews(): Promise<DemoShopView[]> {
   const demoShops = await db.select({ id: shops.id, name: shops.name, businessType: shops.businessType }).from(shops).where(eq(shops.isDemo, true)).orderBy(asc(shops.name));
   if (demoShops.length === 0) return [];
   const people = await db
-    .select({ id: users.id, name: users.name, role: users.role, shopId: users.shopId, title: proProfiles.title, station: proProfiles.stationNumber })
+    .select({ id: users.id, name: staffNameSql(users), role: users.role, shopId: users.shopId, title: proProfiles.title, station: proProfiles.stationNumber })
     .from(users)
     .leftJoin(proProfiles, eq(proProfiles.userId, users.id))
     .where(and(eq(users.isDemo, true), inArray(users.role, ["owner", "pro"]), inArray(users.shopId, demoShops.map((s) => s.id))))

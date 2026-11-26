@@ -53,7 +53,8 @@ Types: `uuid` = unique id, `text` = words, `int` = whole number, `timestamptz` =
 | id | uuid | yes | PK |
 | **shop_id** | uuid FK shops | no | **Ties the user to a shop.** Empty only for `super_admin`. |
 | role | text | yes | `super_admin`, `owner`, `pro`, `client` |
-| name | text | yes | |
+| name | text | yes | first name, used for greetings ("Hi, Ray") |
+| last_name | text | pros and owners (clients leave it empty) | only the initial is ever shown: pros and owners appear as "Ray K." everywhere other people see them, so two pros with the same first name can be told apart. Never logged. |
 | email | text | **clients: optional. Owner, pro, Super Admin: required** | unique when present. Can be used to log in. Never shown to pros. |
 | phone | text | **clients: required.** Others: optional | unique when present. Saved in one standard format (E.164, e.g. `+15551234567`). Can be used to log in. |
 | password_hash | text | yes, except a pro account an owner just created | hash only, never the password. Never returned by any route. Empty only until the pro uses their setup link; **login is refused while it is empty.** |

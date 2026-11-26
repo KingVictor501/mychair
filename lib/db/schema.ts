@@ -134,7 +134,11 @@ export const users = pgTable(
     shopId: uuid("shop_id").references(() => shops.id, { onDelete: "cascade" }),
     // super_admin, owner, pro or client.
     role: text("role").notNull(),
+    // First name.
     name: text("name").notNull(),
+    // Last name, for pros and owners (clients leave it empty). Only its first letter is ever shown
+    // ("Ray K."), so two pros with the same first name can be told apart. Never logged.
+    lastName: text("last_name"),
     // Unique when present. Used to log in. Never shown to pros.
     email: text("email").unique(),
     // E.164 format, e.g. +15550101234. Unique when present.

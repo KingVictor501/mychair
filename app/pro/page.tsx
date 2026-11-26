@@ -59,7 +59,7 @@ export default async function ProHome({ searchParams }: { searchParams: Promise<
   return (
     <main className="!max-w-3xl">
       <Breadcrumbs items={user.role === "owner" ? [{ label: shop.name, href: "/owner" }, { label: "My schedule" }] : [{ label: "My schedule" }]} />
-      <ShopBanner businessType={shop.businessType} title={`Hi, ${pro.name}`} subtitle={`${pro.title} at ${shop.name}`} />
+      <ShopBanner businessType={shop.businessType} title={`Hi, ${pro.firstName}`} subtitle={`${pro.title} at ${shop.name}`} />
 
       <section aria-label="Live status" className="mb-6">
         <LiveStatusPicker initial={pro.liveStatus} />

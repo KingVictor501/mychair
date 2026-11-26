@@ -14,6 +14,7 @@ import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, gte, inArray, lt, notInArray, or, sql } from "drizzle-orm";
 import { ApiError } from "../api-error";
 import { getDb } from "../db/client";
+import { staffNameSql } from "../db/names";
 import { appointmentServices, appointments, availabilityRules, proProfiles, proServices, services, shops, styleCards, users } from "../db/schema";
 import { addDays, localDateParts, type LocalDate } from "../demo/time";
 import { canClientCancel, combineServices, effectivePrice, openSlots, type Rule, type Slot } from "./slots";
@@ -48,7 +49,7 @@ export async function getShop(shopId: string): Promise<ShopRow | null> {
 export async function listPros(shopId: string): Promise<ProSummary[]> {
   const db = getDb();
   const pros = await db
-    .select({ id: users.id, name: users.name, title: proProfiles.title, liveStatus: proProfiles.liveStatus, bio: proProfiles.bio, priceMode: proProfiles.priceMode })
+    .select({ id: users.id, name: staffNameSql(users), title: proProfiles.title, liveStatus: proProfiles.liveStatus, bio: proProfiles.bio, priceMode: proProfiles.priceMode })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
     .where(and(eq(users.shopId, shopId), TAKES_APPOINTMENTS))
@@ -69,7 +70,7 @@ export async function listPros(shopId: string): Promise<ProSummary[]> {
 // on "Let other pros book for me". Names only, themselves first.
 export async function bookablePros(proId: string, shopId: string): Promise<Array<{ id: string; name: string }>> {
   const rows = await getDb()
-    .select({ id: users.id, name: users.name })
+    .select({ id: users.id, name: staffNameSql(users) })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
     .where(and(eq(users.shopId, shopId), TAKES_APPOINTMENTS, or(eq(users.id, proId), eq(proProfiles.allowOthersToBook, true))))
@@ -77,11 +78,12 @@ export async function bookablePros(proId: string, shopId: string): Promise<Array
   return [...rows.filter((r) => r.id === proId), ...rows.filter((r) => r.id !== proId)];
 }
 
-// One pro's profile, or null if there's no such pro. ("allowOthersToBook" is the pro's own
+// One pro's profile, or null if there's no such pro. "name" is the label others see ("Ray K.");
+// "firstName" is for greeting the pro themselves ("Hi, Ray"). ("allowOthersToBook" is the pro's own
 // setting; the public pages don't show it.)
 export async function getPro(proId: string) {
   const [row] = await getDb()
-    .select({ id: users.id, name: users.name, shopId: users.shopId, title: proProfiles.title, bio: proProfiles.bio, liveStatus: proProfiles.liveStatus, priceMode: proProfiles.priceMode, allowOthersToBook: proProfiles.allowOthersToBook })
+    .select({ id: users.id, name: staffNameSql(users), firstName: users.name, shopId: users.shopId, title: proProfiles.title, bio: proProfiles.bio, liveStatus: proProfiles.liveStatus, priceMode: proProfiles.priceMode, allowOthersToBook: proProfiles.allowOthersToBook })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
     .where(and(eq(users.id, proId), TAKES_APPOINTMENTS));
@@ -192,7 +194,7 @@ export const serviceListSql = sql<string[]>`coalesce((select array_agg(s.name or
 // A client's appointments: upcoming first (soonest first), then past (newest first).
 export async function listClientAppointments(clientId: string, shop: ShopRow, now: Date = new Date()): Promise<ClientAppointment[]> {
   const rows = await getDb()
-    .select({ id: appointments.id, startsAt: appointments.startsAt, endsAt: appointments.endsAt, status: appointments.status, priceCents: appointments.priceCents, serviceName: serviceNamesSql, proName: users.name })
+    .select({ id: appointments.id, startsAt: appointments.startsAt, endsAt: appointments.endsAt, status: appointments.status, priceCents: appointments.priceCents, serviceName: serviceNamesSql, proName: staffNameSql(users) })
     .from(appointments)
     .innerJoin(services, eq(services.id, appointments.serviceId))
     .innerJoin(users, eq(users.id, appointments.proId))

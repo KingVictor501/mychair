@@ -20,7 +20,7 @@ export default async function SessionBanner() {
     return (
       <div role="status" className="flex flex-wrap items-center justify-center gap-3 border-b border-border bg-text px-4 py-2 text-sm text-bg">
         <span>
-          Viewing as <strong>{user.name}</strong> ({ROLE_LABEL[user.role]}){user.isDemo ? " · demo data" : ""}. What you do here is done as them.
+          Viewing as <strong>{user.displayName ?? user.name}</strong> ({ROLE_LABEL[user.role]}){user.isDemo ? " · demo data" : ""}. What you do here is done as them.
         </span>
         <SwitchSessionButton url="/api/admin/view-as/stop" label="Stop viewing as" className="!py-1 text-sm" />
       </div>
@@ -31,7 +31,7 @@ export default async function SessionBanner() {
     return (
       <div role="status" className="flex flex-wrap items-center justify-center gap-3 border-b border-border bg-surface px-4 py-2 text-sm">
         <span>
-          <strong className="text-text">Demo</strong> · you&apos;re seeing {user.name}&apos;s {ROLE_LABEL[user.role]} view, with made-up data.
+          <strong className="text-text">Demo</strong> · you&apos;re seeing {user.displayName ?? user.name}&apos;s {ROLE_LABEL[user.role]} view, with made-up data.
         </span>
         <LogoutButton label="Leave demo" goTo="/demo" />
       </div>

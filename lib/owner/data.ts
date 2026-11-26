@@ -15,6 +15,7 @@ import { and, asc, count, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { ApiError } from "../api-error";
 import { serviceNamesSql, TAKES_APPOINTMENTS, type ShopRow } from "../booking/data";
 import { getDb } from "../db/client";
+import { staffNameSql } from "../db/names";
 import { appointments, proProfiles, proServices, services, users } from "../db/schema";
 import { addDays, type LocalDate, zonedToUtc } from "../demo/time";
 import { alias } from "drizzle-orm/pg-core";
@@ -61,7 +62,7 @@ export async function listShopDay(shop: ShopRow, date: LocalDate): Promise<ShopD
       priceCents: appointments.priceCents,
       serviceName: serviceNamesSql,
       proId: appointments.proId,
-      proName: users.name,
+      proName: staffNameSql(users),
       clientName: client.name,
     })
     .from(appointments)
@@ -106,7 +107,7 @@ export async function listTeam(shop: ShopRow, today: LocalDate): Promise<TeamMem
   const pros = await db
     .select({
       id: users.id,
-      name: users.name,
+      name: staffNameSql(users),
       title: proProfiles.title,
       station: proProfiles.stationNumber,
       liveStatus: proProfiles.liveStatus,
@@ -145,7 +146,7 @@ export async function listTeam(shop: ShopRow, today: LocalDate): Promise<TeamMem
 export async function getProPricing(shop: ShopRow, proId: string) {
   const db = getDb();
   const [pro] = await db
-    .select({ id: users.id, name: users.name, title: proProfiles.title, priceMode: proProfiles.priceMode })
+    .select({ id: users.id, name: staffNameSql(users), title: proProfiles.title, priceMode: proProfiles.priceMode })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
     .where(and(eq(users.id, proId), TAKES_APPOINTMENTS, eq(users.shopId, shop.id)));

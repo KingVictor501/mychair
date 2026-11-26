@@ -65,7 +65,7 @@ export default async function SiteHeader() {
         <Link href={user ? HOME_FOR_ROLE[user.role] : "/"} className="text-lg font-bold tracking-tight !no-underline">
           MyChair
         </Link>
-        <NavMenu links={links} who={user ? `${user.name} · ${ROLE_LABEL[user.role]}` : null} />
+        <NavMenu links={links} who={user ? `${user.displayName ?? user.name} · ${ROLE_LABEL[user.role]}` : null} />
       </div>
     </div>
   );

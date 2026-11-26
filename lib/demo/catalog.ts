@@ -1,6 +1,7 @@
 // lib/demo/catalog.ts
 // WHAT IT'S FOR: the made-up demo shops: names, people, services, prices, hours and pay.
-// Everything here is fictional. Everyone is shown by first name only, to keep the demo professional. Emails are @example.com and phone numbers are in the 555-01xx
+// Everything here is fictional. Clients are shown by first name only; pros and owners by first
+// name and last initial ("Ray K."), so two pros with the same first name can be told apart. Emails are @example.com and phone numbers are in the 555-01xx
 // range, which is reserved for fiction, so nothing here can reach a real person.
 // WHO USES IT: lib/demo/seed.ts. The catalog was approved before it was first seeded.
 // WHY THE NAME: the demo "catalog"; ".ts" = no screen code.
@@ -8,6 +9,7 @@
 export type DemoService = { name: string; description: string; durationMin: number; priceCents: number };
 export type DemoPro = {
   name: string;
+  lastName: string; // shown only as an initial ("Ray K.")
   title: string;
   email: string;
   phone: string;
@@ -22,7 +24,7 @@ export type DemoShop = {
   name: string;
   businessType: "barbershop" | "nail_salon" | "lash_studio";
   timezone: string;
-  owner: { name: string; email: string; phone: string };
+  owner: { name: string; lastName: string; email: string; phone: string };
   pros: DemoPro[];
   clients: Array<{ name: string; phone: string; email: string }>;
   // Area codes for the drop-in clients (demoDropInClients). Each gives 80 numbers, 555-0120 to
@@ -45,15 +47,15 @@ export const DEMO_SHOPS: DemoShop[] = [
     businessType: "barbershop",
     timezone: "America/New_York",
     dropInAreaCodes: ["212", "646", "718", "917"],
-    owner: { name: "Ben", email: "ben.fadefactory@example.com", phone: "+12125550101" },
+    owner: { name: "Ben", lastName: "Carter", email: "ben.fadefactory@example.com", phone: "+12125550101" },
     pros: [
       {
-        name: "Ray", title: "Master barber", email: "ray.fadefactory@example.com", phone: "+12125550102", station: "1",
+        name: "Ray", lastName: "Kendall", title: "Master barber", email: "ray.fadefactory@example.com", phone: "+12125550102", station: "1",
         payType: "chair_rent", payAmount: 120000, customPrices: { "Skin fade": 5000, "Cut + beard": 6500 },
         bio: "Fifteen years behind the chair. Fades and hot towel shaves.",
       },
-      { name: "Tia", title: "Barber", email: "tia.fadefactory@example.com", phone: "+12125550103", station: "2", payType: "commission", payAmount: 45, bio: "Tapers, textured cuts and kids' cuts." },
-      { name: "Leo", title: "Barber", email: "leo.fadefactory@example.com", phone: "+12125550104", station: "3", payType: "commission", payAmount: 40, bio: "Sharp line-ups and beard work." },
+      { name: "Tia", lastName: "Moreno", title: "Barber", email: "tia.fadefactory@example.com", phone: "+12125550103", station: "2", payType: "commission", payAmount: 45, bio: "Tapers, textured cuts and kids' cuts." },
+      { name: "Leo", lastName: "Grant", title: "Barber", email: "leo.fadefactory@example.com", phone: "+12125550104", station: "3", payType: "commission", payAmount: 40, bio: "Sharp line-ups and beard work." },
     ],
     clients: [
       { name: "Chris", phone: "+12125550111", email: "chris.fadefactory@example.com" },
@@ -86,15 +88,15 @@ export const DEMO_SHOPS: DemoShop[] = [
     businessType: "nail_salon",
     timezone: "America/New_York",
     dropInAreaCodes: ["305", "786", "954", "561"],
-    owner: { name: "Paula", email: "paula.glossandtips@example.com", phone: "+13055550101" },
+    owner: { name: "Paula", lastName: "Reyes", email: "paula.glossandtips@example.com", phone: "+13055550101" },
     pros: [
       {
-        name: "Annie", title: "Senior nail tech", email: "annie.glossandtips@example.com", phone: "+13055550102", station: "1",
+        name: "Annie", lastName: "Shaw", title: "Senior nail tech", email: "annie.glossandtips@example.com", phone: "+13055550102", station: "1",
         payType: "chair_rent", payAmount: 100000, customPrices: { "Acrylic full set": 7500, "Acrylic fill": 5500 },
         bio: "Acrylic sets and sculpted nails.",
       },
-      { name: "Gina", title: "Nail tech", email: "gina.glossandtips@example.com", phone: "+13055550103", station: "2", payType: "commission", payAmount: 45, bio: "Gel manicures and nail art." },
-      { name: "Penny", title: "Nail tech", email: "penny.glossandtips@example.com", phone: "+13055550104", station: "3", payType: "commission", payAmount: 40, bio: "Pedicures and natural nail care." },
+      { name: "Gina", lastName: "Ford", title: "Nail tech", email: "gina.glossandtips@example.com", phone: "+13055550103", station: "2", payType: "commission", payAmount: 45, bio: "Gel manicures and nail art." },
+      { name: "Penny", lastName: "Wells", title: "Nail tech", email: "penny.glossandtips@example.com", phone: "+13055550104", station: "3", payType: "commission", payAmount: 40, bio: "Pedicures and natural nail care." },
     ],
     clients: [
       { name: "Rachel", phone: "+13055550111", email: "rachel.glossandtips@example.com" },
@@ -128,15 +130,15 @@ export const DEMO_SHOPS: DemoShop[] = [
     businessType: "lash_studio",
     timezone: "America/New_York",
     dropInAreaCodes: ["415", "628", "510", "650"],
-    owner: { name: "Lana", email: "lana.flutter@example.com", phone: "+14155550101" },
+    owner: { name: "Lana", lastName: "Brooks", email: "lana.flutter@example.com", phone: "+14155550101" },
     pros: [
       {
-        name: "Vera", title: "Lead lash artist", email: "vera.flutter@example.com", phone: "+14155550102", station: "1",
+        name: "Vera", lastName: "Lin", title: "Lead lash artist", email: "vera.flutter@example.com", phone: "+14155550102", station: "1",
         payType: "chair_rent", payAmount: 110000, customPrices: { "Volume full set": 21000, "Volume fill": 9500 },
         bio: "Volume and mega-volume sets.",
       },
-      { name: "Cleo", title: "Lash artist", email: "cleo.flutter@example.com", phone: "+14155550103", station: "2", payType: "commission", payAmount: 45, bio: "Natural classic and hybrid sets." },
-      { name: "Lou", title: "Lash artist", email: "lou.flutter@example.com", phone: "+14155550104", station: "3", payType: "commission", payAmount: 40, bio: "Lash lifts, tints and brows." },
+      { name: "Cleo", lastName: "Hart", title: "Lash artist", email: "cleo.flutter@example.com", phone: "+14155550103", station: "2", payType: "commission", payAmount: 45, bio: "Natural classic and hybrid sets." },
+      { name: "Lou", lastName: "Park", title: "Lash artist", email: "lou.flutter@example.com", phone: "+14155550104", station: "3", payType: "commission", payAmount: 40, bio: "Lash lifts, tints and brows." },
     ],
     clients: [
       { name: "Whitney", phone: "+14155550111", email: "whitney.flutter@example.com" },

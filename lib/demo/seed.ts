@@ -126,7 +126,7 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
   const shopId = shopRow.id;
 
   // The owner (runs the shop; doesn't take appointments in the demo).
-  await db.insert(users).values({ id: demoId(shop.owner.email), shopId, role: "owner", name: shop.owner.name, email: shop.owner.email, phone: shop.owner.phone, passwordHash, isDemo: true });
+  await db.insert(users).values({ id: demoId(shop.owner.email), shopId, role: "owner", name: shop.owner.name, lastName: shop.owner.lastName, email: shop.owner.email, phone: shop.owner.phone, passwordHash, isDemo: true });
 
   // Services and their standard prices.
   const serviceRows = await db
@@ -139,7 +139,7 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
   for (const [index, pro] of shop.pros.entries()) {
     const [proRow] = await db
       .insert(users)
-      .values({ id: demoId(pro.email), shopId, role: "pro", name: pro.name, email: pro.email, phone: pro.phone, passwordHash, isDemo: true })
+      .values({ id: demoId(pro.email), shopId, role: "pro", name: pro.name, lastName: pro.lastName, email: pro.email, phone: pro.phone, passwordHash, isDemo: true })
       .returning({ id: users.id });
     if (!proRow) throw new Error("demo pro insert failed");
     const custom = pro.customPrices ?? {};

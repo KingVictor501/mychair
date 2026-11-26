@@ -86,7 +86,10 @@ export type CurrentUser = {
   id: string;
   role: Role;
   shopId: string | null; // null only for the Super Admin
-  name: string;
+  name: string; // first name, for greetings ("Hi, Ray")
+  // The label other people see: "Ray K." for pros and owners, the first name for everyone else.
+  // Optional so plain test objects can leave it out (left out = use "name").
+  displayName?: string;
   isDemo: boolean;
   // True if this person has a pro profile, so they take appointments: every pro, and an owner
   // who turned on "Take appointments myself". Optional so plain test objects can leave it out
