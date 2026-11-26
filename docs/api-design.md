@@ -49,6 +49,8 @@ A REST API: the web app and the future mobile apps call the same URLs. All busin
 | POST | `/api/team` | `{ name, email, role }` | 201 `{ pro, setupUrl, expiresAt }`. The owner never sets or sees a password. | Owner (own shop), Super Admin |
 | GET | `/api/team` | none | list of pros (pay fields only for owner and Super Admin) | Protected |
 | PATCH | `/api/team/[proId]` | `{ role?, stationNumber?, payType?, payAmount?, priceMode? }` | `{ pro }` | Owner, Super Admin |
+| POST | `/api/owner/chair` | `{ title }` | 201 `{ takesAppointments: true }` (200 if it was already on). The owner gets a pro profile, the shop's services at standard prices and starting hours, and can then use every `/api/pro/*` route. | Owner (own account) |
+| DELETE | `/api/owner/chair` | none | `{ takesAppointments: false }`, or 409 `HAS_APPOINTMENTS` while they have upcoming appointments | Owner (own account) |
 
 ### Services, prices, pros
 | Method | URL | Request body | Response | Who |

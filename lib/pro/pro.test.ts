@@ -70,6 +70,10 @@ test("a pro books with another pro only if that pro allows it, and only in the s
   assert.equal(canBookFor(ray, { id: "leo", shopId: "shop-1", allowOthersToBook: false }), false, "Leo doesn't");
   assert.equal(canBookFor(ray, { id: "annie", shopId: "shop-2", allowOthersToBook: true }), false, "another shop, never");
   assert.equal(canBookFor(person("client", "c1", "shop-1"), { id: "tia", shopId: "shop-1", allowOthersToBook: true }), false, "not for clients");
+  const ben = { ...person("owner", "ben", "shop-1"), takesAppointments: true };
+  assert.equal(canBookFor(ben, { id: "ben", shopId: "shop-1", allowOthersToBook: false }), true, "an owner with a chair books themselves");
+  assert.equal(canBookFor(ben, { id: "tia", shopId: "shop-1", allowOthersToBook: true }), true, "and pros who allow it");
+  assert.equal(canBookFor(person("owner", "ben", "shop-1"), { id: "ben", shopId: "shop-1", allowOthersToBook: false }), false, "not without a chair");
 });
 
 test("pro settings accept a true/false toggle and nothing else", () => {

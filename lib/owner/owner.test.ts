@@ -5,7 +5,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { payLabel, pricingInput, revenueRanges } from "./rules";
+import { chairInput, payLabel, pricingInput, revenueRanges, startingHours } from "./rules";
 
 const SVC = "6f1c3d2e-8a4b-4c5d-9e6f-1a2b3c4d5e6f";
 
@@ -32,4 +32,23 @@ test("revenue ranges start at midnight today, Monday and the 1st, in the shop's 
   assert.equal(r.today.toISOString(), "2026-11-26T05:00:00.000Z");
   assert.equal(r.week.toISOString(), "2026-11-23T05:00:00.000Z", "Monday 23 Nov");
   assert.equal(r.month.toISOString(), "2026-11-01T04:00:00.000Z", "1 Nov, still daylight time");
+});
+
+test("taking appointments needs a sensible title and nothing else", () => {
+  assert.equal(chairInput.safeParse({ title: "Barber" }).success, true);
+  assert.equal(chairInput.safeParse({ title: " " }).success, false, "blank");
+  assert.equal(chairInput.safeParse({ title: "x".repeat(41) }).success, false, "too long");
+  assert.equal(chairInput.safeParse({ title: "Barber", payType: "commission" }).success, false, "no sneaking in pay");
+  assert.equal(chairInput.safeParse({ title: "Barber", userId: "someone-else" }).success, false, "no picking another account");
+});
+
+test("the owner's starting hours copy a teammate, or fall back to Tuesday to Saturday", () => {
+  const ray = [
+    { weekday: 1, startTime: "10:00", endTime: "19:00", kind: "work" },
+    { weekday: 1, startTime: "13:00", endTime: "13:30", kind: "break" },
+  ];
+  assert.deepEqual(startingHours(ray), ray);
+  const fallback = startingHours([]);
+  assert.deepEqual(fallback.map((r) => r.weekday), [2, 3, 4, 5, 6]);
+  assert.ok(fallback.every((r) => r.startTime === "09:00" && r.endTime === "17:00" && r.kind === "work"));
 });

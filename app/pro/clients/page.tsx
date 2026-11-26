@@ -10,6 +10,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import ClientSearch from "@/components/ClientSearch";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
+import { worksAsPro } from "@/lib/auth/permissions";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop } from "@/lib/booking/data";
 import { listMyClients } from "@/lib/pro/data";
@@ -21,7 +22,8 @@ export const metadata: Metadata = { title: "My clients · MyChair" };
 export default async function MyClientsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "pro") redirect(HOME_FOR_ROLE[user.role]);
+  // Pros, and owners who also take appointments (lib/auth/permissions.ts).
+  if (!worksAsPro(user)) redirect(HOME_FOR_ROLE[user.role]);
   const shop = user.shopId ? await getShop(user.shopId) : null;
   if (!shop) redirect("/login");
   const clients = await listMyClients(user.id);

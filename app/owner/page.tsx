@@ -4,6 +4,8 @@
 //   - the day: every appointment across all pros, with steps (check in, complete, no-show)
 //   - the team: each pro's live status, station, pay structure (owner only), price mode, and a
 //     link to set their prices
+//   - Your chair: "Take appointments myself", for an owner who also cuts, does nails or lashes.
+//     Once on, the owner is on the team list and has their own schedule at /pro.
 //   - Client search by name or phone
 // Only the shop's owner can open it; the server checks role and shop.
 // WHO USES IT: owners.
@@ -14,6 +16,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AppointmentActions from "@/components/AppointmentActions";
 import ClientSearch from "@/components/ClientSearch";
+import OwnerChair from "@/components/OwnerChair";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getShop } from "@/lib/booking/data";
@@ -21,7 +24,7 @@ import { parseLocalDate } from "@/lib/booking/slots";
 import { addDays, localDateParts, type LocalDate } from "@/lib/demo/time";
 import { LIVE_STATUS, money, shopTime } from "@/lib/format";
 import { listShopDay, listTeam, shopRevenue } from "@/lib/owner/data";
-import { payLabel } from "@/lib/owner/rules";
+import { DEFAULT_CHAIR_TITLE, payLabel } from "@/lib/owner/rules";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ShopBanner from "@/components/ShopBanner";
 import StatusPill from "@/components/StatusPill";
@@ -45,6 +48,8 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
   const isToday = ymd(date) === ymd(today);
   const [day, team, revenue] = await Promise.all([listShopDay(shop, date), listTeam(shop, today), shopRevenue(shop)]);
   const booked = day.filter((a) => a.status !== "cancelled");
+  // The owner's own row on the team, once they take appointments.
+  const mine = team.find((p) => p.id === user.id);
   const dayTitle = isToday
     ? "Today"
     : new Date(Date.UTC(date.year, date.month - 1, date.day)).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", month: "short", day: "numeric" });
@@ -67,6 +72,8 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
         ))}
       </section>
       <p className="!mt-1 text-xs">Revenue is completed appointments, at the price they were booked at.</p>
+
+      <OwnerChair ownerId={user.id} takesAppointments={Boolean(mine)} title={mine?.title ?? null} suggestedTitle={DEFAULT_CHAIR_TITLE[shop.businessType] ?? "Pro"} />
 
       <section aria-label="Appointments" className="mt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -110,7 +117,10 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
             {team.map((p) => (
               <li key={p.id} className="rounded-lg border border-border bg-bg p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-text">{p.name}</span>
+                  <span className="font-semibold text-text">
+                    {p.name}
+                    {p.id === user.id ? " (you)" : ""}
+                  </span>
                   <span className="text-xs text-text-muted">{LIVE_STATUS[p.liveStatus] ?? p.liveStatus}</span>
                 </div>
                 <div className="text-sm text-text-muted">
@@ -126,7 +136,7 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
                   <div>Other pros can book for them: {p.allowOthersToBook ? "Yes" : "No"}</div>
                 </div>
                 <Link href={`/owner/pros/${p.id}`} className="mt-2 inline-block text-sm">
-                  Set {p.name}&apos;s prices
+                  {p.id === user.id ? "Set my prices" : `Set ${p.name}'s prices`}
                 </Link>
               </li>
             ))}

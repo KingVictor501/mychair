@@ -17,7 +17,7 @@ import { normalizePhone, parseIdentifier } from "./identifier";
 import { hashPassword, verifyPassword } from "./password";
 import { canEnterDemo, canUseAdmin, canViewAs } from "./access-rules";
 import { superAdminSettings } from "./super-admin";
-import { assertShopAccess, canAccessShop, canSeeClient, requireRole, requireUser } from "./permissions";
+import { assertShopAccess, canAccessShop, canSeeClient, requireRole, requireUser, worksAsPro } from "./permissions";
 import { createSessionToken, readSessionToken } from "./session";
 
 const SECRET = "test-session-secret-that-is-at-least-32-chars";
@@ -182,4 +182,15 @@ test("the Super Admin settings need a real email and a password of 12 or more ch
   assert.equal(superAdminSettings({ SUPER_ADMIN_EMAIL: "", SUPER_ADMIN_PASSWORD: "a-long-password-1" }).ok, false);
   assert.equal(superAdminSettings({ SUPER_ADMIN_EMAIL: "not-an-email", SUPER_ADMIN_PASSWORD: "a-long-password-1" }).ok, false);
   assert.equal(superAdminSettings({ SUPER_ADMIN_EMAIL: "me@example.com", SUPER_ADMIN_PASSWORD: "short" }).ok, false, "too short");
+});
+
+test("the pro pages are for pros, and for owners only once they take appointments", () => {
+  const base = { shopId: "shop-1", name: "x", isDemo: false };
+  assert.equal(worksAsPro({ ...base, id: "p", role: "pro", takesAppointments: true }), true);
+  assert.equal(worksAsPro({ ...base, id: "o", role: "owner" }), false, "an owner who doesn't take appointments");
+  assert.equal(worksAsPro({ ...base, id: "o", role: "owner", takesAppointments: false }), false);
+  assert.equal(worksAsPro({ ...base, id: "o", role: "owner", takesAppointments: true }), true, "an owner with their own chair");
+  assert.equal(worksAsPro({ ...base, id: "c", role: "client", takesAppointments: true }), false, "never a client");
+  assert.equal(worksAsPro({ id: "a", role: "super_admin", shopId: null, name: "x", isDemo: false, takesAppointments: true }), false, "the Super Admin uses view as");
+  assert.equal(worksAsPro(null), false);
 });

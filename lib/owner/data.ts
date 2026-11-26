@@ -13,7 +13,7 @@
 
 import { and, asc, count, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { ApiError } from "../api-error";
-import { serviceNamesSql, type ShopRow } from "../booking/data";
+import { serviceNamesSql, TAKES_APPOINTMENTS, type ShopRow } from "../booking/data";
 import { getDb } from "../db/client";
 import { appointments, proProfiles, proServices, services, users } from "../db/schema";
 import { addDays, type LocalDate, zonedToUtc } from "../demo/time";
@@ -87,7 +87,7 @@ export async function shopRevenue(shop: ShopRow, now: Date = new Date()): Promis
   return { todayCents: Number(row?.today ?? 0), weekCents: Number(row?.week ?? 0), monthCents: Number(row?.month ?? 0) };
 }
 
-// The shop's pros with everything the owner manages, and how many appointments each has today.
+// The shop's pros (and the owner, once they take appointments) with everything the owner manages, and how many appointments each has today.
 export async function listTeam(shop: ShopRow, today: LocalDate): Promise<TeamMember[]> {
   const db = getDb();
   const pros = await db
@@ -104,7 +104,7 @@ export async function listTeam(shop: ShopRow, today: LocalDate): Promise<TeamMem
     })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
-    .where(and(eq(users.shopId, shop.id), eq(users.role, "pro")))
+    .where(and(eq(users.shopId, shop.id), TAKES_APPOINTMENTS))
     .orderBy(asc(proProfiles.stationNumber), asc(users.name));
   if (pros.length === 0) return [];
   const from = zonedToUtc(today, "00:00", shop.timezone);
@@ -124,7 +124,7 @@ export async function getProPricing(shop: ShopRow, proId: string) {
     .select({ id: users.id, name: users.name, title: proProfiles.title, priceMode: proProfiles.priceMode })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
-    .where(and(eq(users.id, proId), eq(users.role, "pro"), eq(users.shopId, shop.id)));
+    .where(and(eq(users.id, proId), TAKES_APPOINTMENTS, eq(users.shopId, shop.id)));
   if (!pro) throw new ApiError(404, "NOT_FOUND", "Not found.");
   const rows = await db
     .select({ id: services.id, name: services.name, durationMin: services.durationMin, standardCents: services.standardPriceCents, customCents: proServices.customPriceCents })

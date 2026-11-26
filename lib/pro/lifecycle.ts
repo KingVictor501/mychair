@@ -12,6 +12,7 @@
 // WHY THE NAME: the appointment "lifecycle"; ".ts" = no screen code.
 
 import { z } from "zod";
+import { worksAsPro } from "../auth/permissions";
 import type { CurrentUser } from "../types";
 
 export const APPOINTMENT_STATUSES = ["waiting", "in_chair", "completed", "no_show", "cancelled"] as const;
@@ -48,10 +49,10 @@ export function canManageAppointment(user: CurrentUser, appointment: { proId: st
   return false;
 }
 
-// True if a pro may book a client onto "target" pro's calendar: always for themselves; for
+// True if a pro (or an owner who takes appointments) may book a client onto "target" pro's calendar: always for themselves; for
 // another pro only in the same shop, and only if that pro turned on "Let other pros book for me".
 export function canBookFor(booker: CurrentUser, target: { id: string; shopId: string | null; allowOthersToBook: boolean }): boolean {
-  if (booker.role !== "pro" || !booker.shopId || booker.shopId !== target.shopId) return false;
+  if (!worksAsPro(booker) || !booker.shopId || booker.shopId !== target.shopId) return false;
   return booker.id === target.id || target.allowOthersToBook;
 }
 

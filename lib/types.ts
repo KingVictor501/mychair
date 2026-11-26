@@ -88,6 +88,10 @@ export type CurrentUser = {
   shopId: string | null; // null only for the Super Admin
   name: string;
   isDemo: boolean;
+  // True if this person has a pro profile, so they take appointments: every pro, and an owner
+  // who turned on "Take appointments myself". Optional so plain test objects can leave it out
+  // (left out = false).
+  takesAppointments?: boolean;
 };
 
 // The minimum the permission checks need to know about a shop.

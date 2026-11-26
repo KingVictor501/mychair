@@ -35,6 +35,10 @@ export type ClientAppointment = {
 // Statuses that hold a time slot.
 const INACTIVE = ["cancelled", "no_show"];
 
+// "This person takes appointments": a pro, or an owner who also works as a pro. Used together
+// with the inner join on pro_profiles, so an owner shows up only once they have a pro profile.
+export const TAKES_APPOINTMENTS = inArray(users.role, ["pro", "owner"]);
+
 export async function getShop(shopId: string): Promise<ShopRow | null> {
   const [row] = await getDb().select().from(shops).where(eq(shops.id, shopId));
   return row ?? null;
@@ -47,7 +51,7 @@ export async function listPros(shopId: string): Promise<ProSummary[]> {
     .select({ id: users.id, name: users.name, title: proProfiles.title, liveStatus: proProfiles.liveStatus, bio: proProfiles.bio, priceMode: proProfiles.priceMode })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
-    .where(and(eq(users.shopId, shopId), eq(users.role, "pro")))
+    .where(and(eq(users.shopId, shopId), TAKES_APPOINTMENTS))
     .orderBy(asc(users.name));
   if (pros.length === 0) return [];
   const offered = await db
@@ -68,7 +72,7 @@ export async function bookablePros(proId: string, shopId: string): Promise<Array
     .select({ id: users.id, name: users.name })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
-    .where(and(eq(users.shopId, shopId), eq(users.role, "pro"), or(eq(users.id, proId), eq(proProfiles.allowOthersToBook, true))))
+    .where(and(eq(users.shopId, shopId), TAKES_APPOINTMENTS, or(eq(users.id, proId), eq(proProfiles.allowOthersToBook, true))))
     .orderBy(asc(users.name));
   return [...rows.filter((r) => r.id === proId), ...rows.filter((r) => r.id !== proId)];
 }
@@ -80,7 +84,7 @@ export async function getPro(proId: string) {
     .select({ id: users.id, name: users.name, shopId: users.shopId, title: proProfiles.title, bio: proProfiles.bio, liveStatus: proProfiles.liveStatus, priceMode: proProfiles.priceMode, allowOthersToBook: proProfiles.allowOthersToBook })
     .from(users)
     .innerJoin(proProfiles, eq(proProfiles.userId, users.id))
-    .where(and(eq(users.id, proId), eq(users.role, "pro")));
+    .where(and(eq(users.id, proId), TAKES_APPOINTMENTS));
   return row ?? null;
 }
 

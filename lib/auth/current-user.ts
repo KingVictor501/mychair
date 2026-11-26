@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 // cookies() (from Next.js) reads the cookies the browser sent with this request.
 import { cookies } from "next/headers";
 import { getDb } from "../db/client";
-import { users } from "../db/schema";
+import { proProfiles, users } from "../db/schema";
 import { isDemoModeOn } from "../demo/mode";
 import type { CurrentUser, Role } from "../types";
 import { readSessionToken, SESSION_COOKIE, type SessionClaims } from "./session";
@@ -28,13 +28,15 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (!claims) return null;
 
   const [row] = await getDb()
-    .select({ id: users.id, role: users.role, shopId: users.shopId, name: users.name, isDemo: users.isDemo })
+    .select({ id: users.id, role: users.role, shopId: users.shopId, name: users.name, isDemo: users.isDemo, proProfileId: proProfiles.userId })
     .from(users)
+    // A pro profile means this person takes appointments (a pro, or an owner who also works as one).
+    .leftJoin(proProfiles, eq(proProfiles.userId, users.id))
     .where(eq(users.id, claims.userId));
   if (!row) return null;
 
   // Demo accounts only work while demo mode is on.
   if (row.isDemo && !(await isDemoModeOn())) return null;
 
-  return { id: row.id, role: row.role as Role, shopId: row.shopId, name: row.name, isDemo: row.isDemo };
+  return { id: row.id, role: row.role as Role, shopId: row.shopId, name: row.name, isDemo: row.isDemo, takesAppointments: row.proProfileId !== null };
 }

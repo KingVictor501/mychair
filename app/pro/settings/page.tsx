@@ -7,6 +7,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
+import { worksAsPro } from "@/lib/auth/permissions";
 import LogoutButton from "@/components/LogoutButton";
 import ProSettingsToggles from "@/components/ProSettingsToggles";
 import { getCurrentUser } from "@/lib/auth/current-user";
@@ -19,7 +20,8 @@ export const metadata: Metadata = { title: "Settings · MyChair" };
 export default async function ProSettingsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "pro") redirect(HOME_FOR_ROLE[user.role]);
+  // Pros, and owners who also take appointments (lib/auth/permissions.ts).
+  if (!worksAsPro(user)) redirect(HOME_FOR_ROLE[user.role]);
   const pro = await getPro(user.id);
   if (!pro) redirect("/login");
   // The shop, for its colors on the banner.

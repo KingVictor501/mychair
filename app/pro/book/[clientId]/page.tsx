@@ -11,6 +11,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingForm from "@/components/BookingForm";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
+import { worksAsPro } from "@/lib/auth/permissions";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { bookableDates, bookablePros, getPro, getShop, listProServices } from "@/lib/booking/data";
 import { getDb } from "@/lib/db/client";
@@ -21,7 +22,8 @@ import ShopBanner from "@/components/ShopBanner";
 export default async function BookForClientPage({ params, searchParams }: { params: Promise<{ clientId: string }>; searchParams: Promise<{ pro?: string }> }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "pro") redirect(HOME_FOR_ROLE[user.role]);
+  // Pros, and owners who also take appointments (lib/auth/permissions.ts).
+  if (!worksAsPro(user)) redirect(HOME_FOR_ROLE[user.role]);
   const shop = user.shopId ? await getShop(user.shopId) : null;
   if (!shop) redirect("/login");
 

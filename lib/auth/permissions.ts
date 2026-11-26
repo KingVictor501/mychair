@@ -3,6 +3,7 @@
 // docs/permissions.md. Plain functions with no database, so they're easy to test:
 //   requireUser      not logged in -> 401
 //   requireRole      wrong kind of account -> 403
+//   worksAsPro       may this person use the pro pages? Pros, and owners who take appointments
 //   assertShopAccess the user may only touch their own shop; the Super Admin may touch any shop;
 //                    a DEMO account may only ever touch demo shops ("boxed in"), even a demo
 //                    Super Admin. Wrong shop -> 404, so the route doesn't even confirm it exists.
@@ -37,6 +38,14 @@ export function canAccessShop(user: CurrentUser, shop: ShopRef): boolean {
 // Stops the request with 404 unless the user may access this shop.
 export function assertShopAccess(user: CurrentUser, shop: ShopRef | null | undefined): asserts shop is ShopRef {
   if (!shop || !canAccessShop(user, shop)) throw new ApiError(404, "NOT_FOUND", "Not found.");
+}
+
+// True if this person may use the pro pages (/pro and app/api/pro/*): every pro, and an owner
+// who also takes appointments. The Super Admin uses "view as" instead, and clients never.
+export function worksAsPro(user: CurrentUser | null): boolean {
+  if (!user) return false;
+  if (user.role === "pro") return true;
+  return user.role === "owner" && user.takesAppointments === true;
 }
 
 // True if a pro may see a client: only their own clients (someone they have an appointment or

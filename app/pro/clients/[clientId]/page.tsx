@@ -8,6 +8,7 @@
 
 import { notFound, redirect } from "next/navigation";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
+import { worksAsPro } from "@/lib/auth/permissions";
 import StyleCardEditor from "@/components/StyleCardEditor";
 import VisitHistory from "@/components/VisitHistory";
 import { ApiError } from "@/lib/api-error";
@@ -22,7 +23,8 @@ import ShopBanner from "@/components/ShopBanner";
 export default async function ClientPage({ params }: { params: Promise<{ clientId: string }> }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "pro") redirect(HOME_FOR_ROLE[user.role]);
+  // Pros, and owners who also take appointments (lib/auth/permissions.ts).
+  if (!worksAsPro(user)) redirect(HOME_FOR_ROLE[user.role]);
   const shop = user.shopId ? await getShop(user.shopId) : null;
   if (!shop) redirect("/login");
   const { clientId } = await params;

@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 import AppointmentActions from "@/components/AppointmentActions";
 import LiveStatusPicker from "@/components/LiveStatusPicker";
 import { HOME_FOR_ROLE } from "@/lib/auth/home";
+import { worksAsPro } from "@/lib/auth/permissions";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getPro, getShop } from "@/lib/booking/data";
 import { parseLocalDate } from "@/lib/booking/slots";
@@ -29,7 +30,8 @@ const ymd = (d: LocalDate) => `${d.year}-${String(d.month).padStart(2, "0")}-${S
 export default async function ProHome({ searchParams }: { searchParams: Promise<{ date?: string; view?: string }> }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "pro") redirect(HOME_FOR_ROLE[user.role]);
+  // Pros, and owners who also take appointments (lib/auth/permissions.ts).
+  if (!worksAsPro(user)) redirect(HOME_FOR_ROLE[user.role]);
   const [shop, pro] = await Promise.all([user.shopId ? getShop(user.shopId) : null, getPro(user.id)]);
   if (!shop || !pro) redirect("/login");
 
@@ -56,7 +58,7 @@ export default async function ProHome({ searchParams }: { searchParams: Promise<
 
   return (
     <main className="!max-w-3xl">
-      <Breadcrumbs items={[{ label: "My schedule" }]} />
+      <Breadcrumbs items={user.role === "owner" ? [{ label: shop.name, href: "/owner" }, { label: "My schedule" }] : [{ label: "My schedule" }]} />
       <ShopBanner businessType={shop.businessType} title={`Hi, ${pro.name}`} subtitle={`${pro.title} at ${shop.name}`} />
 
       <section aria-label="Live status" className="mb-6">

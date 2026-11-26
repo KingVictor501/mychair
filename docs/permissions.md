@@ -10,7 +10,7 @@ Two rules apply to every row below:
 
 Legend: ✅ allowed, ❌ not allowed, 🔸 allowed with a limit (explained in the notes column).
 
-An owner who also cuts hair has both the Owner and Pro columns.
+An owner who also cuts hair has both the Owner and Pro columns. They turn this on themselves with "Take appointments myself" on `/owner`, which gives them a pro profile: from then on they're on the team and the booking pages, and they use `/pro` (their own schedule, clients and settings) like any pro.
 
 | Action | Super Admin | Owner | Pro | Client | Notes |
 |---|---|---|---|---|---|
@@ -32,6 +32,7 @@ An owner who also cuts hair has both the Owner and Pro columns.
 | Set station number | ✅ | ✅ | ❌ | ❌ | |
 | See pay structure | ✅ | ✅ | ❌ | ❌ | hidden from pros and clients |
 | Set pay structure | ✅ | ✅ | ❌ | ❌ | |
+| Take appointments yourself ("your chair") | ❌ | 🔸 | – | ❌ | owner: their own account only, in their own shop. Starts with every service at the standard price and a teammate's hours. Turning it off is refused while they have upcoming appointments. Pros already take appointments. |
 | **Services and prices** | | | | | |
 | View services and prices | ✅ | ✅ | ✅ | ✅ | |
 | Create or edit a service (name, description, duration) | ✅ | ✅ | 🔸 | ❌ | pro: only adds or removes services on their own list |
@@ -81,9 +82,6 @@ An owner who also cuts hair has both the Owner and Pro columns.
 - It is active for 24 hours and can be used once. It counts as used only after the client's account is created successfully, so a failed sign-up (for example, a typo) does not burn the link. The pro can make another one at any time.
 - The link is a random secret stored hashed (same design as pro invites). Creating links is rate limited.
 - The link never contains the client's name, phone, or email.
-
-## Notes for later
-- **Owner as a pro:** the owner needs their own "pro" view on the dashboard so they can take and schedule their own appointments, switching between the owner view and the pro view. Not built yet; the owner column already allows booking and schedule actions.
 
 ## What each failure returns
 - Not logged in: **401**.

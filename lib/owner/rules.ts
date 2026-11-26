@@ -51,3 +51,29 @@ export function revenueRanges(now: Date, timeZone: string): { today: Date; week:
     month: zonedToUtc(first, "00:00", timeZone),
   };
 }
+
+// ---- The owner's own chair ("Take appointments myself") ----
+
+// What clients see under the owner's name when they start taking appointments, by kind of shop.
+// The owner can type something else.
+export const DEFAULT_CHAIR_TITLE: Record<string, string> = {
+  barbershop: "Barber",
+  nail_salon: "Nail tech",
+  lash_studio: "Lash artist",
+};
+
+// What a "take appointments myself" request may contain: the title clients see. Nothing else,
+// so the owner can't slip in pay or prices here (prices are set on /owner/pros/<id> as usual).
+export const chairInput = z
+  .object({ title: z.string().trim().min(2, "Enter a title of at least 2 characters, for example Barber.").max(40, "Keep the title under 40 characters.") })
+  .strict();
+
+// One weekly hours row (work hours or a break), in the shop's local time.
+export type WeeklyRule = { weekday: number; startTime: string; endTime: string; kind: string };
+
+// The owner's starting hours: a copy of one teammate's weekly hours and breaks (they already
+// match when the shop is open), or Tuesday to Saturday, 9 to 5, if nobody has hours yet.
+export function startingHours(teammate: WeeklyRule[]): WeeklyRule[] {
+  if (teammate.length > 0) return teammate.map(({ weekday, startTime, endTime, kind }) => ({ weekday, startTime, endTime, kind }));
+  return [2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "09:00", endTime: "17:00", kind: "work" }));
+}
