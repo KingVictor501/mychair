@@ -38,16 +38,15 @@ import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } fro
 
 type Db = ReturnType<typeof getDb>;
 
-// How far back the demo's appointment history goes, so visit history and revenue have a few months to show.
-const HISTORY_DAYS = 90;
-// Every demo pro has at least this much recent and upcoming work right after a seed or reset
-// (see the top-up step in seedShop), so weekly reports always have data from every pro.
-export const RECENT_COMPLETED = 5;
-export const RECENT_NO_SHOWS = 1;
-export const UPCOMING = 5;
+// How far back the demo's appointment history goes: a year, so visit history, revenue and the
+// weekly review's "no-shows in the past 12 months" have real data.
+const HISTORY_DAYS = 365;
+// Each pro's appointments per open day (cancellations and no-shows included), from HISTORY_DAYS
+// back to UPCOMING_DAYS ahead. Closed days have none.
+export const PER_DAY_MIN = 4;
+export const PER_DAY_MAX = 5;
+export const UPCOMING_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
-// "2026-11-24" for a local date, used as a map key.
-const ymdKey = (d: { year: number; month: number; day: number }) => `${d.year}-${d.month}-${d.day}`;
 
 // A fixed ID for a demo shop or person, made from its slug or email. Because the ID is the same
 // every time the demo is seeded, resetting the demo doesn't log anyone out: their session still
@@ -178,9 +177,12 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
   for (let i = 0; i < profiles.length; i += 200) await db.insert(clientProfiles).values(profiles.slice(i, i + 200));
   const regulars = pros.map((_, p) => allClients.filter((_, i) => i < regularCount && homePro(i) === p));
 
-  // Appointments: about three months back to 5 days ahead, in the shop's local time. Each client
-  // comes back every so often (regulars every 1 to 2 weeks, drop-ins every 2 to 5 weeks), and each
-  // visit is ONE appointment with 1 to 3 different services, mostly with their own pro.
+  // Appointments: every open day from a year back to a week ahead, in the shop's local time. Each
+  // pro has PER_DAY_MIN to PER_DAY_MAX appointments on the books each open day (cancellations and
+  // no-shows included), and none on days the shop is closed. Who fills the chair: first that pro's
+  // regulars when they're due (every 1 to 2 weeks), then the drop-in clients who are most overdue
+  // (each comes back every 3 to 6 weeks), now and then one from another pro's list. Each visit is
+  // ONE appointment with 1 to 3 different services, and a client never has two visits in a day.
   const rows: AppointmentRow[] = [];
   const lines: Array<typeof appointmentServices.$inferInsert> = [];
   const today = localDateParts(now, shop.timezone);
@@ -195,100 +197,101 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
     if (start < open || end > close || (start < breakEnd && end > breakStart)) return false;
     return !(booked.get(key) ?? []).some(([s, e]) => start < e && end > s);
   };
+  // The next free start time on the 15-minute grid: visits follow one another through the day,
+  // sometimes with a 15 or 30 minute gap, so a day of long services still fits 4 to 5 visits.
+  // Null if the day has no room left for this length.
+  const freeStart = (key: string, length: number): number | null => {
+    let first: number | null = null;
+    for (let t = open; t + length <= close && first === null; t += 15) if (fits(key, t, length)) first = t;
+    if (first === null) return null;
+    const gap = [0, 0, 15, 30][Math.floor(rand() * 4)]!;
+    return fits(key, first + gap, length) ? first + gap : first;
+  };
+  // Minutes still free in a pro's day (open hours minus the break minus what's booked).
+  const freeMinutes = (key: string) => close - open - (breakEnd - breakStart) - (booked.get(key) ?? []).reduce((sum, [a, b]) => sum + (b - a), 0);
+  // The shortest services, for keeping a nearly full day to 4 or 5 visits.
+  const quick = [...serviceRows].sort((x, y) => x.durationMin - y.durationMin).slice(0, Math.max(1, Math.ceil(serviceRows.length / 2)));
+  const shortest = quick[0]!.durationMin;
 
-  allClients.forEach((client, i) => {
-    const cadence = i < regularCount ? 7 + Math.floor(rand() * 8) : 14 + Math.floor(rand() * 22);
-    for (let offset = -HISTORY_DAYS + Math.floor(rand() * cadence); offset <= 5; offset += cadence + Math.floor(rand() * 7) - 3) {
-      // If the shop is closed that day, come the next open day instead.
-      let o = offset;
-      let day = addDays(today, o);
-      for (let tries = 0; tries < 3 && !shop.openDays.includes(day.weekday); tries++) day = addDays(today, ++o);
-      if (!shop.openDays.includes(day.weekday) || o > 5) continue;
-      // Usually their own pro; now and then someone else in the shop.
-      const p = rand() < 0.9 ? homePro(i) : Math.floor(rand() * pros.length);
-      const pro = pros[p]!;
-      // One service most visits, sometimes two or three, never the same one twice.
-      const howMany = rand() < 0.65 ? 1 : rand() < 0.8 ? 2 : 3;
-      const pool = [...serviceRows];
-      const picked = Array.from({ length: howMany }, () => pool.splice(Math.floor(rand() * pool.length), 1)[0]!);
-      const length = picked.reduce((sum, sv) => sum + sv.durationMin, 0);
-      // Find a free start time on the 15-minute grid; if the day is full, skip this visit.
+  // When each client is next due back (a day offset), and how often they come.
+  const cadence = allClients.map((_, i) => (i < regularCount ? 7 + Math.floor(rand() * 8) : 21 + Math.floor(rand() * 22)));
+  const nextDue = cadence.map((c) => -HISTORY_DAYS + Math.floor(rand() * c));
+  const lastVisit = allClients.map(() => -Infinity);
+
+  for (let o = -HISTORY_DAYS; o <= UPCOMING_DAYS; o++) {
+    const day = addDays(today, o);
+    if (!shop.openDays.includes(day.weekday)) continue;
+    pros.forEach((pro, p) => {
       const key = `${p}|${o}`;
-      let start: number | null = null;
-      for (let t = 0; t < 25 && start === null; t++) {
-        const candidate = open + Math.floor(rand() * ((close - open) / 15)) * 15;
-        if (fits(key, candidate, length)) start = candidate;
-      }
-      if (start === null) continue;
-      booked.set(key, [...(booked.get(key) ?? []), [start, start + length]]);
-      const prices = picked.map((sv) => pro.custom[sv.name] ?? sv.priceCents);
-      const id = randomUUID();
-      const base = {
-        shopId,
-        proId: pro.id,
-        clientId: client.id,
-        serviceId: picked[0]!.id,
-        startsAt: zonedToUtc(day, minutesToTime(start), shop.timezone),
-        endsAt: zonedToUtc(day, minutesToTime(start + length), shop.timezone),
-        priceCents: prices.reduce((sum, c) => sum + c, 0),
-      };
-      rows.push({ ...makeAppointment(base, now, rand), id });
-      // An appointment with more than one service lists each one, with its own price and length.
-      if (picked.length > 1) picked.forEach((sv, k) => lines.push({ appointmentId: id, position: k + 1, serviceId: sv.id, priceCents: prices[k]!, durationMin: sv.durationMin }));
-    }
-  });
-
-  // Guarantees per pro, so reports and the owner's no-show count always have recent data, however
-  // the random history above came out: in the 7 days before today at least RECENT_COMPLETED
-  // completed appointments and RECENT_NO_SHOWS no-show, and at least UPCOMING waiting ones in the
-  // next two weeks. Each top-up is a normal one-service visit by one of that pro's own clients,
-  // on an open day, in a free time, and never a second visit for that client on the same day.
-  const visitDays = new Set(rows.map((r) => `${r.clientId}|${ymdKey(localDateParts(r.startsAt as Date, shop.timezone))}`));
-  pros.forEach((pro, p) => {
-    const own = allClients.filter((_, i) => homePro(i) === p);
-    const weekAgo = now.getTime() - 7 * DAY_MS;
-    const mine = () => rows.filter((r) => r.proId === pro.id);
-    const recent = (status: string) => mine().filter((r) => r.status === status && (r.startsAt as Date).getTime() >= weekAgo && (r.endsAt as Date).getTime() <= now.getTime()).length;
-    const upcoming = () => mine().filter((r) => r.status === "waiting" && (r.startsAt as Date).getTime() > now.getTime()).length;
-    let next = 0;
-    // Adds one visit on the first day in "offsets" that has room. Returns false if no day had room.
-    const addVisit = (offsets: number[], status: "completed" | "no_show" | "waiting"): boolean => {
-      for (const o of offsets) {
-        const day = addDays(today, o);
-        if (!shop.openDays.includes(day.weekday)) continue;
-        const client = own[next % own.length]!;
-        if (visitDays.has(`${client.id}|${ymdKey(day)}`)) continue;
-        const service = serviceRows[Math.floor(rand() * serviceRows.length)]!;
-        const key = `${p}|${o}`;
-        let start: number | null = null;
-        for (let t = open; t + service.durationMin <= close && start === null; t += 15) if (fits(key, t, service.durationMin)) start = t;
-        if (start === null) continue;
-        booked.set(key, [...(booked.get(key) ?? []), [start, start + service.durationMin]]);
-        visitDays.add(`${client.id}|${ymdKey(day)}`);
-        next++;
+      const target = PER_DAY_MIN + Math.floor(rand() * (PER_DAY_MAX - PER_DAY_MIN + 1));
+      // Clients who can come today: not already in today. Their own regulars first, then the
+      // most overdue drop-ins (now and then someone from another pro's list).
+      const free = (i: number) => lastVisit[i] !== o;
+      const queue = [
+        ...allClients.map((_, i) => i).filter((i) => i < regularCount && homePro(i) === p && nextDue[i]! <= o && free(i)),
+        ...allClients
+          .map((_, i) => i)
+          .filter((i) => i >= regularCount && free(i) && (homePro(i) === p || rand() < 0.1))
+          .sort((x, y) => nextDue[x]! - nextDue[y]!),
+      ];
+      let made = 0;
+      for (const i of queue) {
+        if (made >= target) break;
+        // One service most visits, sometimes two or three, never the same one twice.
+        const howMany = rand() < 0.65 ? 1 : rand() < 0.8 ? 2 : 3;
+        const pool = [...serviceRows];
+        let picked = Array.from({ length: howMany }, () => pool.splice(Math.floor(rand() * pool.length), 1)[0]!);
+        let length = picked.reduce((sum, sv) => sum + sv.durationMin, 0);
+        // Leave enough time for the visits still to come today (at least the shortest service each,
+        // plus room for gaps); if this visit would eat into that, it becomes one quick service.
+        const stillToCome = Math.max(0, PER_DAY_MIN - made - 1);
+        let start = length <= freeMinutes(key) - stillToCome * (shortest + 30) ? freeStart(key, length) : null;
+        // No room for that visit: try one quick service instead (a random one, then each from the
+        // shortest up); if even the shortest won't fit, the day is full.
+        if (start === null) {
+          for (const sv of [quick[Math.floor(rand() * quick.length)]!, ...quick]) {
+            start = freeStart(key, sv.durationMin);
+            if (start !== null) {
+              picked = [sv];
+              length = sv.durationMin;
+              break;
+            }
+          }
+        }
+        if (start === null) break;
+        booked.set(key, [...(booked.get(key) ?? []), [start, start + length]]);
+        lastVisit[i] = o;
+        nextDue[i] = o + cadence[i]! + Math.floor(rand() * 7) - 3;
+        made++;
+        const client = allClients[i]!;
+        const prices = picked.map((sv) => pro.custom[sv.name] ?? sv.priceCents);
+        const id = randomUUID();
         const base = {
           shopId,
           proId: pro.id,
           clientId: client.id,
-          serviceId: service.id,
+          serviceId: picked[0]!.id,
           startsAt: zonedToUtc(day, minutesToTime(start), shop.timezone),
-          endsAt: zonedToUtc(day, minutesToTime(start + service.durationMin), shop.timezone),
-          priceCents: pro.custom[service.name] ?? service.priceCents,
+          endsAt: zonedToUtc(day, minutesToTime(start + length), shop.timezone),
+          priceCents: prices.reduce((sum, c) => sum + c, 0),
         };
-        rows.push({ ...makeAppointment(base, now, rand, status), id: randomUUID() });
-        return true;
+        rows.push({ ...makeAppointment(base, now, rand), id });
+        // An appointment with more than one service lists each one, with its own price and length.
+        if (picked.length > 1) picked.forEach((sv, k) => lines.push({ appointmentId: id, position: k + 1, serviceId: sv.id, priceCents: prices[k]!, durationMin: sv.durationMin }));
       }
-      next++;
-      return false;
-    };
-    const past = [-1, -2, -3, -4, -5, -6, -7];
-    const ahead = Array.from({ length: 14 }, (_, k) => k + 1);
-    // Rotating the start day spreads the top-ups over the week instead of piling onto one day.
-    const rotate = (list: number[], by: number) => [...list.slice(by % list.length), ...list.slice(0, by % list.length)];
-    for (let tries = 0; recent("completed") < RECENT_COMPLETED && tries < 30; tries++) addVisit(rotate(past, tries), "completed");
-    for (let tries = 0; recent("no_show") < RECENT_NO_SHOWS && tries < 30; tries++) addVisit(rotate(past, tries + p), "no_show");
-    for (let tries = 0; upcoming() < UPCOMING && tries < 30; tries++) addVisit(rotate(ahead, tries * 2), "waiting");
-  });
+    });
+  }
+
+  // Every pro has at least one no-show in the 7 days before today, so the owner's no-show count
+  // and weekly reports always have one to show. If the dice gave a pro none, their most recent
+  // completed visit becomes a no-show (same time and client, so the day still has 4 to 5).
+  const weekAgo = now.getTime() - 7 * DAY_MS;
+  for (const pro of pros) {
+    const recent = rows.filter((r) => r.proId === pro.id && (r.startsAt as Date).getTime() >= weekAgo && (r.endsAt as Date).getTime() <= now.getTime());
+    if (recent.some((r) => r.status === "no_show")) continue;
+    const last = recent.filter((r) => r.status === "completed").sort((x, y) => (y.startsAt as Date).getTime() - (x.startsAt as Date).getTime())[0];
+    if (last) Object.assign(last, { status: "no_show", paymentStatus: null, checkedInAt: null, chairAt: null, finishedAt: null });
+  }
 
   // Insert in batches to keep each request small.
   for (let i = 0; i < rows.length; i += 200) await db.insert(appointments).values(rows.slice(i, i + 200));
@@ -322,17 +325,16 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
 }
 
 // Builds one appointment. Past ones are mostly completed (a few no-shows and cancellations);
-// upcoming ones are waiting. "force" picks the status instead (used by the per-pro top-ups).
+// upcoming ones are waiting.
 function makeAppointment(
   base: { shopId: string; proId: string; clientId: string; serviceId: string; startsAt: Date; endsAt: Date; priceCents: number },
   now: Date,
   rand: () => number,
-  force?: "completed" | "no_show" | "waiting",
 ): AppointmentRow {
-  if (force === "waiting" || (!force && base.endsAt.getTime() > now.getTime())) {
+  if (base.endsAt.getTime() > now.getTime()) {
     return { ...base, status: "waiting", paymentStatus: rand() < 0.2 ? "deposit_held" : null };
   }
-  const roll = force === "completed" ? 1 : force === "no_show" ? 0 : rand();
+  const roll = rand();
   if (roll < 0.06) return { ...base, status: "no_show", paymentStatus: null };
   if (roll < 0.13) return { ...base, status: "cancelled", paymentStatus: null };
   return {
