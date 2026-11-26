@@ -40,6 +40,14 @@ type Db = ReturnType<typeof getDb>;
 
 // How far back the demo's appointment history goes, so visit history and revenue have a few months to show.
 const HISTORY_DAYS = 90;
+// Every demo pro has at least this much recent and upcoming work right after a seed or reset
+// (see the top-up step in seedShop), so weekly reports always have data from every pro.
+export const RECENT_COMPLETED = 5;
+export const RECENT_NO_SHOWS = 1;
+export const UPCOMING = 5;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// "2026-11-24" for a local date, used as a map key.
+const ymdKey = (d: { year: number; month: number; day: number }) => `${d.year}-${d.month}-${d.day}`;
 
 // A fixed ID for a demo shop or person, made from its slug or email. Because the ID is the same
 // every time the demo is seeded, resetting the demo doesn't log anyone out: their session still
@@ -230,6 +238,58 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
     }
   });
 
+  // Guarantees per pro, so reports and the owner's no-show count always have recent data, however
+  // the random history above came out: in the 7 days before today at least RECENT_COMPLETED
+  // completed appointments and RECENT_NO_SHOWS no-show, and at least UPCOMING waiting ones in the
+  // next two weeks. Each top-up is a normal one-service visit by one of that pro's own clients,
+  // on an open day, in a free time, and never a second visit for that client on the same day.
+  const visitDays = new Set(rows.map((r) => `${r.clientId}|${ymdKey(localDateParts(r.startsAt as Date, shop.timezone))}`));
+  pros.forEach((pro, p) => {
+    const own = allClients.filter((_, i) => homePro(i) === p);
+    const weekAgo = now.getTime() - 7 * DAY_MS;
+    const mine = () => rows.filter((r) => r.proId === pro.id);
+    const recent = (status: string) => mine().filter((r) => r.status === status && (r.startsAt as Date).getTime() >= weekAgo && (r.endsAt as Date).getTime() <= now.getTime()).length;
+    const upcoming = () => mine().filter((r) => r.status === "waiting" && (r.startsAt as Date).getTime() > now.getTime()).length;
+    let next = 0;
+    // Adds one visit on the first day in "offsets" that has room. Returns false if no day had room.
+    const addVisit = (offsets: number[], status: "completed" | "no_show" | "waiting"): boolean => {
+      for (const o of offsets) {
+        const day = addDays(today, o);
+        if (!shop.openDays.includes(day.weekday)) continue;
+        const client = own[next % own.length]!;
+        if (visitDays.has(`${client.id}|${ymdKey(day)}`)) continue;
+        const service = serviceRows[Math.floor(rand() * serviceRows.length)]!;
+        const key = `${p}|${o}`;
+        let start: number | null = null;
+        for (let t = open; t + service.durationMin <= close && start === null; t += 15) if (fits(key, t, service.durationMin)) start = t;
+        if (start === null) continue;
+        booked.set(key, [...(booked.get(key) ?? []), [start, start + service.durationMin]]);
+        visitDays.add(`${client.id}|${ymdKey(day)}`);
+        next++;
+        const base = {
+          shopId,
+          proId: pro.id,
+          clientId: client.id,
+          serviceId: service.id,
+          startsAt: zonedToUtc(day, minutesToTime(start), shop.timezone),
+          endsAt: zonedToUtc(day, minutesToTime(start + service.durationMin), shop.timezone),
+          priceCents: pro.custom[service.name] ?? service.priceCents,
+        };
+        rows.push({ ...makeAppointment(base, now, rand, status), id: randomUUID() });
+        return true;
+      }
+      next++;
+      return false;
+    };
+    const past = [-1, -2, -3, -4, -5, -6, -7];
+    const ahead = Array.from({ length: 14 }, (_, k) => k + 1);
+    // Rotating the start day spreads the top-ups over the week instead of piling onto one day.
+    const rotate = (list: number[], by: number) => [...list.slice(by % list.length), ...list.slice(0, by % list.length)];
+    for (let tries = 0; recent("completed") < RECENT_COMPLETED && tries < 30; tries++) addVisit(rotate(past, tries), "completed");
+    for (let tries = 0; recent("no_show") < RECENT_NO_SHOWS && tries < 30; tries++) addVisit(rotate(past, tries + p), "no_show");
+    for (let tries = 0; upcoming() < UPCOMING && tries < 30; tries++) addVisit(rotate(ahead, tries * 2), "waiting");
+  });
+
   // Insert in batches to keep each request small.
   for (let i = 0; i < rows.length; i += 200) await db.insert(appointments).values(rows.slice(i, i + 200));
   // Service lines after their appointments (each line points at one).
@@ -262,16 +322,17 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
 }
 
 // Builds one appointment. Past ones are mostly completed (a few no-shows and cancellations);
-// upcoming ones are waiting.
+// upcoming ones are waiting. "force" picks the status instead (used by the per-pro top-ups).
 function makeAppointment(
   base: { shopId: string; proId: string; clientId: string; serviceId: string; startsAt: Date; endsAt: Date; priceCents: number },
   now: Date,
   rand: () => number,
+  force?: "completed" | "no_show" | "waiting",
 ): AppointmentRow {
-  if (base.endsAt.getTime() > now.getTime()) {
+  if (force === "waiting" || (!force && base.endsAt.getTime() > now.getTime())) {
     return { ...base, status: "waiting", paymentStatus: rand() < 0.2 ? "deposit_held" : null };
   }
-  const roll = rand();
+  const roll = force === "completed" ? 1 : force === "no_show" ? 0 : rand();
   if (roll < 0.06) return { ...base, status: "no_show", paymentStatus: null };
   if (roll < 0.13) return { ...base, status: "cancelled", paymentStatus: null };
   return {

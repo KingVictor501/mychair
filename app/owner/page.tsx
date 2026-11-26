@@ -1,6 +1,7 @@
 // app/owner/page.tsx
 // WHAT IT'S FOR: the owner's dashboard, at /owner (or /owner?date=YYYY-MM-DD for another day):
 //   - revenue: completed appointments today, this week and this month
+//   - no-shows: the shop's total in the last 7 and 30 days, and each pro's in the last 7
 //   - the day: every appointment across all pros, with steps (check in, complete, no-show)
 //   - the team: each pro's live status, station, pay structure (owner only), price mode, and a
 //     link to set their prices
@@ -23,7 +24,7 @@ import { getShop } from "@/lib/booking/data";
 import { parseLocalDate } from "@/lib/booking/slots";
 import { addDays, localDateParts, type LocalDate } from "@/lib/demo/time";
 import { LIVE_STATUS, money, shopTime } from "@/lib/format";
-import { listShopDay, listTeam, shopRevenue } from "@/lib/owner/data";
+import { listShopDay, listTeam, shopNoShows, shopRevenue } from "@/lib/owner/data";
 import { DEFAULT_CHAIR_TITLE, payLabel } from "@/lib/owner/rules";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ShopBanner from "@/components/ShopBanner";
@@ -46,7 +47,7 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
   const asked = parseLocalDate((await searchParams).date ?? "");
   const date = asked ?? today;
   const isToday = ymd(date) === ymd(today);
-  const [day, team, revenue] = await Promise.all([listShopDay(shop, date), listTeam(shop, today), shopRevenue(shop)]);
+  const [day, team, revenue, noShows] = await Promise.all([listShopDay(shop, date), listTeam(shop, today), shopRevenue(shop), shopNoShows(shop)]);
   const booked = day.filter((a) => a.status !== "cancelled");
   // The owner's own row on the team, once they take appointments.
   const mine = team.find((p) => p.id === user.id);
@@ -72,6 +73,16 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
         ))}
       </section>
       <p className="!mt-1 text-xs">Revenue is completed appointments, at the price they were booked at.</p>
+
+      <section aria-label="No-shows" className="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-1 rounded-lg border border-border bg-surface p-3">
+        <span className="text-sm font-semibold text-text">No-shows</span>
+        <span className="text-sm">
+          Last 7 days: <strong className="text-text">{noShows.last7}</strong>
+        </span>
+        <span className="text-sm">
+          Last 30 days: <strong className="text-text">{noShows.last30}</strong>
+        </span>
+      </section>
 
       <OwnerChair ownerId={user.id} takesAppointments={Boolean(mine)} title={mine?.title ?? null} suggestedTitle={DEFAULT_CHAIR_TITLE[shop.businessType] ?? "Pro"} />
 
@@ -133,6 +144,7 @@ export default async function OwnerHome({ searchParams }: { searchParams: Promis
                   <div>
                     Today: {p.todayCount} {p.todayCount === 1 ? "appointment" : "appointments"}
                   </div>
+                  <div>No-shows (7 days): {p.noShows7d}</div>
                   <div>Other pros can book for them: {p.allowOthersToBook ? "Yes" : "No"}</div>
                 </div>
                 <Link href={`/owner/pros/${p.id}`} className="mt-2 inline-block text-sm">

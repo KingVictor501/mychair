@@ -43,6 +43,7 @@ export type TeamMember = {
   priceMode: string;
   allowOthersToBook: boolean;
   todayCount: number;
+  noShows7d: number; // this pro's no-shows in the last 7 days
 };
 
 // Every appointment in the shop on one local day, all pros, soonest first.
@@ -87,6 +88,18 @@ export async function shopRevenue(shop: ShopRow, now: Date = new Date()): Promis
   return { todayCents: Number(row?.today ?? 0), weekCents: Number(row?.week ?? 0), monthCents: Number(row?.month ?? 0) };
 }
 
+// The shop's no-shows in the last 7 days and the last 30 days (rolling, so a Monday never
+// shows an empty week). Counts only; who no-showed is on the day list and the client's card.
+export async function shopNoShows(shop: ShopRow, now: Date = new Date()): Promise<{ last7: number; last30: number }> {
+  const since7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const since30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const [row] = await getDb()
+    .select({ last7: sql<string>`count(*) filter (where ${appointments.startsAt} >= ${since7})`, last30: count() })
+    .from(appointments)
+    .where(and(eq(appointments.shopId, shop.id), eq(appointments.status, "no_show"), gte(appointments.startsAt, since30), lt(appointments.startsAt, now)));
+  return { last7: Number(row?.last7 ?? 0), last30: Number(row?.last30 ?? 0) };
+}
+
 // The shop's pros (and the owner, once they take appointments) with everything the owner manages, and how many appointments each has today.
 export async function listTeam(shop: ShopRow, today: LocalDate): Promise<TeamMember[]> {
   const db = getDb();
@@ -114,7 +127,18 @@ export async function listTeam(shop: ShopRow, today: LocalDate): Promise<TeamMem
     .from(appointments)
     .where(and(inArray(appointments.proId, pros.map((p) => p.id)), gte(appointments.startsAt, from), lt(appointments.startsAt, to), sql`${appointments.status} <> 'cancelled'`))
     .groupBy(appointments.proId);
-  return pros.map((p) => ({ ...p, todayCount: Number(counts.find((c) => c.proId === p.id)?.n ?? 0) }));
+  // Each pro's no-shows in the last 7 days.
+  const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const noShows = await db
+    .select({ proId: appointments.proId, n: count() })
+    .from(appointments)
+    .where(and(inArray(appointments.proId, pros.map((p) => p.id)), eq(appointments.status, "no_show"), gte(appointments.startsAt, since7), lt(appointments.startsAt, new Date())))
+    .groupBy(appointments.proId);
+  return pros.map((p) => ({
+    ...p,
+    todayCount: Number(counts.find((c) => c.proId === p.id)?.n ?? 0),
+    noShows7d: Number(noShows.find((c) => c.proId === p.id)?.n ?? 0),
+  }));
 }
 
 // One pro in this shop, with their services at standard and custom prices. 404 if not in the shop.
