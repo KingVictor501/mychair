@@ -59,3 +59,17 @@ export function timeToMinutes(time: string): number {
 export function minutesToTime(minutes: number): string {
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 }
+
+// Whole days from one local date to another (negative if "to" is earlier).
+export function daysBetween(from: LocalDate, to: LocalDate): number {
+  return Math.round((Date.UTC(to.year, to.month - 1, to.day) - Date.UTC(from.year, from.month - 1, from.day)) / 86_400_000);
+}
+
+// The holiday season that starts in "year": Thanksgiving (the fourth Thursday of November)
+// through New Year's Day. A long gap between a client's visits that overlaps it is excused when
+// judging how consistent they are (docs/scoping.md).
+export function holidaySeason(year: number): { start: LocalDate; end: LocalDate } {
+  const nov1 = new Date(Date.UTC(year, 10, 1)).getUTCDay();
+  const firstThursday = 1 + ((4 - nov1 + 7) % 7);
+  return { start: withWeekday(year, 11, firstThursday + 21), end: withWeekday(year + 1, 1, 1) };
+}

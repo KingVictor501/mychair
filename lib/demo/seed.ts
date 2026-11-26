@@ -34,7 +34,7 @@ import {
 } from "../db/schema";
 import { deleteBlobs } from "../photos/data";
 import { DEMO_SHOPS, DEMO_SUPER_ADMIN, demoDropInClients, type DemoShop } from "./catalog";
-import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
+import { addDays, daysBetween, holidaySeason, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -46,6 +46,8 @@ const HISTORY_DAYS = 365;
 export const PER_DAY_MIN = 4;
 export const PER_DAY_MAX = 5;
 export const UPCOMING_DAYS = 7;
+// A gap between visits this long (7 weeks) or longer counts against a client's consistency.
+export const LONG_GAP_DAYS = 49;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // A fixed ID for a demo shop or person, made from its slug or email. Because the ID is the same
@@ -218,6 +220,27 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
   const nextDue = cadence.map((c) => -HISTORY_DAYS + Math.floor(rand() * c));
   const lastVisit = allClients.map(() => -Infinity);
 
+  // Some drop-in clients aren't steady: they go away for 7 weeks or more now and then. This gives
+  // the weekly Digest's consistency rule (docs/scoping.md) real examples of every case:
+  //   "irregular"         3 to 4 long gaps outside the holidays: not consistent, strikes stay valid
+  //   "holiday traveller" 3 long gaps, one over the holiday season: only 2 count, still consistent
+  //   "two gaps"          2 long gaps: right at the limit, still consistent
+  // Each long gap is a stretch of days ("away") when that client books nothing.
+  const season = holidaySeason(today.year - 1);
+  const seasonStart = daysBetween(today, season.start);
+  const away: Array<Array<[number, number]>> = allClients.map((_, i) => {
+    if (i < regularCount) return [];
+    const long = () => LONG_GAP_DAYS + 3 + Math.floor(rand() * 14);
+    const jitter = () => Math.floor(rand() * 10);
+    const kind = (i - regularCount) % 10;
+    const at = (starts: number[]) => starts.map((s): [number, number] => { const a = s + jitter(); return [a, a + long()]; });
+    if (kind === 0) return at(rand() < 0.5 ? [-310, -215, -120] : [-320, -235, -150, -70]);
+    if (kind === 1) return [[Math.max(-HISTORY_DAYS + 10, seasonStart - 7), Math.max(-HISTORY_DAYS + 10, seasonStart - 7) + long()] as [number, number], ...at([-220, -110])];
+    if (kind === 2) return at([-250, -120]);
+    return [];
+  });
+  const isAway = (i: number, o: number) => away[i]!.some(([a, b]) => o >= a && o < b);
+
   for (let o = -HISTORY_DAYS; o <= UPCOMING_DAYS; o++) {
     const day = addDays(today, o);
     if (!shop.openDays.includes(day.weekday)) continue;
@@ -226,7 +249,7 @@ async function seedShop(db: Db, shop: DemoShop, passwordHash: string, now: Date,
       const target = PER_DAY_MIN + Math.floor(rand() * (PER_DAY_MAX - PER_DAY_MIN + 1));
       // Clients who can come today: not already in today. Their own regulars first, then the
       // most overdue drop-ins (now and then someone from another pro's list).
-      const free = (i: number) => lastVisit[i] !== o;
+      const free = (i: number) => lastVisit[i] !== o && !isAway(i, o);
       const queue = [
         ...allClients.map((_, i) => i).filter((i) => i < regularCount && homePro(i) === p && nextDue[i]! <= o && free(i)),
         ...allClients

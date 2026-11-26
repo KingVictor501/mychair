@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { DEMO_SHOPS, DEMO_SUPER_ADMIN, demoDropInClients } from "./catalog";
 import { staffName } from "../format";
 import { demoId } from "./seed";
-import { addDays, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
+import { addDays, daysBetween, holidaySeason, localDateParts, minutesToTime, timeToMinutes, zonedToUtc } from "./time";
 
 test("three demo shops, each with 1 owner, 3 pros and a priced service list", () => {
   assert.deepEqual(DEMO_SHOPS.map((s) => s.businessType), ["barbershop", "nail_salon", "lash_studio"]);
@@ -78,4 +78,12 @@ test("pros and owners show first name and last initial, and no two in a shop loo
     const labels = staff.map((p) => staffName(p.name, p.lastName));
     assert.equal(new Set(labels).size, labels.length, `${shop.name}: labels are all different`);
   }
+});
+
+test("the holiday season runs from Thanksgiving to New Year's Day", () => {
+  assert.deepEqual(holidaySeason(2025).start, { year: 2025, month: 11, day: 27, weekday: 4 });
+  assert.deepEqual(holidaySeason(2026).start, { year: 2026, month: 11, day: 26, weekday: 4 });
+  assert.deepEqual(holidaySeason(2025).end, { year: 2026, month: 1, day: 1, weekday: 4 });
+  assert.equal(daysBetween(holidaySeason(2025).start, holidaySeason(2025).end), 35);
+  assert.equal(daysBetween(holidaySeason(2025).end, holidaySeason(2025).start), -35);
 });
